@@ -56,28 +56,15 @@ namespace :db do
       enable_extension "hstore"
 
       create_table :people, force: true do |t|
-        t.inet     "ip"
-        t.cidr     "subnet"
         t.integer  "tag_ids",      array: true
         t.string   "tags",         array: true
         t.hstore   "data"
-        t.integer  "lucky_number"
         t.datetime "created_at"
         t.datetime "updated_at"
-      end
-
-      create_table :people_tags, force: true do |t|
-        t.integer  "person_id"
-        t.integer  "tag_id"
       end
 
       create_table :tags, force: true do |t|
         t.integer  "person_id"
-        t.string   "categories", array: true
-        t.datetime "created_at"
-        t.datetime "updated_at"
-        t.integer  "parent_id"
-        t.string   "type"
       end
     end
 

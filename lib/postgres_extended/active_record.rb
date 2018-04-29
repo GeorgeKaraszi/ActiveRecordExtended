@@ -2,7 +2,7 @@
 
 require "active_record"
 
-require "postgres_extended/active_record/where_chain_decorator"
+require "postgres_extended/active_record/query_methods_decorator"
 require "postgres_extended/active_record/array_handler_decorator"
 
 if ActiveRecord::VERSION::MAJOR >= 5

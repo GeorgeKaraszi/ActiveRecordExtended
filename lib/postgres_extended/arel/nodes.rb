@@ -9,5 +9,23 @@ module Arel
         :"&&"
       end
     end
+
+    class Contains < Arel::Nodes::Binary
+      def operator
+        :>>
+      end
+    end
+
+    class ContainsHStore < Arel::Nodes::Binary
+      def operator
+        :"@>"
+      end
+    end
+
+    class ContainsArray < Arel::Nodes::Binary
+      def operator
+        :"@>"
+      end
+    end
   end
 end

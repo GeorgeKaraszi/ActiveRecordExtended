@@ -2,7 +2,7 @@
 
 require "database_cleaner"
 
-DatabaseCleaner.strategy = :deletion
+DatabaseCleaner.strategy = :truncation
 
 RSpec.configure do |config|
   config.before do

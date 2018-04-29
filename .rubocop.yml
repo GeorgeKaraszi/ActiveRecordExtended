@@ -34,6 +34,9 @@ BracesAroundHashParameters:
 StringLiterals:
   EnforcedStyle: double_quotes
 
+Metrics/AbcSize:
+  Max: 18
+
 #################
 # Disabled cops #
 #################
@@ -80,8 +83,3 @@ Style/GuardClause:
 Lint/AmbiguousBlockAssociation:
   Exclude:
     - spec/**/*
-
-# Increase minsize to prevent rubocop throwing warning on ActiveRecord/ActiveController Callbacks
-# Ex after_action :some_action, on: [:update, :create]
-Style/SymbolArray:
-  MinSize: 4

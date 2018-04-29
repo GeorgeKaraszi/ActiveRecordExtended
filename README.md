@@ -22,9 +22,16 @@ Or install it yourself as:
 
     $ gem install postgres_extended
 
-## Usage
+## About
 
-TODO: Write usage instructions here
+Postgres Extended is the continuation of maintaining and improving the work done by **Dan McClain**, the original author of [postgres_ext](https://github.com/DavyJonesLocker/postgres_ext).
+
+Overtime the lack of updating to support the latest versions of ActiveRecord 5.x has caused quite a bit of users forking off the project to create their own patches jobs to maintain compatibility. 
+The only problem is that this has created a wild west of environments of sorts. The problem has grown to the point no one is attempting to directly contribute to the original source. 
+And these patch jobs can vary wildly between developers, often causing unintended breakage to standard ActiveRecord methods.
+
+Postgres Extended is intended to be a supporting community that will maintain compatibility for the foreseeable future.
+
 
 ## Development
 
