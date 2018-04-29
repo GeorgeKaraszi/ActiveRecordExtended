@@ -3,9 +3,12 @@
 # require "bundler/setup"
 require "active_record"
 require "database_cleaner"
-require "dotenv"
 
-Dotenv.load
+unless ENV["DATABASE_URL"]
+  require "dotenv"
+  Dotenv.load
+end
+
 DatabaseCleaner.strategy = :deletion
 ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
 
