@@ -1,0 +1,87 @@
+AllCops:
+  TargetRubyVersion: 2.4
+  DisplayStyleGuide: true
+  DisplayCopNames: true
+
+#################
+# [i] Overrides #
+#################
+
+CollectionMethods:
+  # Mapping from undesired method to desired_method
+  # e.g. to use `detect` over `find`:
+  #
+  # CollectionMethods:
+  #   PreferredMethods:
+  #     find: detect
+  PreferredMethods:
+    reduce: 'inject'
+    find: 'detect'
+    each_with_index: 'each.with_index'
+
+# Align ends correctly.
+EndAlignment:
+  EnforcedStyleAlignWith: variable
+
+LineLength:
+  Max: 120
+  Exclude:
+    - examples/**/*
+
+BracesAroundHashParameters:
+  EnforcedStyle: context_dependent
+
+StringLiterals:
+  EnforcedStyle: double_quotes
+
+#################
+# Disabled cops #
+#################
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/Lambda:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArguments:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/GuardClause:
+  Enabled: false
+
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+    - spec/**/*
+
+# Increase minsize to prevent rubocop throwing warning on ActiveRecord/ActiveController Callbacks
+# Ex after_action :some_action, on: [:update, :create]
+Style/SymbolArray:
+  MinSize: 4
