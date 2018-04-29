@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/GeorgeKaraszi/postgres_extended.svg?branch=master)](https://travis-ci.org/GeorgeKaraszi/postgres_extended) [![Maintainability](https://api.codeclimate.com/v1/badges/9b5bb16d02df58c395f6/maintainability)](https://codeclimate.com/github/GeorgeKaraszi/postgres_extended/maintainability)
+
 # PostgresExtended
 
 Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/postgres_extended`. To experiment with that code, run `bin/console` for an interactive prompt.

@@ -1,0 +1,15 @@
+engines:
+  rubocop:
+    enabled: true
+    channel: rubocop-0-54
+  duplication:
+    enabled: true
+    config:
+      languages:
+        ruby:
+          mass_threshold: 60
+ratings:
+  paths:
+    - lib/**
+exclude_paths:
+  - spec/**/*
