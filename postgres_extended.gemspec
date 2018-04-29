@@ -8,8 +8,8 @@ require "postgres_extended/version"
 Gem::Specification.new do |spec|
   spec.name          = "postgres_extended"
   spec.version       = PostgresExtended::VERSION
-  spec.authors       = ["George Protacio-Karaszi"]
-  spec.email         = ["georgekaraszi@gmail.com"]
+  spec.authors       = ["George Protacio-Karaszi", "Dan McClain"]
+  spec.email         = ["georgekaraszi@gmail.com", "git@danmcclain.net"]
 
   spec.summary       = "Adds extended functionality to Activerecord Postgres implementation"
   spec.description   = "Adds extended functionality to Activerecord Postgres implementation"
