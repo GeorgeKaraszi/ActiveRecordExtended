@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# require "bundler/setup"
 require "active_record"
 require "database_cleaner"
 

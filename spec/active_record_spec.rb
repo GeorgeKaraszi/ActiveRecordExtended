@@ -12,6 +12,9 @@ RSpec.describe "Active Record Querying" do
 
       expect(query).to include(one, two)
       expect(query).to_not include(three)
+
+      query = Person.where.overlap(tags: [2, 3])
+      expect(query).to include(one, two, three)
     end
   end
 end
