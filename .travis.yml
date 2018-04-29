@@ -30,4 +30,4 @@ before_script:
   - bundle exec rake db:migrate
 
 addons:
-  postgresql: '10'
+  postgresql: '9.6'
