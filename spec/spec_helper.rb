@@ -1,37 +1,16 @@
 # frozen_string_literal: true
 
 require "active_record"
-require "database_cleaner"
 
 unless ENV["DATABASE_URL"]
   require "dotenv"
   Dotenv.load
 end
 
-DatabaseCleaner.strategy = :deletion
 ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
 
-require "postgres_extended"
-
-class Person < ActiveRecord::Base
-  has_many :hm_tags, class_name: "Tag"
-  has_and_belongs_to_many :habtm_tags, class_name: "Tag"
-
-  def self.wicked_people
-    includes(:habtm_tags).where(tags: { categories: %w[wicked awesome] })
-  end
-end
-
-class Tag < ActiveRecord::Base
-  belongs_to :person
-end
-
-class ParentTag < Tag
-end
-
-class ChildTag < Tag
-  belongs_to :parent_tag, foreign_key: :parent_id
-end
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require File.expand_path(f) }
+Dir["#{File.dirname(__FILE__)}/**/*examples.rb"].each { |f| require f }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -43,12 +22,7 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
-
-  config.before do
-    DatabaseCleaner.start
-  end
-
-  config.after do
-    DatabaseCleaner.clean
-  end
 end
+
+# Gem files must be loaded last
+require "postgres_extended"
