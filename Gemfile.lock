@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    postgres_extended (0.1.0)
-      activerecord (>= 5.0, < 6)
+    postgres_extended (0.2.0)
+      activerecord (>= 5.1, < 6.0)
       pg (~> 0.18)
 
 GEM

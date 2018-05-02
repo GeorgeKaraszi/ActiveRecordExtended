@@ -12,7 +12,6 @@ branches:
   only:
     - master
 gemfile:
-  - gemfiles/activerecord-50.gemfile
   - gemfiles/activerecord-51.gemfile
   - gemfiles/activerecord-52.gemfile
   - gemfiles/activerecord-52+.gemfile
