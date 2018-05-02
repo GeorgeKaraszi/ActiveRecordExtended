@@ -27,5 +27,29 @@ module Arel
         :"@>"
       end
     end
+
+    class ContainedInArray < Arel::Nodes::Binary
+      def operator
+        :"<@"
+      end
+    end
+
+    class ContainsEquals < Arel::Nodes::Binary
+      def operator
+        :">>="
+      end
+    end
+
+    class ContainedWithin < Arel::Nodes::Binary
+      def operator
+        :<<
+      end
+    end
+
+    class ContainedWithinEquals < Arel::Nodes::Binary
+      def operator
+        :"<<="
+      end
+    end
   end
 end

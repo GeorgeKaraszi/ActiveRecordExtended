@@ -36,4 +36,28 @@ RSpec.describe "Array Column Predicates" do
       expect(Person.where(arel_table[:tag_ids].contains([1, 2])).count).to eq 0
     end
   end
+
+  describe "Any Array Element" do
+    it "creates any predicates that contain a string value" do
+      query = arel_table.where(arel_table[:tags].any("tag")).to_sql
+      expect(query).to match_regex(/'tag' = ANY\("people"\."tags"\)/)
+    end
+
+    it "creates any predicates that contain a integer value" do
+      query = arel_table.where(arel_table[:tags].any(2)).to_sql
+      expect(query).to match_regex(/2 = ANY\("people"\."tags"\)/)
+    end
+  end
+
+  describe "All Array Elements" do
+    it "create all predicates that contain a string value" do
+      query = arel_table.where(arel_table[:tags].all("tag")).to_sql
+      expect(query).to match_regex(/'tag' = ALL\("people"\."tags"\)/)
+    end
+
+    it "create all predicates that contain a interger value" do
+      query = arel_table.where(arel_table[:tags].all(2)).to_sql
+      expect(query).to match_regex(/2 = ALL\("people"\."tags"\)/)
+    end
+  end
 end

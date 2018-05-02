@@ -6,6 +6,18 @@ module PostgresExtended
       substitute_comparisons(opts, rest, Arel::Nodes::Overlap, "overlap")
     end
 
+    def contained_within(opts, *rest)
+      substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithin, "contained_within")
+    end
+
+    def contained_within_or_equals(opts, *rest)
+      substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithinEquals, "contained_within_or_equals")
+    end
+
+    def contains_or_equals(opts, *rest)
+      substitute_comparisons(opts, rest, Arel::Nodes::ContainsEquals, "contains_or_equals")
+    end
+
     def contains(opts, *rest)
       build_where_chain(opts, rest) do |arel|
         case arel
@@ -23,6 +35,14 @@ module PostgresExtended
           raise ArgumentError, "Invalid argument for .where.contains(), got #{arel.class}"
         end
       end
+    end
+
+    def any(opts, *rest)
+      equality_to_function("ANY", opts, rest)
+    end
+
+    def all(opts, *rest)
+      equality_to_function("ALL", opts, rest)
     end
 
     private
@@ -43,6 +63,17 @@ module PostgresExtended
 
     def left_column(arel)
       @scope.klass.columns_hash[arel.left.name] || @scope.klass.columns_hash[arel.left.relation.name]
+    end
+
+    def equality_to_function(function_name, opts, rest)
+      build_where_chain(opts, rest) do |arel|
+        case arel
+        when Arel::Nodes::Equality
+          Arel::Nodes::Equality.new(arel.right, Arel::Nodes::NamedFunction.new(function_name, [arel.left]))
+        else
+          raise ArgumentError, "Invalid argument for .where.#{function_name.downcase}(), got #{arel.class}"
+        end
+      end
     end
 
     def substitute_comparisons(opts, rest, arel_node_class, method)

@@ -13,11 +13,6 @@ module PostgresExtended
         infix_value object, collector, " && "
       end
 
-      def visit_Arel_Nodes_ContainsArray(object, collector)
-        infix_value object, collector, " @> "
-      end
-      alias visit_Arel_Nodes_ContainsHStore visit_Arel_Nodes_ContainsArray
-
       def visit_Arel_Nodes_Contains(object, collector)
         left_column = object.left.relation.name.classify.constantize.columns.detect do |col|
           matchable_column?(col, object)
@@ -28,6 +23,31 @@ module PostgresExtended
         else
           infix_value object, collector, " >> "
         end
+      end
+
+      def visit_Arel_Nodes_ContainsArray(object, collector)
+        infix_value object, collector, " @> "
+      end
+      alias visit_Arel_Nodes_ContainsHStore visit_Arel_Nodes_ContainsArray
+
+      def visit_Arel_Nodes_ContainedWithin(object, collector)
+        infix_value object, collector, " << "
+      end
+
+      def visit_Arel_Nodes_ContainedWithinEquals(object, collector)
+        infix_value object, collector, " <<= "
+      end
+
+      def visit_Arel_Nodes_ContainedInHStore(object, collector)
+        infix_value object, collector, " <@ "
+      end
+
+      def visit_Arel_Nodes_ContainedInArray(object, collector)
+        infix_value object, collector, " <@ "
+      end
+
+      def visit_Arel_Nodes_ContainsEquals(object, collector)
+        infix_value object, collector, " >>= "
       end
 
       def matchable_column?(col, object)

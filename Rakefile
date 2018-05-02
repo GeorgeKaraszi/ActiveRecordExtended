@@ -58,6 +58,7 @@ namespace :db do
       create_table :people, force: true do |t|
         t.integer  "tag_ids",      array: true
         t.string   "tags",         array: true
+        t.integer  "personal_id"
         t.hstore   "data"
         t.datetime "created_at"
         t.datetime "updated_at"
@@ -69,6 +70,16 @@ namespace :db do
     end
 
     puts "Database migrated"
+  end
+
+  task setup: :load_db_settings do
+    unless ENV["DATABASE_URL"]
+      Rake::Task["setup"].invoke
+      Dotenv.load
+    end
+
+    Rake::Task["db:create"].invoke
+    Rake::Task["db:migrate"].invoke
   end
 end
 
