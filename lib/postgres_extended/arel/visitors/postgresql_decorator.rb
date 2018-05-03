@@ -18,7 +18,9 @@ module PostgresExtended
           matchable_column?(col, object)
         end
 
-        if left_column && (left_column.type == :hstore || left_column.try(:array))
+        if %i[hstore jsonb].include?(left_column&.type)
+          visit_Arel_Nodes_ContainsHStore(object, collector)
+        elsif left_column.try(:array)
           visit_Arel_Nodes_ContainsArray(object, collector)
         else
           infix_value object, collector, " >> "
@@ -28,7 +30,10 @@ module PostgresExtended
       def visit_Arel_Nodes_ContainsArray(object, collector)
         infix_value object, collector, " @> "
       end
-      alias visit_Arel_Nodes_ContainsHStore visit_Arel_Nodes_ContainsArray
+
+      def visit_Arel_Nodes_ContainsHStore(object, collector)
+        infix_value object, collector, " @> "
+      end
 
       def visit_Arel_Nodes_ContainedWithin(object, collector)
         infix_value object, collector, " << "

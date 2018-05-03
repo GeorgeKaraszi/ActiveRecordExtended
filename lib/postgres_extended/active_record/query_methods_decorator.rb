@@ -18,13 +18,21 @@ module PostgresExtended
       substitute_comparisons(opts, rest, Arel::Nodes::ContainsEquals, "contains_or_equals")
     end
 
+    def any(opts, *rest)
+      equality_to_function("ANY", opts, rest)
+    end
+
+    def all(opts, *rest)
+      equality_to_function("ALL", opts, rest)
+    end
+
     def contains(opts, *rest)
       build_where_chain(opts, rest) do |arel|
         case arel
         when Arel::Nodes::In, Arel::Nodes::Equality
           column = left_column(arel) || column_from_association(arel)
 
-          if column.type == :hstore
+          if %i[hstore jsonb].include?(column.type)
             Arel::Nodes::ContainsHStore.new(arel.left, arel.right)
           elsif column.try(:array)
             Arel::Nodes::ContainsArray.new(arel.left, arel.right)
@@ -35,14 +43,6 @@ module PostgresExtended
           raise ArgumentError, "Invalid argument for .where.contains(), got #{arel.class}"
         end
       end
-    end
-
-    def any(opts, *rest)
-      equality_to_function("ANY", opts, rest)
-    end
-
-    def all(opts, *rest)
-      equality_to_function("ALL", opts, rest)
     end
 
     private

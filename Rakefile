@@ -60,6 +60,7 @@ namespace :db do
         t.string   "tags",         array: true
         t.integer  "personal_id"
         t.hstore   "data"
+        t.jsonb    "jsonb_data"
         t.datetime "created_at"
         t.datetime "updated_at"
       end
