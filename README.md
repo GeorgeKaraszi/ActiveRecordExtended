@@ -2,9 +2,13 @@
 
 # PostgresExtended
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/postgres_extended`. To experiment with that code, run `bin/console` for an interactive prompt.
+Postgres Extended is the continuation of maintaining and improving the work done by **Dan McClain**, the original author of [postgres_ext](https://github.com/DavyJonesLocker/postgres_ext).
 
-TODO: Delete this and the text above, and describe your gem
+Overtime the lack of updating to support the latest versions of ActiveRecord 5.x has caused quite a bit of users forking off the project to create their own patches jobs to maintain compatibility. 
+The only problem is that this has created a wild west of environments of sorts. The problem has grown to the point no one is attempting to directly contribute to the original source. 
+And these patch jobs can vary wildly between developers, often causing unintended breakage to standard ActiveRecord methods.
+
+Postgres Extended is intended to be a supporting community that will maintain compatibility for the foreseeable future.
 
 ## Installation
 
@@ -21,16 +25,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install postgres_extended
-
-## About
-
-Postgres Extended is the continuation of maintaining and improving the work done by **Dan McClain**, the original author of [postgres_ext](https://github.com/DavyJonesLocker/postgres_ext).
-
-Overtime the lack of updating to support the latest versions of ActiveRecord 5.x has caused quite a bit of users forking off the project to create their own patches jobs to maintain compatibility. 
-The only problem is that this has created a wild west of environments of sorts. The problem has grown to the point no one is attempting to directly contribute to the original source. 
-And these patch jobs can vary wildly between developers, often causing unintended breakage to standard ActiveRecord methods.
-
-Postgres Extended is intended to be a supporting community that will maintain compatibility for the foreseeable future.
 
 
 ## Development
