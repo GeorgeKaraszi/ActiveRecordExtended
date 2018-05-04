@@ -45,6 +45,9 @@ module PostgresExtended
       end
     end
 
+    def any_of(opts, *rest)
+    end
+
     private
 
     def matchable_column?(col, arel)

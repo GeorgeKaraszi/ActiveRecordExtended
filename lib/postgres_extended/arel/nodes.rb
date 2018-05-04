@@ -51,5 +51,11 @@ module Arel
         :"<<="
       end
     end
+
+    class Node
+      def group_or(right)
+        Arel::Nodes::Or.new self, Arel::Nodes::Grouping.new(right)
+      end
+    end
   end
 end

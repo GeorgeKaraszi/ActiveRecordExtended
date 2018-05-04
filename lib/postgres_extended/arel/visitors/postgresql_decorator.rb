@@ -55,6 +55,15 @@ module PostgresExtended
         infix_value object, collector, " >>= "
       end
 
+      def visit_Arel_Nodes_AnyOf(object, collector)
+        pp object
+        pp collector
+        collector
+
+        object.right.value
+
+      end
+
       def matchable_column?(col, object)
         col.name == object.left.name.to_s || col.name == object.left.relation.name.to_s
       end

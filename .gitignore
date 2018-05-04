@@ -14,3 +14,5 @@
 .env
 *.gem
 *.DS_Store
+
+.pryrc
