@@ -8,7 +8,7 @@ RSpec.describe "Active Record Hash Related Query Methods" do
   let!(:three) { Person.create!(data: { nickname: "georgey" }) }
 
   describe "#contains" do
-    context "HStore Column " do
+    context "HStore Column Type" do
       it "returns records that contain hash elements in joined tables" do
         tag_one = Tag.create!(person_id: one.id)
         tag_two = Tag.create!(person_id: two.id)
@@ -25,7 +25,7 @@ RSpec.describe "Active Record Hash Related Query Methods" do
       end
     end
 
-    context "JSONB Column" do
+    context "JSONB Column Type" do
       it "returns records that contains a json hashed value" do
         query = Person.where.contains(jsonb_data: { payment: "zip" })
         expect(query).to include(one)

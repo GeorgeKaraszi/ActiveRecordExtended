@@ -66,7 +66,17 @@ namespace :db do
       end
 
       create_table :tags, force: true do |t|
-        t.integer  "person_id"
+        t.belongs_to :person
+      end
+
+      create_table :profile_ls, force: true do |t|
+        t.belongs_to :person
+        t.integer :likes
+      end
+
+      create_table :profile_rs, force: true do |t|
+        t.belongs_to :person
+        t.integer :dislikes
       end
     end
 

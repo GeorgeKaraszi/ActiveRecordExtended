@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ActiveRecordExtended
-  module QueryMethodsDecorator
+  module WhereChain
     def overlap(opts, *rest)
       substitute_comparisons(opts, rest, Arel::Nodes::Overlap, "overlap")
     end
@@ -92,7 +92,7 @@ end
 module ActiveRecord
   module QueryMethods
     class WhereChain
-      prepend ActiveRecordExtended::QueryMethodsDecorator
+      prepend ActiveRecordExtended::WhereChain
 
       def build_where_chain(opts, rest, &block)
         where_clause = @scope.send(:where_clause_factory).build(opts, rest)
