@@ -2,7 +2,7 @@
 
 require "arel/visitors/postgresql"
 
-module PostgresExtended
+module ActiveRecordExtended
   module Visitors
     module PostgreSQLDecorator
       private
@@ -55,6 +55,12 @@ module PostgresExtended
         infix_value object, collector, " >>= "
       end
 
+      def visit_Arel_Nodes_AnyOf(object, collector)
+        pp object
+        pp collector
+        collector
+      end
+
       def matchable_column?(col, object)
         col.name == object.left.name.to_s || col.name == object.left.relation.name.to_s
       end
@@ -64,4 +70,4 @@ module PostgresExtended
   end
 end
 
-Arel::Visitors::PostgreSQL.prepend(PostgresExtended::Visitors::PostgreSQLDecorator)
+Arel::Visitors::PostgreSQL.prepend(ActiveRecordExtended::Visitors::PostgreSQLDecorator)

@@ -25,4 +25,4 @@ RSpec.configure do |config|
 end
 
 # Gem files must be loaded last
-require "postgres_extended"
+require "active_record_extended"
