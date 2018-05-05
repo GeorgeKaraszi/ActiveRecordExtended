@@ -2,8 +2,9 @@
 
 require "active_record"
 
-require "active_record_extended/query_methods_decorator"
 require "active_record_extended/predicate_builder/array_handler_decorator"
+require "active_record_extended/query_methods/where_chain"
+require "active_record_extended/query_methods/either"
 
 if ActiveRecord::VERSION::MAJOR >= 5
   if ActiveRecord::VERSION::MINOR >= 2

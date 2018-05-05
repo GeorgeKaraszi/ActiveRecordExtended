@@ -3,6 +3,7 @@ PATH
   specs:
     active_record_extended (0.1.0)
       activerecord (>= 5.1, < 6.0)
+      ar_outer_joins (~> 0.2)
       pg (~> 0.18)
 
 GEM
@@ -19,6 +20,8 @@ GEM
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
+    ar_outer_joins (0.2.0)
+      activerecord (>= 3.2)
     arel (9.0.0)
     ast (2.4.0)
     byebug (10.0.2)
