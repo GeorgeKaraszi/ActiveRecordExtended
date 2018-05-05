@@ -33,16 +33,10 @@ module Arel
       Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), any_tags_function)
     end
 
-    #[self] ALL (table.column)
+    # [self] ALL (table.column)
     def all(other)
       any_tags_function = Arel::Nodes::NamedFunction.new("ALL", [self])
       Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), any_tags_function)
-    end
-
-    def any_of(other)
-      nodes = other.map { |o|  Arel::Nodes::Equality.new(Nodes.build_quoted(o), self) }
-      arel_table.join
-      Nodes::AnyOf.new(nodes)
     end
   end
 end

@@ -3,7 +3,7 @@
 require "active_record/relation/predicate_builder"
 require "active_record/relation/predicate_builder/array_handler"
 
-module PostgresExtended
+module ActiveRecordExtended
   module ArrayHandlerDecorator
     def call(attribute, value)
       cache = ActiveRecord::Base.connection.schema_cache
@@ -17,4 +17,4 @@ module PostgresExtended
   end
 end
 
-ActiveRecord::PredicateBuilder::ArrayHandler.prepend(PostgresExtended::ArrayHandlerDecorator)
+ActiveRecord::PredicateBuilder::ArrayHandler.prepend(ActiveRecordExtended::ArrayHandlerDecorator)

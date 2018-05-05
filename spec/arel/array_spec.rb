@@ -60,10 +60,4 @@ RSpec.describe "Array Column Predicates" do
       expect(query).to match_regex(/2 = ALL\("people"\."tags"\)/)
     end
   end
-
-  describe "any_of([{column: value}, {column: value}]" do
-    it "creates a combined set or predicate statements" do
-      pp arel_table.any_of([{tows: 2, pool: 2}, {ppp: 55, zipper: 3}]).to_sql
-    end
-  end
 end

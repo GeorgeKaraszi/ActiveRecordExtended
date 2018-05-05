@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PostgresExtended
+module ActiveRecordExtended
   module QueryMethodsDecorator
     def overlap(opts, *rest)
       substitute_comparisons(opts, rest, Arel::Nodes::Overlap, "overlap")
@@ -43,9 +43,6 @@ module PostgresExtended
           raise ArgumentError, "Invalid argument for .where.contains(), got #{arel.class}"
         end
       end
-    end
-
-    def any_of(opts, *rest)
     end
 
     private
@@ -95,7 +92,7 @@ end
 module ActiveRecord
   module QueryMethods
     class WhereChain
-      prepend PostgresExtended::QueryMethodsDecorator
+      prepend ActiveRecordExtended::QueryMethodsDecorator
 
       def build_where_chain(opts, rest, &block)
         where_clause = @scope.send(:where_clause_factory).build(opts, rest)

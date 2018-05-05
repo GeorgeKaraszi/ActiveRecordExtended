@@ -22,10 +22,10 @@ matrix:
     - gemfile: gemfiles/activerecord-52+.gemfile
 
 
-env: DATABASE_URL=postgres://postgres@localhost/postgres_extended_test
+env: DATABASE_URL=postgres://postgres@localhost/active_record_extended_test
 
 before_script:
-  - psql -c 'create database postgres_extended_test;' -U postgres
+  - psql -c 'create database active_record_extended_test;' -U postgres
   - bundle exec rake db:migrate
 
 cache:

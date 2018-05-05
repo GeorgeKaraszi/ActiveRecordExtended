@@ -16,10 +16,10 @@ task :setup do
   db_password = fetch_input("Enter your database password: [] ")
   db_server   = fetch_input("Enter your database server: [localhost] ")
 
-  db_name     = "postgres_extended_test" if db_name.empty?
-  db_password = ":#{db_password}"        unless db_password.empty?
-  db_server   = "localhost"              if db_server.empty?
-  db_server   = "@#{db_server}"          unless db_user.empty?
+  db_name     = "active_record_extended_test" if db_name.empty?
+  db_password = ":#{db_password}"             unless db_password.empty?
+  db_server   = "localhost"                   if db_server.empty?
+  db_server   = "@#{db_server}"               unless db_user.empty?
   env_path    = File.expand_path("./.env")
 
   File.open(env_path, "w") do |file|

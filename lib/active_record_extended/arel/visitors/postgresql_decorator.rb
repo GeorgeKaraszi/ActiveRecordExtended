@@ -2,7 +2,7 @@
 
 require "arel/visitors/postgresql"
 
-module PostgresExtended
+module ActiveRecordExtended
   module Visitors
     module PostgreSQLDecorator
       private
@@ -59,9 +59,6 @@ module PostgresExtended
         pp object
         pp collector
         collector
-
-        object.right.value
-
       end
 
       def matchable_column?(col, object)
@@ -73,4 +70,4 @@ module PostgresExtended
   end
 end
 
-Arel::Visitors::PostgreSQL.prepend(PostgresExtended::Visitors::PostgreSQLDecorator)
+Arel::Visitors::PostgreSQL.prepend(ActiveRecordExtended::Visitors::PostgreSQLDecorator)
