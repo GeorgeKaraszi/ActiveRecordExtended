@@ -33,7 +33,6 @@ module Arel
       Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), any_tags_function)
     end
 
-    # [self] ALL (table.column)
     def all(other)
       any_tags_function = Arel::Nodes::NamedFunction.new("ALL", [self])
       Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), any_tags_function)
