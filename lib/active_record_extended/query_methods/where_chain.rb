@@ -2,6 +2,10 @@
 
 module ActiveRecordExtended
   module WhereChain
+
+    # Finds Records that have an array column that contain any a set of values
+    # User.where.overlap(tags: [1,2])
+    #   # SELECT * FROM users WHERE tags && {1,2}
     def overlap(opts, *rest)
       substitute_comparisons(opts, rest, Arel::Nodes::Overlap, "overlap")
     end
@@ -18,14 +22,40 @@ module ActiveRecordExtended
       substitute_comparisons(opts, rest, Arel::Nodes::ContainsEquals, "contains_or_equals")
     end
 
+    # Finds Records that contain an element in an array column
+    # User.where.any(tags: 3)
+    #   # SELECT user.* FROM user WHERE 3 = ANY(user.tags)
     def any(opts, *rest)
       equality_to_function("ANY", opts, rest)
     end
 
+    # Finds Records that contain a single matchable array element
+    # User.where.all(tags: 3)
+    #   # SELECT user.* FROM user WHERE 3 = ALL(user.tags)
     def all(opts, *rest)
       equality_to_function("ALL", opts, rest)
     end
 
+    # Finds Records that contains a nested set elements
+    #
+    # Array Column Type:
+    #   User.where.contains(tags: [1, 3])
+    #   # SELECT user.* FROM user WHERE user.tags @> {1,3}
+    #
+    # HStore Column Type:
+    #   User.where.contains(data: { nickname: 'chainer' })
+    #   # SELECT user.* FROM user WHERE user.data @> 'nickname' => 'chainer'
+    #
+    # JSONB Column Type:
+    #   User.where.contains(data: { nickname: 'chainer' })
+    #   # SELECT user.* FROM user WHERE user.data @> {'nickname': 'chainer'}
+    #
+    # This can also be used along side joined tables
+    #
+    # JSONB Column Type Example:
+    #   Tag.joins(:user).where.contains(user: { data: { nickname: 'chainer' } })
+    #   # SELECT tags.* FROM tags INNER JOIN user on user.id = tags.user_id WHERE user.data @> { nickname: 'chainer' }
+    #
     def contains(opts, *rest)
       build_where_chain(opts, rest) do |arel|
         case arel
