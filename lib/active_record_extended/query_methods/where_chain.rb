@@ -2,7 +2,6 @@
 
 module ActiveRecordExtended
   module WhereChain
-
     # Finds Records that have an array column that contain any a set of values
     # User.where.overlap(tags: [1,2])
     #   # SELECT * FROM users WHERE tags && {1,2}
