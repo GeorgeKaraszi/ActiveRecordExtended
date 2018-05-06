@@ -1,3 +1,7 @@
+# 0.2.1 - May 6th 2018
+
+Changed how where clause is required. This is to hopefully future proof the next minior update to ActiveRecord.
+
 # 0.2.0 - May 6th 2018
 
 Added ActiveRecord Where Chain Functionality
