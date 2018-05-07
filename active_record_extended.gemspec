@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "Adds extended functionality to Activerecord Postgres implementation"
   spec.description   = "Adds extended functionality to Activerecord Postgres implementation"
-  spec.homepage      = "https://github.com/georgekaraszi/active_record_extended"
+  spec.homepage      = "https://github.com/georgekaraszi/ActiveRecordExtended"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split("\n")
