@@ -11,7 +11,7 @@ task :setup do
   if File.exist?(".env")
     puts "This will overwrite your existing .env file"
   end
-  db_name     = fetch_input("Enter your database name: [postgres_ext_test] ")
+  db_name     = fetch_input("Enter your database name: [active_record_extended_test] ")
   db_user     = fetch_input("Enter your database user: [] ")
   db_password = fetch_input("Enter your database password: [] ")
   db_server   = fetch_input("Enter your database server: [localhost] ")
