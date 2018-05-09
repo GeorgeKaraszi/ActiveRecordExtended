@@ -15,6 +15,14 @@ RSpec.describe "Active Record Either Methods" do
       expect(query).to include(one, two)
       expect(query).to_not include(three)
     end
+
+    context "Alias .either_joins/2" do
+      it "Should only only return records that belong to profile L or profile R" do
+        query = Person.either_joins(:profile_l, :profile_r)
+        expect(query).to include(one, two)
+        expect(query).to_not include(three)
+      end
+    end
   end
 
   describe ".either_order/2" do
@@ -31,6 +39,13 @@ RSpec.describe "Active Record Either Methods" do
     it "Should order people based on their likes and dislikes in descending order" do
       query = Person.either_order(:desc, profile_l: :likes, profile_r: :dislikes).where(id: [one.id, two.id])
       expect(query).to match_array([one, two])
+    end
+
+    context "Alias .either_order/2" do
+      it "Should order people based on their likes and dislikes in ascended order" do
+        query = Person.either_orders(:asc, profile_l: :likes, profile_r: :dislikes).where(id: [one.id, two.id])
+        expect(query).to match_array([two, one])
+      end
     end
   end
 end
