@@ -52,7 +52,7 @@ module ActiveRecordExtended
             query_map[:references] << translate_reference(query.references_values) if query.references_values.any?
             query_map[:binds] += bind_attributes(query)
             query.arel.constraints.reduce(:and)
-          end.reduce(:group_or)
+          end.reduce(:or)
         end
       end
 

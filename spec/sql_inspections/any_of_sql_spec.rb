@@ -3,15 +3,15 @@
 require "spec_helper"
 
 RSpec.describe "Any / None of SQL Queries" do
-  let(:equal_query) { "people\".\"personal_id\" = 1" }
-  let(:or_query)    { "OR (\"people\".\"personal_id\" = 2)" }
+  let(:equal_query) { '"people"."personal_id" = 1' }
+  let(:or_query)    { 'OR "people"."personal_id" = 2' }
   let(:equal_or)    { equal_query + " " + or_query }
   let(:join_query)  { /INNER JOIN \"tags\" ON \"tags\".\"person_id\" = \"people\".\"id/ }
 
   describe "where.any_of/1" do
     it "should group different column arguments into nested or conditions" do
       query = Person.where.any_of({ personal_id: 1 }, { id: 2 }, { personal_id: 2 }).to_sql
-      expect(query).to match_regex(/WHERE .+ = 1 OR \(.+\) OR \(.+\)/)
+      expect(query).to match_regex(/WHERE \(\(.+ = 1 OR .+ = 2\) OR .+ = 2\)/)
     end
 
     it "Should assign where clause predicates for standard queries" do
@@ -35,7 +35,7 @@ RSpec.describe "Any / None of SQL Queries" do
   describe "where.none_of/1" do
     it "Should surround the query in a WHERE NOT clause" do
       query = Person.where.none_of({ personal_id: 1 }, { id: 2 }, { personal_id: 2 }).to_sql
-      expect(query).to match_regex(/WHERE.+NOT \(.+ = 1 OR \(.+\) OR \(.+\)\)/)
+      expect(query).to match_regex(/WHERE.+NOT \(\(.+ = 1 OR .+ = 2\) OR .+ = 2\)/)
     end
   end
 end
