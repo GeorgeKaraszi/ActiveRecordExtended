@@ -4,7 +4,6 @@ require "active_record"
 require "active_record/relation"
 require "active_record/relation/query_methods"
 
-
 require "active_record_extended/predicate_builder/array_handler_decorator"
 Dir["#{File.dirname(__FILE__)}/query_methods/**/*.rb"].each { |f| require File.expand_path(f) }
 
