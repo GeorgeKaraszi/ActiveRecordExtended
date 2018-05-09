@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/GeorgeKaraszi/active_record_extended.svg?branch=master)](https://travis-ci.org/GeorgeKaraszi/active_record_extended) [![Maintainability](https://api.codeclimate.com/v1/badges/98ecffc0239417098cbc/maintainability)](https://codeclimate.com/github/GeorgeKaraszi/active_record_extended/maintainability)
+[![Build Status](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended.svg?branch=master)](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended) [![Maintainability](https://api.codeclimate.com/v1/badges/98ecffc0239417098cbc/maintainability)](https://codeclimate.com/github/GeorgeKaraszi/active_record_extended/maintainability)
 
 # Active Record Extended
 
