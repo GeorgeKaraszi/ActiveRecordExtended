@@ -1,3 +1,8 @@
+# 0.4.0 - May 9th 2018
+
+- Use Arel's `or` for grouping queries when using `#any_of` or `#none_of`
+- Added Plural aliases for `.either_join` : `.either_joins` and `.either_order` : `.either_orders`
+
 # 0.3.0 - May 9th 2018
 
 - Fixed ActiveRecord QueryMethod constant load error.
