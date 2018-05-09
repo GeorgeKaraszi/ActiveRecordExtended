@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "active_record/relation/query_methods"
-
 module ActiveRecordExtended
   module WhereChain
     # Finds Records that have an array column that contain any a set of values

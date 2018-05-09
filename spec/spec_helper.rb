@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_record"
+require "active_record_extended"
 
 unless ENV["DATABASE_URL"]
   require "dotenv"
@@ -23,6 +23,3 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 end
-
-# Gem files must be loaded last
-require "active_record_extended"
