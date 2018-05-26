@@ -1,6 +1,23 @@
 [![Build Status](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended.svg?branch=master)](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended) [![Maintainability](https://api.codeclimate.com/v1/badges/98ecffc0239417098cbc/maintainability)](https://codeclimate.com/github/GeorgeKaraszi/active_record_extended/maintainability)
 
-# Active Record Extended
+## Index
+- [Description and history](#description-and-history)
+- [Installation](#installation)
+- [Useage](#usage)
+  - [Query Methods](#query-methods)
+    - [Any](#any)
+    - [Any_of / None_of](#any_of--none_of)
+    - [All](#all)
+    - [Contains](#contains)
+    - [Contains or Equals](#contains-or-equals)
+    - [Contained Within](#contained-within)
+    - [Contained Within or Equals](#contained-within-or-equals)
+    - [Overlap](#overlap)
+  - [Conditional Methods](#conditional-methods)
+    - [Either Join](#either-join)
+    - [Either Order](#either-order)
+
+## Description and History
 
 Active Record Extended is the continuation of maintaining and improving the work done by **Dan McClain**, the original author of [postgres_ext](https://github.com/DavyJonesLocker/postgres_ext).
 
@@ -8,6 +25,25 @@ Overtime the lack of updating to support the latest versions of ActiveRecord 5.x
 The only problem is that this has created a wild west of environments of sorts. The problem has grown to the point no one is attempting to directly contribute to the original source. And forked repositories are finding themselves as equally as dead with little to no activity.
 
 Active Record Extended is intended to be a supporting community that will maintain compatibility for the foreseeable future.
+
+
+## Usage
+
+### Query Methods
+
+#### Any
+#### Any_of / None_of
+#### All
+#### Contains
+#### Contains or Equals
+#### Contained Within
+#### Contained Within or Equals
+#### Overlap
+
+### Conditional Methods
+
+#### Either Join
+#### Either Order
 
 ## Installation
 
