@@ -1,3 +1,14 @@
+# 0.5.0.beta1 - May 26th 2018
+
+Added support for Rails 5.0.x
+
+### Warning for Rails 5.0.x Projects
+The proposed changes to this could cause unintended behavior in existing Rails 5.0.x applications. 
+This is due to the overwrite needed to be done on its internal Predicate builder. 
+Rails projects above 5.0.x should not experience any unforeseen issues since they contain the necessary structure required.
+
+**Use with caution.** And always make sure you have good tests to verify everything in your application.
+
 # 0.4.0 - May 9th 2018
 
 - Use Arel's `or` for grouping queries when using `#any_of` or `#none_of`
