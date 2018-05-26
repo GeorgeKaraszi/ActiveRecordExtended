@@ -114,7 +114,10 @@ Person.where.overlap(tags: [1, 3, 8]) #=> [person_one, person_two, person_three]
 ### Conditional Methods
 #### Any_of / None_of
  `any_of/1` simplifies the process of finding records that require multiple `or` conditions.
- It accepts An array of: ActiveRecord Objects, Query Strings, and basic attribute names
+ 
+ `none_of/1` is the inverse of `any_of/1`. It'll find records where none of the contains are matched.
+ 
+ Both accepts An array of: ActiveRecord Objects, Query Strings, and basic attribute names.
  
  Querying With Attributes:
  ```ruby
