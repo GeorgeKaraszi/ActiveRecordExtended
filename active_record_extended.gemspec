@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activerecord", ">= 5.1", "< 6.0"
+  spec.add_dependency "activerecord", ">= 5.0", "< 6.0"
   spec.add_dependency "ar_outer_joins", "~> 0.2"
   spec.add_dependency "pg", "~> 0.18"
 
