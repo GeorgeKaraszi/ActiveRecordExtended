@@ -52,6 +52,12 @@ module Arel
           :"<<="
         end
       end
+
+      class ContainsOrContainedWithin < Arel::Nodes::Binary
+        def operator
+          :"&&"
+        end
+      end
     end
 
     class Node
