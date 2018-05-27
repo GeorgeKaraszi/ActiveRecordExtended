@@ -4,6 +4,16 @@ require "arel/predications"
 
 module Arel
   module Predications
+    def any(other)
+      any_tags_function = Arel::Nodes::NamedFunction.new("ANY", [self])
+      Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), any_tags_function)
+    end
+
+    def all(other)
+      all_tags_function = Arel::Nodes::NamedFunction.new("ALL", [self])
+      Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), all_tags_function)
+    end
+
     def overlap(other)
       Nodes::Overlap.new(self, Nodes.build_quoted(other, self))
     end
@@ -27,16 +37,6 @@ module Arel
 
     def inet_contains_or_equals(other)
       Nodes::Inet::ContainsEquals.new self, Nodes.build_quoted(other, self)
-    end
-
-    def any(other)
-      any_tags_function = Arel::Nodes::NamedFunction.new("ANY", [self])
-      Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), any_tags_function)
-    end
-
-    def all(other)
-      any_tags_function = Arel::Nodes::NamedFunction.new("ALL", [self])
-      Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), any_tags_function)
     end
   end
 end
