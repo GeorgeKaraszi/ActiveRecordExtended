@@ -9,7 +9,7 @@
     - [All](#all)
     - [Contains](#contains)
     - [Overlap](#overlap)
-    - [Inet / IP Address Querying](#inet--ip-address-querying)
+    - [Inet / IP Address](#inet--ip-address)
       - [Inet Contains](#inet-contains)
       - [Inet Contains or Equals](#inet-contains-or-equals)
       - [Inet Contained Within](#inet-contained-within)
@@ -109,7 +109,7 @@ Person.where.overlap(tags: [1, 3, 8]) #=> [alice, bob, randy]
 
 ```
 
-#### Inet / IP Address Querying
+#### Inet / IP Address
 ##### Inet Contains
 [Postgres >> (contains) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
 
