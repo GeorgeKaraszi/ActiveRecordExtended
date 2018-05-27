@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module ActiveRecordExtended
-  VERSION = "0.5.0.beta1"
+  VERSION = "0.5.0.beta2"
 end
