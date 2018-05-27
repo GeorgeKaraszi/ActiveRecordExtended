@@ -24,9 +24,9 @@ RSpec.describe "Active Record Array Query Methods" do
       expect(query).to include(one, two)
       expect(query).to_not include(three)
 
-      query = Person.where.overlap(tags: [8, 2])
-      expect(query).to include(one, three)
-      expect(query).to_not include(two)
+      query = Person.where.contains(tags: [8, 2])
+      expect(query).to include(three)
+      expect(query).to_not include(one, two)
     end
   end
 
