@@ -1,7 +1,7 @@
 sudo: false
 language: ruby
 global:
-    - CC_TEST_REPORTER_ID=48c3085f9a132152c06d9e1e27774f453f9ee30eb67175d52df8ea8379de6c12
+  - CC_TEST_REPORTER_ID=48c3085f9a132152c06d9e1e27774f453f9ee30eb67175d52df8ea8379de6c12
 
 rvm:
   - 2.3
