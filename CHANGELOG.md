@@ -1,8 +1,8 @@
 # 0.5.0.beta2 - May 27th 2018
 
-Added support for Postgres Inet functions. View the readme for more details on the following:
-
 Renamed inet functions to hopefully give a clearer understanding to what these methods are used for.
+
+Added support for Postgres Inet functions. View the readme for more details on the following:
 
 - `#inet_contained_within/1`
 - `#inet_contained_within_or_equals/1`
