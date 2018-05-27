@@ -14,6 +14,7 @@
       - [Inet Contains or Equals](#inet-contains-or-equals)
       - [Inet Contained Within](#inet-contained-within)
       - [Inet Contained Within or Equals](#inet-contained-within-or-equals)
+      - [Inet Contains or Contained Within](#inet-contains-or-contained-within)
   - [Conditional Methods](#conditional-methods)
     - [Any_of / None_of](#any_of--none_of)
     - [Either Join](#either-join)
@@ -140,7 +141,7 @@ Person.where.inet_contains_or_equals(ip: "127.0.0.1/32") #=> [alice, bob]
 ```
 
 ##### Inet Contained Within
-[Postgres << (contained within) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
+[Postgres << (contained by) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
 
 For the `inet_contained_within` method, we try to find IP's that fall within a submasking range we provide.
 
@@ -154,7 +155,7 @@ Person.where.inet_contained_within(ip: "127.0.0.1/16") #=> [alice, bob, randy]
 ```
 
 ##### Inet Contained Within or Equals
-[Postgres <<= (contained within or equals) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
+[Postgres <<= (contained by or equals) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
 
 The `inet_contained_within_or_equals` method works much like the [Inet Contained Within](#inet-contained-within) method, but will also accept a submask range.
 
@@ -168,6 +169,21 @@ Person.where.inet_contained_within_or_equals(ip: "127.0.0.1/16") #=> [bob, randy
 Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/8") #=> [alice, bob, randy]
 ```
 
+##### Inet Contains or Contained Within
+[Postgres && (contains or is contained by) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
+
+The `inet_contains_or_contained_within` method is a combination of [Inet Contains](#inet-contains) and [Inet Contained Within](#inet-contained-within).
+It essentially (the database) tries to use both methods to find as many records as possible that match either condition on both sides.
+
+```ruby
+alice = Person.create!(ip: "127.0.0.1/24")
+bob   = Person.create!(ip: "127.0.22.44/8")
+randy = Person.create!(ip: "127.0.99.1")
+
+Person.where.inet_contains_or_is_contained_within(ip: "127.0.255.80") #=> [bob]
+Person.where.inet_contains_or_is_contained_within(ip: "127.0.0.80") #=> [alice, bob]
+Person.where.inet_contains_or_is_contained_within(ip: "127.0.0.80/8") #=> [alice, bob, randy]
+```
 
 ### Conditional Methods
 #### Any_of / None_of
