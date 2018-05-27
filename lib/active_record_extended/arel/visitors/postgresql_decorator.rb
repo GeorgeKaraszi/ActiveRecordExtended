@@ -35,14 +35,6 @@ module ActiveRecordExtended
         infix_value object, collector, " @> "
       end
 
-      def visit_Arel_Nodes_ContainedWithin(object, collector)
-        infix_value object, collector, " << "
-      end
-
-      def visit_Arel_Nodes_ContainedWithinEquals(object, collector)
-        infix_value object, collector, " <<= "
-      end
-
       def visit_Arel_Nodes_ContainedInHStore(object, collector)
         infix_value object, collector, " <@ "
       end
@@ -51,7 +43,15 @@ module ActiveRecordExtended
         infix_value object, collector, " <@ "
       end
 
-      def visit_Arel_Nodes_ContainsEquals(object, collector)
+      def visit_Arel_Nodes_Inet_ContainedWithin(object, collector)
+        infix_value object, collector, " << "
+      end
+
+      def visit_Arel_Nodes_Inet_ContainedWithinEquals(object, collector)
+        infix_value object, collector, " <<= "
+      end
+
+      def visit_Arel_Nodes_Inet_ContainsEquals(object, collector)
         infix_value object, collector, " >>= "
       end
 
