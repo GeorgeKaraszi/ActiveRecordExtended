@@ -34,21 +34,23 @@ module Arel
       end
     end
 
-    class ContainsEquals < Arel::Nodes::Binary
-      def operator
-        :">>="
+    module Inet
+      class ContainsEquals < Arel::Nodes::Binary
+        def operator
+          :">>="
+        end
       end
-    end
 
-    class ContainedWithin < Arel::Nodes::Binary
-      def operator
-        :<<
+      class ContainedWithin < Arel::Nodes::Binary
+        def operator
+          :<<
+        end
       end
-    end
 
-    class ContainedWithinEquals < Arel::Nodes::Binary
-      def operator
-        :"<<="
+      class ContainedWithinEquals < Arel::Nodes::Binary
+        def operator
+          :"<<="
+        end
       end
     end
 
