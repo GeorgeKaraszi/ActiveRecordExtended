@@ -39,11 +39,11 @@ Active Record Extended is intended to be a supporting community that will mainta
 In Postgres the `ANY` expression is used for gather record's that have an Array column type that contain a single matchable value within its array. 
 
 ```ruby
-person_one   = Person.create!(tags: [1])
-person_two   = Person.create!(tags: [1, 2])
-person_three = Person.create!(tags: [3])
+alice = Person.create!(tags: [1])
+bob   = Person.create!(tags: [1, 2])
+randy = Person.create!(tags: [3])
 
-Person.where.any(tags: 1) #=> [person_one, person_two] 
+Person.where.any(tags: 1) #=> [alice, bob] 
 
 ```
 
@@ -56,11 +56,11 @@ This only accepts a single value. So querying for example multiple tag numbers `
 In Postgres the `ALL` expression is used for gather record's that have an Array column type that contains only a **single** and matchable element. 
 
 ```ruby
-person_one   = Person.create!(tags: [1])
-person_two   = Person.create!(tags: [1, 2])
-person_three = Person.create!(tags: [3])
+alice = Person.create!(tags: [1])
+bob   = Person.create!(tags: [1, 2])
+randy = Person.create!(tags: [3])
 
-Person.where.all(tags: 1) #=> [person_one] 
+Person.where.all(tags: 1) #=> [alice] 
 
 ```
 
@@ -77,20 +77,20 @@ That contains all of the provided values.
 
 Array Type:
 ```ruby
-person_one   = Person.create!(tags: [1, 4])
-person_two   = Person.create!(tags: [3, 1])
-person_three = Person.create!(tags: [4, 1])
+alice = Person.create!(tags: [1, 4])
+bob   = Person.create!(tags: [3, 1])
+randy = Person.create!(tags: [4, 1])
 
-Person.where.contains(tags: [1, 4]) #=> [person_one, person_three]
+Person.where.contains(tags: [1, 4]) #=> [alice, randy]
 ```
 
 HSTORE / JSONB Type:
 ```ruby
-person_one   = Person.create!(data: { nickname: "ARExtend" })
-person_two   = Person.create!(data: { nickname: "ARExtended" })
-person_three = Person.create!(data: { nickname: "ARExtended" })
+alice = Person.create!(data: { nickname: "ARExtend" })
+bob   = Person.create!(data: { nickname: "ARExtended" })
+randy = Person.create!(data: { nickname: "ARExtended" })
 
-Person.where.contains(data: { nickname: "ARExtended" }) #=> [person_two, person_three]
+Person.where.contains(data: { nickname: "ARExtended" }) #=> [bob, randy]
 ```
 
 #### Overlap
@@ -99,13 +99,13 @@ Person.where.contains(data: { nickname: "ARExtended" }) #=> [person_two, person_
 The `overlap/1` method will match an Array column type that contains any of the provided values within its column.
 
 ```ruby
-person_one   = Person.create!(tags: [1, 4])
-person_two   = Person.create!(tags: [3, 4])
-person_three = Person.create!(tags: [4, 8])
+alice = Person.create!(tags: [1, 4])
+bob   = Person.create!(tags: [3, 4])
+randy = Person.create!(tags: [4, 8])
 
-Person.where.overlap(tags: [4]) #=> [person_one, person_two, person_three]
-Person.where.overlap(tags: [1, 8]) #=> [person_one, person_three]
-Person.where.overlap(tags: [1, 3, 8]) #=> [person_one, person_two, person_three]
+Person.where.overlap(tags: [4]) #=> [alice, bob, randy]
+Person.where.overlap(tags: [1, 8]) #=> [alice, randy]
+Person.where.overlap(tags: [1, 3, 8]) #=> [alice, bob, randy]
 
 ```
 
@@ -117,11 +117,11 @@ The `inet_contains` method works by taking a column(inet type) that has a submas
 And tries to find related records that fall within a given IP's range.
 
 ```ruby
-person_one   = Person.create!(ip: "127.0.0.1/16")
-person_two   = Person.create!(ip: "192.168.0.1/16")
+alice = Person.create!(ip: "127.0.0.1/16")
+bob   = Person.create!(ip: "192.168.0.1/16")
 
-Person.where.inet_contains(ip: "127.0.0.254") #=> [person_one]
-Person.where.inet_contains(ip: "192.168.20.44") #=> [person_two]
+Person.where.inet_contains(ip: "127.0.0.254") #=> [alice]
+Person.where.inet_contains(ip: "192.168.20.44") #=> [bob]
 Person.where.inet_contains(ip: "192.255.1.1") #=> []
 ```
 
@@ -131,12 +131,12 @@ Person.where.inet_contains(ip: "192.255.1.1") #=> []
 The `inet_contains_or_equals` method works much like the [Inet Contains](#inet-contains) method, but will also accept a submask range.
 
 ```ruby
-person_one   = Person.create!(ip: "127.0.0.1/10")
-person_two   = Person.create!(ip: "127.0.0.44/24")
+alice = Person.create!(ip: "127.0.0.1/10")
+bob   = Person.create!(ip: "127.0.0.44/24")
 
-Person.where.inet_contains_or_equals(ip: "127.0.0.1/16") #=> [person_one]
-Person.where.inet_contains_or_equals(ip: "127.0.0.1/10") #=> [person_one]
-Person.where.inet_contains_or_equals(ip: "127.0.0.1/32") #=> [person_one, person_two]
+Person.where.inet_contains_or_equals(ip: "127.0.0.1/16") #=> [alice]
+Person.where.inet_contains_or_equals(ip: "127.0.0.1/10") #=> [alice]
+Person.where.inet_contains_or_equals(ip: "127.0.0.1/32") #=> [alice, bob]
 ```
 
 ##### Inet Contained Within
@@ -145,12 +145,12 @@ Person.where.inet_contains_or_equals(ip: "127.0.0.1/32") #=> [person_one, person
 For the `inet_contained_within` method, we try to find IP's that fall within a submasking range we provide.
 
 ```ruby
-person_one   = Person.create!(ip: "127.0.0.1")
-person_two   = Person.create!(ip: "127.0.0.44") 
-person_three = Person.create!(ip: "127.0.55.20")
+alice = Person.create!(ip: "127.0.0.1")
+bob   = Person.create!(ip: "127.0.0.44") 
+randy = Person.create!(ip: "127.0.55.20")
 
-Person.where.inet_contained_within(ip: "127.0.0.1/24") #=> [person_one, person_two]
-Person.where.inet_contained_within(ip: "127.0.0.1/16") #=> [person_one, person_two, person_three]
+Person.where.inet_contained_within(ip: "127.0.0.1/24") #=> [alice, bob]
+Person.where.inet_contained_within(ip: "127.0.0.1/16") #=> [alice, bob, randy]
 ```
 
 ##### Inet Contained Within or Equals
@@ -159,13 +159,13 @@ Person.where.inet_contained_within(ip: "127.0.0.1/16") #=> [person_one, person_t
 The `inet_contained_within_or_equals` method works much like the [Inet Contained Within](#inet-contained-within) method, but will also accept a submask range.
 
 ```ruby
-person_one   = Person.create!(ip: "127.0.0.1/10")
-person_two   = Person.create!(ip: "127.0.0.44/32")
-person_three = Person.create!(ip: "127.0.99.1")
+alice = Person.create!(ip: "127.0.0.1/10")
+bob   = Person.create!(ip: "127.0.0.44/32")
+randy = Person.create!(ip: "127.0.99.1")
 
-Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/32") #=> [person_two]
-Person.where.inet_contained_within_or_equals(ip: "127.0.0.1/16") #=> [person_two, person_three]
-Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/8") #=> [person_one, person_two, person_three]
+Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/32") #=> [bob]
+Person.where.inet_contained_within_or_equals(ip: "127.0.0.1/16") #=> [bob, randy]
+Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/8") #=> [alice, bob, randy]
 ```
 
 
@@ -179,38 +179,38 @@ Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/8") #=> [person_one
  
  Querying With Attributes:
  ```ruby
-person_one   = Person.create!(uid: 1)
-person_two   = Person.create!(uid: 2)
-person_three = Person.create!(uid: 3)
+alice = Person.create!(uid: 1)
+bob   = Person.create!(uid: 2)
+randy = Person.create!(uid: 3)
 
-Person.where.any_of({ uid: 1 }, { uid: 2 }) #=> [person_one, person_two]
+Person.where.any_of({ uid: 1 }, { uid: 2 }) #=> [alice, bob]
 ```
 
 Querying With ActiveRecord Objects:
 ```ruby
-person_one   = Person.create!(uid: 1)
-person_two   = Person.create!(uid: 2)
-person_three = Person.create!(uid: 3)
+alice = Person.create!(uid: 1)
+bob   = Person.create!(uid: 2)
+randy = Person.create!(uid: 3)
 
 uid_one = Person.where(uid: 1)
 uid_two = Person.where(uid: 2)
 
-Person.where.any_of(uid_one, uid_two) #=> [person_one, person_two]
+Person.where.any_of(uid_one, uid_two) #=> [alice, bob]
 ```
 
 Querying with Joined Relationships:
 ```ruby
-person_one       = Person.create!(uid: 1)
-person_two       = Person.create!(uid: 2)
-person_three     = Person.create!(uid: 3)
-tag_one          = Tag.create!(person_id: person_one.id)
-tag_two          = Tag.create!(person_id: person_two.id)
-tag_three        = Tag.create!(person_id: person_three.id)
+alice     = Person.create!(uid: 1)
+bob       = Person.create!(uid: 2)
+randy     = Person.create!(uid: 3)
+tag_alice = Tag.create!(person_id: alice.id)
+tag_bob   = Tag.create!(person_id: person_two.id)
+tag_randy = Tag.create!(person_id: person_three.id)
 
-person_two_tag   = Tag.where(people: { id: two.id }).includes(:person)
-person_three_tag = Tag.where(people: { id: three.id }).joins(:person)
+bob_tag_query   = Tag.where(people: { id: two.id }).includes(:person)
+randy_tag_query = Tag.where(people: { id: three.id }).joins(:person)
 
-Tag.joins(:person).where.any_of(person_two_tag, person_three_tag) #=> [tag_two, tag_three] (with person table joined)
+Tag.joins(:person).where.any_of(bob_tag_query, randy_tag_query) #=> [tag_bob, tag_randy] (with person table joined)
 ```
 
 #### Either Join
