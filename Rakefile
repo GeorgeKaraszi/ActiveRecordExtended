@@ -61,6 +61,8 @@ namespace :db do
         t.integer  "personal_id"
         t.hstore   "data"
         t.jsonb    "jsonb_data"
+        t.inet     "ip"
+        t.cidr     "subnet"
         t.datetime "created_at"
         t.datetime "updated_at"
       end
