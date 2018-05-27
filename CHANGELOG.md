@@ -1,3 +1,7 @@
+# 0.5.0.beta3 - May 28th 2018
+
+Added `inet_contains_or_contained_within/1` method
+
 # 0.5.0.beta2 - May 27th 2018
 
 Renamed inet functions to hopefully give a clearer understanding to what these methods are used for.
