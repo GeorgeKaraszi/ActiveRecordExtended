@@ -9,7 +9,7 @@
     - [All](#all)
     - [Contains](#contains)
     - [Overlap](#overlap)
-    - [Inet / IP Address Querying](#inet-ip-address-querying)
+    - [Inet / IP Address Querying](#inet--ip-address-querying)
       - [Inet Contains](#inet-contains)
       - [Inet Contains or Equals](#inet-contains-or-equals)
       - [Inet Contained Within](#inet-contained-within)
