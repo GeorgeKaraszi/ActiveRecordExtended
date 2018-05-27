@@ -94,4 +94,28 @@ RSpec.describe "Active Record Inet Query Methods" do
       expect(query).to be_empty
     end
   end
+
+  describe "#inet_contains_or_is_contained_within" do
+    let!(:local_1)    { Person.create!(ip: "127.0.0.1/24") }
+    let!(:local_44)   { Person.create!(ip: "127.0.22.44/8") }
+    let!(:local_99_1) { Person.create!(ip: "127.0.99.1") }
+
+    it "should find records where the records contain the given IP" do
+      query = Person.where.inet_contains_or_is_contained_within(ip: "127.0.255.80")
+      expect(query).to include(local_44)
+      expect(query).to_not include(local_1, local_99_1)
+
+      query = Person.where.inet_contains_or_is_contained_within(ip: "127.0.0.80")
+      expect(query).to include(local_1, local_44)
+      expect(query).to_not include(local_99_1)
+    end
+
+    it "Should find records that the where query contains a valid range" do
+      query = Person.where.inet_contains_or_is_contained_within(ip: "127.0.0.80/8")
+      expect(query).to include(local_1, local_44, local_99_1)
+
+      query = Person.where.inet_contains_or_is_contained_within(ip: "127.0.0.80/16")
+      expect(query).to include(local_1, local_44, local_99_1)
+    end
+  end
 end

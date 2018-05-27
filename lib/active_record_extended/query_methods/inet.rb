@@ -77,6 +77,24 @@ module ActiveRecordExtended
       def inet_contains(opts, *rest)
         substitute_comparisons(opts, rest, Arel::Nodes::Contains, "inet_contains")
       end
+
+      # This method is a combination of `inet_contains` and `inet_contained_within`
+      #
+      # Finds records that are contained within a given submask. And will also find records where their submask is also
+      # contains a given IP or IP submask.
+      #
+      # Column(inet) && "127.0.0.1/28"
+      #
+      # User.where.inet_contains_or_is_contained_by(ip: "127.0.255.255/28")
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" && '127.0.255.255/28'"
+      #
+      # User.where.inet_contains_or_is_contained_by(ip: IPAddr.new("127.0.0.255"))
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" && '127.0.0.255/32'"
+      #
+      def inet_contains_or_is_contained_within(opts, *rest)
+        substitute_comparisons(opts, rest, Arel::Nodes::Inet::ContainsOrContainedWithin,
+                               "inet_contains_or_is_contained_within")
+      end
     end
   end
 end

@@ -48,4 +48,19 @@ RSpec.describe "Inet Column Predicates" do
       expect(Person.where(arel_table[:ip].inet_contains("127.0.0.1")).count).to eq(0)
     end
   end
+
+  describe "#inet_contains_or_is_contained_within" do
+    it "converts Arel inet contained within statement" do
+      query = arel_table.where(arel_table[:ip].inet_contains_or_is_contained_within("127.0.0.1")).to_sql
+      expect(query).to match_regex(/&& '127\.0\.0\.1'/)
+
+      query = arel_table.where(arel_table[:ip].inet_contains_or_is_contained_within(IPAddr.new("127.0.0.1"))).to_sql
+      expect(query).to match_regex(%r{&& '127\.0\.0\.1/32'})
+    end
+
+    it "works with count" do
+      expect(Person.where(arel_table[:ip].inet_contains_or_is_contained_within("127.0.0.1")).count).to eq(0)
+      expect(Person.where(arel_table[:ip].inet_contains_or_is_contained_within(IPAddr.new("127.0.0.1"))).count).to eq(0)
+    end
+  end
 end

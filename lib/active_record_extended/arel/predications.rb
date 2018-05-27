@@ -27,6 +27,10 @@ module Arel
       Nodes::ContainedInArray.new self, Nodes.build_quoted(other, self)
     end
 
+    def inet_contains_or_is_contained_within(other)
+      Nodes::Inet::ContainsOrContainedWithin.new self, Nodes.build_quoted(other, self)
+    end
+
     def inet_contained_within(other)
       Nodes::Inet::ContainedWithin.new self, Nodes.build_quoted(other, self)
     end
