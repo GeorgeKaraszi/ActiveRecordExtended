@@ -20,7 +20,7 @@ module ActiveRecordExtended
       #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" << '192.168.2.0/24'"
       #
       def inet_contained_within(opts, *rest)
-        substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithin, "inet_contained_within")
+        substitute_comparisons(opts, rest, Arel::Nodes::Inet::ContainedWithin, "inet_contained_within")
       end
 
       def contained_within_or_equals(opts, *rest)
@@ -41,7 +41,7 @@ module ActiveRecordExtended
       #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" <<= '192.168.2.0/24'"
       #
       def inet_contained_within_or_equals(opts, *rest)
-        substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithinEquals, "inet_contained_within_or_equals")
+        substitute_comparisons(opts, rest, Arel::Nodes::Inet::ContainedWithinEquals, "inet_contained_within_or_equals")
       end
 
       def contains_or_equals(opts, *rest)
@@ -61,7 +61,7 @@ module ActiveRecordExtended
       #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" >>= '127.0.0.255/32'"
       #
       def inet_contains_or_equals(opts, *rest)
-        substitute_comparisons(opts, rest, Arel::Nodes::ContainsEquals, "inet_contains_or_equals")
+        substitute_comparisons(opts, rest, Arel::Nodes::Inet::ContainsEquals, "inet_contains_or_equals")
       end
 
       # Strictly finds records that contain a submask and the supplied IP address falls within its range.
