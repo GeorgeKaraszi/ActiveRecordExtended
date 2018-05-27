@@ -1,4 +1,4 @@
-# 0.5.0.beta2 - May 26th 2018
+# 0.5.0.beta2 - May 27th 2018
 
 Added support for Postgres Inet functions. View the readme for more details on the following:
 
