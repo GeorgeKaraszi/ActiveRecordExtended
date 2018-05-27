@@ -16,3 +16,4 @@
 *.DS_Store
 
 .pryrc
+coverage

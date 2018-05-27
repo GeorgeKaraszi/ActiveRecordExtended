@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "simplecov"
+SimpleCov.start
+
 require "active_record_extended"
 
 unless ENV["DATABASE_URL"]
