@@ -8,10 +8,12 @@
     - [Any](#any)
     - [All](#all)
     - [Contains](#contains)
-    - [Contains or Equals](#contains-or-equals)
-    - [Contained Within](#contained-within)
-    - [Contained Within or Equals](#contained-within-or-equals)
     - [Overlap](#overlap)
+    - [Inet / IP Address Querying](#inet-ip-address-querying)
+      - [Inet Contains](#inet-contains)
+      - [Inet Contains or Equals](#inet-contains-or-equals)
+      - [Inet Contained Within](#inet-contained-within)
+      - [Inet Contained Within or Equals](#inet-contained-within-or-equals)
   - [Conditional Methods](#conditional-methods)
     - [Any_of / None_of](#any_of--none_of)
     - [Either Join](#either-join)
@@ -91,9 +93,6 @@ person_three = Person.create!(data: { nickname: "ARExtended" })
 Person.where.contains(data: { nickname: "ARExtended" }) #=> [person_two, person_three]
 ```
 
-#### Contains or Equals
-#### Contained Within
-#### Contained Within or Equals
 #### Overlap
 [Postgres && (overlap) Expression](https://www.postgresql.org/docs/10/static/functions-array.html)
 
@@ -108,6 +107,65 @@ Person.where.overlap(tags: [4]) #=> [person_one, person_two, person_three]
 Person.where.overlap(tags: [1, 8]) #=> [person_one, person_three]
 Person.where.overlap(tags: [1, 3, 8]) #=> [person_one, person_two, person_three]
 
+```
+
+#### Inet / IP Address Querying
+##### Inet Contains
+[Postgres >> (contains) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
+
+The `inet_contains` method works by taking a column(inet type) that has a submask prepended to it. 
+And tries to find related records that fall within a given IP's range.
+
+```ruby
+person_one   = Person.create!(ip: "127.0.0.1/16")
+person_two   = Person.create!(ip: "192.168.0.1/16")
+
+Person.where.inet_contains(ip: "127.0.0.254") #=> [person_one]
+Person.where.inet_contains(ip: "192.168.20.44") #=> [person_two]
+Person.where.inet_contains(ip: "192.255.1.1") #=> []
+```
+
+##### Inet Contains or Equals
+[Postgres >>= (contains or equals) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
+
+The `inet_contains_or_equals` method works much like the [Inet Contains](#inet-contains) method, but will also accept a submask range.
+
+```ruby
+person_one   = Person.create!(ip: "127.0.0.1/10")
+person_two   = Person.create!(ip: "127.0.0.44/24")
+
+Person.where.inet_contains_or_equals(ip: "127.0.0.1/16") #=> [person_one]
+Person.where.inet_contains_or_equals(ip: "127.0.0.1/10") #=> [person_one]
+Person.where.inet_contains_or_equals(ip: "127.0.0.1/32") #=> [person_one, person_two]
+```
+
+##### Inet Contained Within
+[Postgres << (contained within) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
+
+For the `inet_contained_within` method, we try to find IP's that fall within a submasking range we provide.
+
+```ruby
+person_one   = Person.create!(ip: "127.0.0.1")
+person_two   = Person.create!(ip: "127.0.0.44") 
+person_three = Person.create!(ip: "127.0.55.20")
+
+Person.where.inet_contained_within(ip: "127.0.0.1/24") #=> [person_one, person_two]
+Person.where.inet_contained_within(ip: "127.0.0.1/16") #=> [person_one, person_two, person_three]
+```
+
+##### Inet Contained Within or Equals
+[Postgres <<= (contained within or equals) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
+
+The `inet_contained_within_or_equals` method works much like the [Inet Contained Within](#inet-contained-within) method, but will also accept a submask range.
+
+```ruby
+person_one   = Person.create!(ip: "127.0.0.1/10")
+person_two   = Person.create!(ip: "127.0.0.44/32")
+person_three = Person.create!(ip: "127.0.99.1")
+
+Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/32") #=> [person_two]
+Person.where.inet_contained_within_or_equals(ip: "127.0.0.1/16") #=> [person_two, person_three]
+Person.where.inet_contained_within_or_equals(ip: "127.0.0.44/8") #=> [person_one, person_two, person_three]
 ```
 
 

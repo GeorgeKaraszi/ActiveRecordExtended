@@ -49,7 +49,7 @@ RSpec.describe "Active Record Inet Query Methods" do
       expect(query).to include(local_44, local_99_1)
       expect(query).to_not include(local_1)
 
-      query = Person.where.inet_contained_within_or_equals(ip: "127.0.0.1/10")
+      query = Person.where.inet_contained_within_or_equals(ip: "127.0.0.1/8")
       expect(query).to include(local_1, local_44, local_99_1)
     end
   end
@@ -70,7 +70,7 @@ RSpec.describe "Active Record Inet Query Methods" do
     end
 
     it "Finds records when querying with a submasked value" do
-      query = Person.where.inet_contains_or_equals(ip: "127.0.0.1/16")
+      query = Person.where.inet_contains_or_equals(ip: "127.0.0.1/10")
       expect(query).to include(local_1)
       expect(query).to_not include(local_44, local_99_1)
 
