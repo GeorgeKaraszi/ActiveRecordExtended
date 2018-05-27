@@ -9,6 +9,16 @@ module ActiveRecordExtended
         inet_contained_within(opts, *rest)
       end
 
+      # Finds matching inet column records that fall within a given submasked IP range
+      #
+      # Column(inet) << "127.0.0.1/24"
+      #
+      # User.where.inet_contained_within(ip: "127.0.0.1/16")
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" << '127.0.0.1/16'"
+      #
+      # User.where.inet_contained_within(ip: IPAddr.new("192.168.2.0/24"))
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" << '192.168.2.0/24'"
+      #
       def inet_contained_within(opts, *rest)
         substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithin, "contained_within")
       end
@@ -19,6 +29,17 @@ module ActiveRecordExtended
         inet_contained_within_or_equals(opts, *rest)
       end
 
+      # Finds matching inet column records that fall within a given submasked IP range and also finds records that also
+      # contain a submasking field that fall within range too.
+      #
+      # Column(inet) <<= "127.0.0.1/24"
+      #
+      # User.where.inet_contained_within_or_equals(ip: "127.0.0.1/16")
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" <<= '127.0.0.44/32'"
+      #
+      # User.where.inet_contained_within_or_equals(ip: IPAddr.new("192.168.2.0/24"))
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" <<= '192.168.2.0/24'"
+      #
       def inet_contained_within_or_equals(opts, *rest)
         substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithinEquals, "contained_within_or_equals")
       end
@@ -29,6 +50,16 @@ module ActiveRecordExtended
         inet_contains_or_equals(opts, *rest)
       end
 
+      # Finds records that contain a submask and the supplied IP address falls within its range.
+      #
+      # Column(inet) >>= "127.0.0.1/24"
+      #
+      # User.where.inet_contained_within_or_equals(ip: "127.0.255.255")
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" >>= '127.0.255.255'"
+      #
+      # User.where.inet_contained_within_or_equals(ip: IPAddr.new("127.0.0.255"))
+      #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" >>= '127.0.0.255/32'"
+      #
       def inet_contains_or_equals(opts, *rest)
         substitute_comparisons(opts, rest, Arel::Nodes::ContainsEquals, "contains_or_equals")
       end
