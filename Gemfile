@@ -6,7 +6,6 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 group :development, :test do
   gem "rubocop", "~> 0.52", require: false
-  gem "simplecov", require: false
 
   gem "dotenv"
 
