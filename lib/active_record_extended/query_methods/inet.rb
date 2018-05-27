@@ -73,7 +73,7 @@ module ActiveRecordExtended
       #
       # User.where.inet_contained_within_or_equals(ip: IPAddr.new("127.0.0.255"))
       #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" >> '127.0.0.255/32'"
-      # 
+      #
       def inet_contains(opts, *rest)
         substitute_comparisons(opts, rest, Arel::Nodes::Contains, "inet_contains")
       end
