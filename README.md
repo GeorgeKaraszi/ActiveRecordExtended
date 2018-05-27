@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended.svg?branch=master)](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended) [![Maintainability](https://api.codeclimate.com/v1/badges/98ecffc0239417098cbc/maintainability)](https://codeclimate.com/github/GeorgeKaraszi/active_record_extended/maintainability)
+[![Build Status](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended.svg?branch=master)](https://travis-ci.com/GeorgeKaraszi/ActiveRecordExtended) 
+[![Maintainability](https://api.codeclimate.com/v1/badges/98ecffc0239417098cbc/maintainability)](https://codeclimate.com/github/GeorgeKaraszi/active_record_extended/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/4db7fb083adc9d828bca/test_coverage)](https://codeclimate.com/github/GeorgeKaraszi/ActiveAccess/test_coverage)
 
 ## Index
 - [Description and history](#description-and-history)
