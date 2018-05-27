@@ -26,8 +26,14 @@ matrix:
 env: DATABASE_URL=postgres://postgres@localhost/active_record_extended_test
 
 before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
   - psql -c 'create database active_record_extended_test;' -U postgres
   - bundle exec rake db:migrate
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 cache:
   - bundler
