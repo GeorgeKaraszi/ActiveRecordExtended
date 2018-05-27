@@ -1,3 +1,21 @@
+# 0.5.0.beta2 - May 26th 2018
+
+Added support for Postgres Inet functions. View the readme for more details on the following:
+
+Renamed inet functions to hopefully give a clearer understanding to what these methods are used for.
+
+- `#inet_contained_within/1`
+- `#inet_contained_within_or_equals/1`
+- `#inet_contains_or_equals/1`
+- `#inet_contains/1`
+
+### Deprecation Warnings
+The following will be dropped upon v1.0 release. In favor of their prefixed counterparts.
+
+- `#contained_within/1`
+- `#contained_within_or_equals/1`
+- `#contains_or_equals/1`
+
 # 0.5.0.beta1 - May 26th 2018
 
 Added support for Rails 5.0.x

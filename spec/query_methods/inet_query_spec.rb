@@ -33,7 +33,7 @@ RSpec.describe "Active Record Inet Query Methods" do
     end
   end
 
-  describe "contained_within_or_equals" do
+  describe "inet_contained_within_or_equals" do
     let!(:local_1)    { Person.create!(ip: "127.0.0.1/10") }
     let!(:local_44)   { Person.create!(ip: "127.0.0.44/32") }
     let!(:local_99_1) { Person.create!(ip: "127.0.99.1") }
