@@ -9,18 +9,6 @@ module ActiveRecordExtended
       substitute_comparisons(opts, rest, Arel::Nodes::Overlap, "overlap")
     end
 
-    def contained_within(opts, *rest)
-      substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithin, "contained_within")
-    end
-
-    def contained_within_or_equals(opts, *rest)
-      substitute_comparisons(opts, rest, Arel::Nodes::ContainedWithinEquals, "contained_within_or_equals")
-    end
-
-    def contains_or_equals(opts, *rest)
-      substitute_comparisons(opts, rest, Arel::Nodes::ContainsEquals, "contains_or_equals")
-    end
-
     # Finds Records that contain an element in an array column
     # User.where.any(tags: 3)
     #   # SELECT user.* FROM user WHERE 3 = ANY(user.tags)
