@@ -255,6 +255,23 @@ User.either_joins(:profile_l, :profile_r) #=> [alice, bob]
 
 #### Either Order
 
+The `#either_order/3` method is a base ActiveRecord querying method that will order a set of columns that may or may not exist for each record.
+This works similar to how [Either Join](#either-join) works. This does not however exclude records that do not have relationships.
+
+```ruby
+alice = User.create!
+bob   = User.create!
+ProfileL.create!(user_id: alice.id, left_turns: 100)
+ProfileR.create!(user_id: bob.id, right_turns: 50)
+
+User.either_order(:asc, profile_l: :left_turns, profile_r: :right_turns) #=> [bob, alice]
+User.either_order(:desc, profile_l: :left_turns, profile_r: :right_turns) #=> [alice, bob]
+
+randy = User.create!
+User.either_order(:asc, profile_l: :left_turns, profile_r: :right_turns) #=> [bob, alice, randy]
+User.either_order(:desc, profile_l: :left_turns, profile_r: :right_turns) #=> [randy, alice, bob]
+```
+
 ## Installation
 
 Add this line to your application's Gemfile:
