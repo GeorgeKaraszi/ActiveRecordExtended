@@ -1,3 +1,7 @@
+# 0.5.0 - May 31st 2018
+
+Released non-marked beta version.
+
 # 0.5.0.beta3 - May 28th 2018
 
 Added `inet_contains_or_contained_within/1` method
