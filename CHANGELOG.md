@@ -2,6 +2,10 @@
 
 Reduced Gem file allocation. We only care about stuff in the lib directory.
 
+# 0.5.1 - June 3rd 2018
+
+Relaxed PG gem requirement for allowing version 1 to be used.
+
 # 0.5.0 - May 31st 2018
 
 Released non-marked beta version.
