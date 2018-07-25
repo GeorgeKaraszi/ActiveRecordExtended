@@ -1,3 +1,7 @@
+# 0.6.0 - July 25th 2018
+
+Reduced Gem file allocation. We only care about stuff in the lib directory.
+
 # 0.5.0 - May 31st 2018
 
 Released non-marked beta version.

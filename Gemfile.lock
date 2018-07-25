@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_record_extended (0.5.0)
+    active_record_extended (0.6.0)
       activerecord (>= 5.0, < 6.0)
       ar_outer_joins (~> 0.2)
       pg (~> 0.18)
@@ -97,4 +97,4 @@ DEPENDENCIES
   simplecov (~> 0.16)
 
 BUNDLED WITH
-   1.16.1
+   1.16.2
