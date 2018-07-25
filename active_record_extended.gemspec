@@ -16,9 +16,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/georgekaraszi/ActiveRecordExtended"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files`.split("\n")
+  spec.files         = Dir["README.md", "lib/**/*"]
   spec.test_files    = `git ls-files -- spec/*`.split("\n")
-  spec.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activerecord", ">= 5.0", "< 6.0"
