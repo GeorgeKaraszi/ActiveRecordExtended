@@ -1,4 +1,3 @@
-
 # frozen_string_literal: true
 
 require "active_record_extended/arel/nodes"
