@@ -59,7 +59,7 @@ module ActiveRecordExtended
         self
       end
 
-      def build_arel(aliases)
+      def build_arel(*aliases)
         super.tap do |arel|
           build_with(arel) if with_values?
         end
