@@ -5,7 +5,11 @@ require "spec_helper"
 RSpec.describe "Active Record WITH CTE tables" do
   let(:with_personal_query) { /WITH.+personal_id_one.+AS \(SELECT.+people.+FROM.+WHERE.+people.+personal_id.+ = 1\)/ }
 
-  it "should contain WITH statment that creates the CTE table" do
+  it "should contain WITH statement that creates the CTE table" do
+    pp "xxxxQUERY `with`xxxxxxx"
+    pp Person
+    pp Person.connection
+    pp "xxxxxxxxxxxx"
     query = Person.with(personal_id_one: Person.where(personal_id: 1))
                   .joins("JOIN personal_id_one ON personal_id_one.id = people.id")
                   .to_sql

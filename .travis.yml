@@ -39,4 +39,4 @@ cache:
   - bundler
 
 addons:
-  postgresql: "10"
+  postgresql: '9.6'
