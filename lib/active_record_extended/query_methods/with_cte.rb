@@ -49,17 +49,11 @@ module ActiveRecordExtended
       alias recursive_value? recursive_value
 
       def with(opts = :chain, *rest)
-        pp "xxxxINSIDE WITHxxxx"
-        pp opts
-        pp "XXXXXXXXXXXX"
         return WithChain.new(spawn) if opts == :chain
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
       def with!(opts = :chain, *rest)
-        pp "xxxxINSIDE WITH!!!!!!!xxxx"
-        pp opts
-        pp "XXXXXXXXXXXX"
         return WithChain.new(self) if opts == :chain
         self.with_values += [opts] + rest
         self
