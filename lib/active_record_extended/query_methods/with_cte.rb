@@ -73,8 +73,6 @@ module ActiveRecordExtended
               Arel::Nodes::SqlLiteral.new("(#{expression})")
             when ActiveRecord::Relation, Arel::SelectManager
               Arel::Nodes::SqlLiteral.new("(#{expression.to_sql})")
-            when Hash
-              build_with_hashed_value(expression)
             end
           next if select.nil?
           Arel::Nodes::As.new(Arel::Nodes::SqlLiteral.new(PG::Connection.quote_ident(name.to_s)), select)
