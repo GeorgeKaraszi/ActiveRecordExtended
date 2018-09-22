@@ -21,6 +21,7 @@
     - [Any_of / None_of](#any_of--none_of)
     - [Either Join](#either-join)
     - [Either Order](#either-order)
+  - [Common Table Expressions (CTE)](#common-table-expressions-(cte))
 
 ## Description and History
 
@@ -271,6 +272,56 @@ User.either_order(:desc, profile_l: :left_turns, profile_r: :right_turns) #=> [a
 randy = User.create!
 User.either_order(:asc, profile_l: :left_turns, profile_r: :right_turns) #=> [bob, alice, randy]
 User.either_order(:desc, profile_l: :left_turns, profile_r: :right_turns) #=> [randy, alice, bob]
+```
+
+### Common Table Expressions (CTE)
+[Postgres WITH (CTE) Statement](https://www.postgresql.org/docs/current/static/queries-with.html)
+
+The `.with/1` method is a base ActiveRecord querying method that will aid in creating complex queries.
+
+```ruby
+alice = User.create!
+bob   = User.create!
+randy = User.create!
+ProfileL.create!(user_id: alice.id, likes: 200)
+ProfileL.create!(user_id: bob.id,   likes: 400)
+ProfileL.create!(user_id: randy.id, likes: 600)
+
+User.with(highly_liked: ProfileL.where("likes > 300"))
+    .joins("JOIN highly_liked ON highly_liked.user_id = users.id") #=> [bob, randy]
+```
+
+Query output:
+```postgresql
+WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes >= 300)) 
+SELECT "users".* 
+FROM "users" 
+JOIN highly_liked ON highly_liked.user_id = users.id
+```
+
+You can also chain or provide additional arguments to the `with/1` method for it to merge into a single, `WITH` statement.
+
+```ruby
+User.with(highly_liked: ProfileL.where("likes > 300"), less_liked: ProfileL.where("likes <= 200"))
+    .joins("JOIN highly_liked ON highly_liked.user_id = users.id")
+    .joins("JOIN less_liked ON less_liked.user_id = users.id")
+
+# OR
+
+User.with(highly_liked: ProfileL.where("likes > 300"))
+    .with(less_liked: ProfileL.where("likes <= 200"))
+    .joins("JOIN highly_liked ON highly_liked.user_id = users.id")
+    .joins("JOIN less_liked ON less_liked.user_id = users.id")
+```
+
+Query output:
+```postgresql
+WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes > 300)), 
+     "less_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes <= 200)) 
+SELECT "users".* 
+FROM "users" 
+JOIN highly_liked ON highly_liked.user_id = users.id 
+JOIN less_liked ON less_liked.user_id = users.id
 ```
 
 ## Installation
