@@ -13,7 +13,8 @@ RSpec.describe "Active Record WITH CTE tables" do
   end
 
   it "will maintain the CTE table when merging" do
-    query = Person.merge(Person.with(personal_id_one: Person.where(personal_id: 1)))
+    query = Person.all
+                  .merge(Person.with(personal_id_one: Person.where(personal_id: 1)))
                   .joins("JOIN personal_id_one ON personal_id_one.id = people.id")
                   .to_sql
 

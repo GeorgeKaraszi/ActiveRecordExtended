@@ -30,9 +30,8 @@ RSpec.describe "Active Record With CTE Query Methods" do
       let!(:version_two) { VersionControl.create!(versionable: profile_two, source: { help: "no one" }) }
 
       it "will maintain the CTE table when merging into existing AR queries" do
-        sub_query = ProfileL.joins(:version)
-                            .with(version_controls: VersionControl.where.contains(source: { help: "me" }))
-        query     = Person.joins(:profile_l).merge(sub_query)
+        sub_query = ProfileL.with(version_controls: VersionControl.where.contains(source: { help: "me" }))
+        query     = Person.joins(profile_l: :version).merge(sub_query)
 
         expect(query).to match_array([person_one])
       end
