@@ -21,7 +21,7 @@
     - [Any_of / None_of](#any_of--none_of)
     - [Either Join](#either-join)
     - [Either Order](#either-order)
-  - [Common Table Expressions (CTE)](#common-table-expressions-(cte))
+  - [Common Table Expressions (CTE)](#common-table-expressions-cte)
 
 ## Description and History
 
