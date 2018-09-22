@@ -292,7 +292,8 @@ User.with(highly_liked: ProfileL.where("likes > 300"))
 ```
 
 Query output:
-```postgresql
+
+```sql
 WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes >= 300)) 
 SELECT "users".* 
 FROM "users" 
@@ -315,7 +316,8 @@ User.with(highly_liked: ProfileL.where("likes > 300"))
 ```
 
 Query output:
-```postgresql
+
+```sql
 WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes > 300)), 
      "less_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes <= 200)) 
 SELECT "users".* 
