@@ -68,17 +68,22 @@ namespace :db do
       end
 
       create_table :tags, force: true do |t|
-        t.belongs_to :person
+        t.belongs_to :person, index: true, foreign_key: true
       end
 
       create_table :profile_ls, force: true do |t|
-        t.belongs_to :person
+        t.belongs_to :person, index: true, foreign_key: true
         t.integer :likes
       end
 
       create_table :profile_rs, force: true do |t|
-        t.belongs_to :person
+        t.belongs_to :person, index: true, foreign_key: true
         t.integer :dislikes
+      end
+
+      create_table :version_controls, force: true do |t|
+        t.references :versionable, polymorphic: true, index: true, null: false
+        t.jsonb :source, default: {}, null: false
       end
     end
 

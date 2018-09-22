@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe "Active Record Any / None of Methods" do
   let!(:one)       { Person.create!(personal_id: 1) }
   let!(:two)       { Person.create!(personal_id: 2) }
