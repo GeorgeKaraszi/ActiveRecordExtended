@@ -2,8 +2,8 @@
 
 require "active_record"
 require "active_record/relation"
-require "active_record/relation/query_methods"
 require "active_record/relation/merger"
+require "active_record/relation/query_methods"
 
 require "active_record_extended/predicate_builder/array_handler_decorator"
 
