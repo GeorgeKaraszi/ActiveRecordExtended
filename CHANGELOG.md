@@ -1,3 +1,10 @@
+# 0.7.0 - September 22nd 2018
+
+Add support for Postgres Commend Table Expression (CTE) methods.
+
+- `.with/1`
+- `.with.recursive/1`
+
 # 0.6.0 - July 25th 2018
 
 Reduced Gem file allocation. We only care about stuff in the lib directory.
