@@ -12,8 +12,14 @@ end
 
 class ProfileL < ActiveRecord::Base
   belongs_to :person
+  has_one :version, as: :versionable, class_name: "VersionControl"
 end
 
 class ProfileR < ActiveRecord::Base
   belongs_to :person
+  has_one :version, as: :versionable, class_name: "VersionControl"
+end
+
+class VersionControl < ActiveRecord::Base
+  belongs_to :versionable, polymorphic: true, optional: false
 end
