@@ -49,6 +49,9 @@ Metrics/CyclomaticComplexity:
 Metrics/MethodLength:
   Enabled: false
 
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
 Metrics/BlockLength:
   Exclude:
     - spec/**/*
@@ -64,6 +67,15 @@ Style/Lambda:
 
 Style/IfUnlessModifier:
   Enabled: false
+
+#################
+# Modified cops #
+#################
+
+Naming/FileName:
+  Enabled: true
+  Exclude:
+    - gemfiles/*
 
 Style/TrailingCommaInArrayLiteral:
   Enabled: true
