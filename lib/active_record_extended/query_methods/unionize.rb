@@ -33,72 +33,56 @@ module ActiveRecordExtended
         protected
 
         def append_union_order!(union_type, args)
-          @scope.tap do |scope|
-            scope.union_values           += args
-            scope.union_operation_values += [union_type]
-          end
+          @scope.union_values     += args
+          @scope.union_operations += [union_type]
+          @scope
         end
       end
 
-      def union_values?
-        !@values.dig(:unionize, :union_values).presence.nil?
+      def unionize_storage
+        @values.fetch(:unionize, {})
       end
 
-      def union_operation_values?
-        !@values.dig(:unionize, :union_operations).presence.nil?
-      end
-
-      def union_order_by?
-        !@values.dig(:unionize, :order_by).presence.nil?
-      end
-
-      def unionized_name?
-        !@values.dig(:unionize, :unionized_name).presence.nil?
-      end
-
-      def union_values
-        unionize_hash[:union_values] || []
-      end
-
-      def union_operation_values
-        unionize_hash[:union_operations] || []
-      end
-
-      def union_order_by
-        unionize_hash[:order_by]
-      end
-
-      def unionized_name
-        unionize_hash[:unionized_name] || @klass.arel_table.name
-      end
-
-      def union_order_by=(value)
-        unionize_hash![:order_by] = value
-      end
-
-      def union_values=(value)
-        unionize_hash![:union_values] = value
-      end
-
-      def union_operation_values=(value)
-        unionize_hash![:union_operations] = value
-      end
-
-      def unionized_name=(value)
-        unionize_hash![:unionized_name] = value
-      end
-
-      def unionize_hash!
+      def unionize_storage!
         @values[:unionize] ||= {
           union_values:     [],
           union_operations: [],
-          order_by:         nil,
+          union_order_by:   nil,
           unionized_name:   nil,
         }
       end
 
-      def unionize_hash
-        @values[:unionize] || {}
+      {
+        union_values:     Array,
+        union_operations: Array,
+        unionized_name:   lambda { |klass| klass.arel_table.name },
+        union_order_by:   nil,
+      }.each_pair do |method_name, default|
+        define_method("#{method_name}?") do
+          unionize_storage.key?(method_name) && !unionize_storage[method_name].presence.nil?
+        end
+
+        define_method(method_name) do
+          unionize_storage[method_name].presence || (default.is_a?(Proc) ? default.call(@klass) : default&.new)
+        end
+
+        define_method("#{method_name}=") do |value|
+          unionize_storage![method_name] = unionize_storage![method_name].is_a?(Array) ? flatten_scopes(value) : value
+        end
+
+        next unless default.is_a?(Array)
+        define_method("flatten_#{method_name}!") do
+          unionize_storage[method_name] =
+            unionize_storage[method_name].inject([]) do |new_array, object|
+              new_array << object.is_a?(Array)
+            end
+        end
+      end
+
+      def flatten_scopes(values)
+        values.inject([]) do |new_ary, value|
+          value.is_a?(Array) ? new_ary + flatten_scopes(value) : new_ary << value
+        end
       end
 
       def union(opts = :chain, *args)
@@ -109,7 +93,7 @@ module ActiveRecordExtended
       def union!(opts = :chain, *args)
         return UnionChain.new(self) if opts == :chain
         self.union_values           += [opts] + args
-        self.union_operation_values += [:union]
+        self.union_operations       += [:union]
         self
       end
 
@@ -119,37 +103,34 @@ module ActiveRecordExtended
         end
       end
 
-      def unionize_nodes(left, right, operation)
-        case operation
-        when :union_all
-          Arel::Nodes::UnionAll.new(left, right)
-        when :except
-          Arel::Nodes::Except.new(left, right)
-        when :intersect
-          Arel::Nodes::Intersect.new(left, right)
-        else
-          Arel::Nodes::Union.new(left, right)
-        end
-      end
-
-      def build_union_relationships(arel)
-        uvs        = union_values.map(&:arel)
-        union_node = unionize_nodes(arel, uvs.shift, union_operation_values.shift)
-
-        uvs.each do |arel_relation|
-          union_node = unionize_nodes(union_node, arel_relation, union_operation_values.shift)
-        end
-
-        union_node
-      end
-
       def build_unions(arel)
         return unless union_values?
 
-        table_name   = unionized_name
-        built_unions = build_union_relationships(arel.dup)
-        from         = Arel::Nodes::As.new(built_unions, Arel::Nodes::SqlLiteral.new(table_name))
+        union_nodes  = build_union_nodes(arel.dup)
+        from         = Arel::Nodes::As.new(union_nodes, Arel::Nodes::SqlLiteral.new(unionized_name))
         arel.from(from)
+      end
+
+      def build_union_nodes(arel)
+        # We need to first initialize the initial union between the parent (arel param) and
+        # the first child being union'd
+        # Afterwords we can begin to nest and append unions in the order for which they were received in.
+        union_values.inject(nil) do |union_node, relation_node|
+          operation     = union_operations.shift
+          left          = union_node || arel
+          right         = relation_node.arel
+
+          case operation
+          when :union_all
+            Arel::Nodes::UnionAll.new(left, right)
+          when :except
+            Arel::Nodes::Except.new(left, right)
+          when :intersect
+            Arel::Nodes::Intersect.new(left, right)
+          else
+            Arel::Nodes::Union.new(left, right)
+          end
+        end
       end
     end
   end
