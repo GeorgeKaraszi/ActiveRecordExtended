@@ -9,6 +9,7 @@ require "active_record_extended/predicate_builder/array_handler_decorator"
 
 require "active_record_extended/query_methods/where_chain"
 require "active_record_extended/query_methods/with_cte"
+require "active_record_extended/query_methods/unionize"
 require "active_record_extended/query_methods/any_of"
 require "active_record_extended/query_methods/either"
 require "active_record_extended/query_methods/inet"

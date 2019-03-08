@@ -23,6 +23,11 @@ CollectionMethods:
 EndAlignment:
   EnforcedStyleAlignWith: variable
 
+Layout/AlignHash:
+  Enabled: true,
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
+
 LineLength:
   Max: 120
   Exclude:
