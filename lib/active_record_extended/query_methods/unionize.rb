@@ -69,14 +69,6 @@ module ActiveRecordExtended
         define_method("#{method_name}=") do |value|
           unionize_storage![method_name] = unionize_storage![method_name].is_a?(Array) ? flatten_scopes(value) : value
         end
-
-        next unless default.is_a?(Array)
-        define_method("flatten_#{method_name}!") do
-          unionize_storage[method_name] =
-            unionize_storage[method_name].inject([]) do |new_array, object|
-              new_array << object.is_a?(Array)
-            end
-        end
       end
 
       def flatten_scopes(values)
