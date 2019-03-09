@@ -156,6 +156,8 @@ module ActiveRecordExtended
       #       .union(User.select(:id).where(id: 50))
       #       .union.except(User.select(:id).where(id: 8))
       #
+      #   #=> [<#User id: 50]]
+      #
       #   ```sql
       #   SELECT users.*
       #   FROM(
