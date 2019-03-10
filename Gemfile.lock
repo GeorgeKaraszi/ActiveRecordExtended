@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_record_extended (0.9.0)
+    active_record_extended (0.7.0)
       activerecord (>= 5.0, < 6.0)
       ar_outer_joins (~> 0.2)
       pg (>= 0, < 1.1)
