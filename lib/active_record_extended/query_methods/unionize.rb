@@ -74,16 +74,24 @@ module ActiveRecordExtended
           ordering_args.compact!
           ordering_args.map! do |arg|
             next sql_literal(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
-
-            arg.each_with_object({}) do |(field, dir), ordering_obj|
-              # ActiveRecord will not reflect if the Hash keys are a `Arel::Nodes::SqlLiteral` klass
-              ordering_obj[sql_literal(field.to_s)] = dir.to_s.downcase
+            # TODO: Rails 5.0.x order logic will *always* append the parents name to the column when its an HASH obj
+            #       We should really do this stuff better. Maybe even just ignore `preprocess_order_args` altogether?
+            #       Maybe I'm just stupidly over paranoid on just the 'ORDER BY' for some odd reason.
+            if ActiveRecord::VERSION::MINOR.zero?
+              arg.each_with_object([]) do |(field, dir), ordering_object|
+                ordering_object << sql_literal(field.to_s).send(dir.to_s.downcase)
+              end
+            else
+              arg.each_with_object({}) do |(field, dir), ordering_obj|
+                # ActiveRecord will not reflect if the Hash keys are a `Arel::Nodes::SqlLiteral` klass
+                ordering_obj[sql_literal(field.to_s)] = dir.to_s.downcase
+              end
             end
-          end
+          end.flatten!
         end
 
         def sql_literal(object)
-          Arel::Nodes::SqlLiteral.new(object.to_s)
+          Arel.sql(object.to_s)
         end
       end
 
@@ -136,6 +144,7 @@ module ActiveRecordExtended
 
       # Will construct *Just* the union SQL statement that was been built thus far
       def to_union_sql
+        return unless union_values?
         apply_union_ordering(build_union_nodes!(false)).to_sql
       end
 
@@ -227,7 +236,8 @@ module ActiveRecordExtended
         return union_nodes unless union_ordering_values?
 
         # Sanitation check / resolver (ActiveRecord::Relation#preprocess_order_args)
-        self.union_ordering_values = preprocess_order_args(union_ordering_values).uniq
+        preprocess_order_args(union_ordering_values)
+        union_ordering_values.uniq!
         Arel::Nodes::InfixOperation.new("ORDER BY", union_nodes, union_ordering_values)
       end
 
