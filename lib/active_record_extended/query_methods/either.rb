@@ -6,7 +6,7 @@ module ActiveRecordExtended
   module QueryMethods
     module Either
       XOR_FIELD_SQL  = "(CASE WHEN %<t1>s.%<c1>s IS NULL THEN %<t2>s.%<c2>s ELSE %<t1>s.%<c1>s END) "
-      XOR_FIELD_KEYS = %i[t1 c1 t2 c2].freeze
+      XOR_FIELD_KEYS = [:t1, :c1, :t2, :c2].freeze
 
       def either_join(initial_association, fallback_association)
         associations        = [initial_association, fallback_association]

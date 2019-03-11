@@ -18,7 +18,7 @@ module ActiveRecordExtended
           matchable_column?(col, object)
         end
 
-        if %i[hstore jsonb].include?(left_column&.type)
+        if [:hstore, :jsonb].include?(left_column&.type)
           visit_Arel_Nodes_ContainsHStore(object, collector)
         elsif left_column.try(:array)
           visit_Arel_Nodes_ContainsArray(object, collector)
