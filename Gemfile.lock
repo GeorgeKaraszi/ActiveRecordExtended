@@ -90,7 +90,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_record_extended!
-  bundler (>= 1.16, <= 2.0)
+  bundler (>= 1.16)
   byebug
   database_cleaner (~> 1.6)
   dotenv
