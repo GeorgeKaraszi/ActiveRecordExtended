@@ -6,11 +6,22 @@ module ActiveRecordExtended
     # that might have been nested due to the (splat)*args parameters
     #
     # Note: calling `Array.flatten[!]/1` will actually remove all AR relations from the array
-    def self.flatten_scopes(values)
-      return [values] unless values.is_a?(Array)
-
-      values.inject([]) do |new_ary, value|
-        value.is_a?(Array) ? new_ary + flatten_scopes(value) : new_ary << value
+    def self.flatten_to_sql(values)
+      case values
+      when ActiveRecord::Relation
+        [Arel.sql(values.to_sql)]
+      when String
+        [Arel.sql(value)]
+      when Array
+        values.inject([]) do |new_ary, value|
+          new_ary + flatten_to_sql(value)
+        end
+      else
+        if values.respond_to?(:to_sql)
+          [Arel.sql(values.to_sql)]
+        else
+          [values]
+        end
       end.compact
     end
   end

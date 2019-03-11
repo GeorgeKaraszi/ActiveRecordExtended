@@ -54,7 +54,7 @@ module ActiveRecordExtended
 
         def append_union_order!(union_type, args)
           @scope.tap do |scope|
-            flatten_scopes = ::ActiveRecordExtended::Utilities.flatten_scopes(args)
+            flatten_scopes = ::ActiveRecordExtended::Utilities.flatten_to_sql(args)
             scope.union_values += flatten_scopes
             calculate_union_operation!(union_type, flatten_scopes.size, scope)
           end
@@ -136,11 +136,7 @@ module ActiveRecordExtended
 
       # Will construct *Just* the union SQL statement that was been built thus far
       def to_union_sql
-        con            = klass.connection
-        arel_statement = apply_union_ordering(build_union_nodes!(false))
-        collector      = Arel::Collectors::SubstituteBinds.new(con, Arel::Collectors::SQLString.new)
-        sql, _binds    = con.unprepared_statement { con.visitor.accept(arel_statement, collector).value }
-        sql
+        apply_union_ordering(build_union_nodes!(false)).to_sql
       end
 
       def to_nice_union_sql
@@ -248,7 +244,7 @@ module ActiveRecordExtended
       def resolve_relation_node(relation_node)
         case relation_node
         when String
-          Arel::Nodes::SqlLiteral.new(relation_node)
+          Arel::Nodes::Grouping.new(Arel::Nodes::SqlLiteral.new(relation_node))
         else
           relation_node.arel
         end
