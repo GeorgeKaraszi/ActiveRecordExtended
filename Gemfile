@@ -10,6 +10,7 @@ group :development, :test do
   gem "dotenv"
 
   gem "byebug"
+  gem "niceql"
   gem "pry", "~> 0.11.3"
   gem "pry-byebug", "~> 3.5", ">= 3.5.1"
 end
