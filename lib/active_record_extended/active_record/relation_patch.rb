@@ -3,11 +3,7 @@
 module ActiveRecordExtended
   module RelationPatch
     module QueryDelegation
-      delegate :with, :union, :to_union_sql, to: :all
-
-      if defined?(Niceql)
-        delegate :to_nice_sql, to: :all
-      end
+      delegate :with, :union, to: :all
     end
 
     module Merger
