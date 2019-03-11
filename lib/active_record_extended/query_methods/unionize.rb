@@ -142,8 +142,8 @@ module ActiveRecordExtended
       end
 
       if defined?(::Niceql)
-        def to_nice_union_sql
-          ::Niceql::Prettifier.prettify_sql(to_union_sql)
+        def to_nice_union_sql(color = true)
+          ::Niceql::Prettifier.prettify_sql(to_union_sql, color)
         end
       end
 
