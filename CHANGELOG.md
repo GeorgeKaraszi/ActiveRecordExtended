@@ -1,3 +1,11 @@
+# 1.0.0(Unreleased) - March 11th 2019
+Add support for Postgres Union types and refactor Arel building process into a single module
+
+- `.union`           (UNION)
+- `.union.all`       (UNION ALL)
+- `.union.except`    (EXCEPT)
+- `.union.intersect` (INTERSECT)
+
 # 0.7.0 - September 22nd 2018
 
 Add support for Postgres Commend Table Expression (CTE) methods.
