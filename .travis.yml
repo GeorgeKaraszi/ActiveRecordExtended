@@ -4,6 +4,7 @@ rvm:
   - 2.3
   - 2.4
   - 2.5
+  - 2.6
   - ruby-head
 
 before_install: gem install bundler
@@ -15,12 +16,12 @@ gemfile:
   - gemfiles/activerecord-50.gemfile
   - gemfiles/activerecord-51.gemfile
   - gemfiles/activerecord-52.gemfile
-  - gemfiles/activerecord-52+.gemfile
+  - gemfiles/activerecord-60-beta.gemfile
 
 matrix:
   allow_failures:
     - rvm: ruby-head
-    - gemfile: gemfiles/activerecord-52+.gemfile
+    - gemfile: gemfiles/activerecord-60-beta.gemfile
 
 
 env: DATABASE_URL=postgres://postgres@localhost/active_record_extended_test
