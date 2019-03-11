@@ -5,6 +5,9 @@ Add support for Postgres Union types and refactor Arel building process into a s
 - `.union.all`       (UNION ALL)
 - `.union.except`    (EXCEPT)
 - `.union.intersect` (INTERSECT)
+- `.union.as` (From clause alias)
+- `.union.order` (ORDER BY)
+- `.union.reorder`
 
 # 0.7.0 - September 22nd 2018
 
