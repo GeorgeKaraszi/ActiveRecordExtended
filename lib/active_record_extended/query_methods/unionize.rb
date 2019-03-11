@@ -29,6 +29,15 @@ module ActiveRecordExtended
           @scope.tap { |scope| scope.union_ordering_values += ordering_args }
         end
 
+        def reorder(*ordering_args)
+          @scope.union_ordering_values.clear
+          order(*ordering_args)
+        end
+
+        def union(*args)
+          append_union_order!(:union, args)
+        end
+
         def all(*args)
           append_union_order!(:union_all, args)
         end
@@ -44,9 +53,17 @@ module ActiveRecordExtended
         protected
 
         def append_union_order!(union_type, args)
-          @scope.union_values     += args
-          @scope.union_operations += [union_type]
-          @scope
+          @scope.tap do |scope|
+            flatten_scopes = ::ActiveRecordExtended::Utilities.flatten_scopes(args)
+            scope.union_values += flatten_scopes
+            calculate_union_operation!(union_type, flatten_scopes.size, scope)
+          end
+        end
+
+        def calculate_union_operation!(union_type, scope_count, scope = @scope)
+          scope_count           -= 1 unless scope.union_operations?
+          scope_count            = 1 if scope_count <= 0 && scope.union_values.size <= 1
+          scope.union_operations += [union_type] * scope_count
         end
 
         # We'll need to preprocess these arguments for allowing `ActiveRecord::Relation#preprocess_order_args`,
@@ -99,7 +116,6 @@ module ActiveRecordExtended
         end
 
         define_method("#{method_name}=") do |value|
-          value = ::ActiveRecordExtended::Utilities.flatten_scopes(value) if unionize_storage![method_name].is_a?(Array)
           unionize_storage![method_name] = value
         end
       end
@@ -114,10 +130,8 @@ module ActiveRecordExtended
       end
 
       def union!(opts = :chain, *args)
-        return UnionChain.new(self) if opts == :chain
-        self.union_values           += [opts] + args
-        self.union_operations       += [:union]
-        self
+        union_chain = UnionChain.new(self)
+        opts == :chain ? union_chain : union_chain.union([opts] + args)
       end
 
       # Will construct *Just* the union SQL statement that was been built thus far
@@ -139,10 +153,9 @@ module ActiveRecordExtended
       def build_unions(arel = @klass.arel_table)
         return unless union_values?
 
-        union_nodes = apply_union_ordering(build_union_nodes!)
-        table_name  = Arel::Nodes::SqlLiteral.new(unionized_name)
-        table_alias = arel.create_table_alias(arel.grouping(union_nodes), table_name)
-        update_projections!(arel)
+        union_nodes      = apply_union_ordering(build_union_nodes!)
+        table_name       = Arel::Nodes::SqlLiteral.new(unionized_name)
+        table_alias      = arel.create_table_alias(arel.grouping(union_nodes), table_name)
         arel.from(table_alias)
       end
 
@@ -172,14 +185,11 @@ module ActiveRecordExtended
       #   ```
 
       def build_union_nodes!(raise_error = true)
-        if raise_error && union_values.size <= 1
-          raise ArgumentError, "You are required to provide 2 or more unions to join!"
-        end
-
-        union_values.inject(nil) do |union_node, relation_node|
+        unionize_error_or_warn!(raise_error)
+        union_values.each_with_index.inject(nil) do |union_node, (relation_node, index)|
           next resolve_relation_node(relation_node) if union_node.nil?
 
-          operation = union_operations.shift
+          operation = union_operations.fetch(index - 1, :union)
           left      = union_node
           right     = resolve_relation_node(relation_node)
 
@@ -225,29 +235,15 @@ module ActiveRecordExtended
         Arel::Nodes::InfixOperation.new("ORDER BY", union_nodes, union_ordering_values)
       end
 
-      # Will attempt to change any top level select statements
-      # that reference the "old" table name, to the new unionized alias name.
-      #
-      # If the table name is the same as the old one. We will ignore this step.
-      #
-      # Ex: Before: `SELECT people.id FROM ([:union:/s]) AS happy_people`
-      #    After:   `SELECT happy_people.id FROM ([:union:/s]) AS happy_people`
-      #
-      def update_projections!(arel, klass_table_name = @klass.arel_table.name)
-        return if unionized_name == klass_table_name
+      private
 
-        arel.projections.map! do |projection|
-          next projection unless projection.is_a?(Arel::Attributes::Attribute)
-          next projection unless (projection.relation.table_alias || projection.relation.name) == klass_table_name
-
-          projection.clone.tap do |cloned_projection|
-            cloned_projection.relation             = cloned_projection.relation.clone
-            cloned_projection.relation.table_alias = unionized_name
-          end
+      def unionize_error_or_warn!(raise_error = true)
+        if raise_error && union_values.size <= 1
+          raise ArgumentError, "You are required to provide 2 or more unions to join!"
+        elsif !raise_error && union_values.size <= 1
+          warn("Warning: You are required to provide 2 or more unions to join.")
         end
       end
-
-      private
 
       def resolve_relation_node(relation_node)
         case relation_node
