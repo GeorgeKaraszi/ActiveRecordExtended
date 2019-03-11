@@ -97,6 +97,9 @@ Style/TrailingCommaInArguments:
 Style/GuardClause:
   Enabled: false
 
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
 Lint/AmbiguousBlockAssociation:
   Exclude:
     - spec/**/*

@@ -2,17 +2,6 @@
 
 module ActiveRecordExtended
   module QueryMethods
-    module QueryDelegationUnionize
-      delegate :union, :to_union_sql, to: :all
-      delegate :to_nice_sql, to: :all if defined?(Niceql)
-    end
-
-    module MergerUnion
-      def normal_values
-        super + [:union]
-      end
-    end
-
     module Unionize
       class UnionChain
         def initialize(scope)
@@ -69,25 +58,33 @@ module ActiveRecordExtended
         # We'll need to preprocess these arguments for allowing `ActiveRecord::Relation#preprocess_order_args`,
         # to check for sanitization issues and convert over to `Arel::Nodes::[Ascending/Descending]`.
         # Without reflecting / prepending the parent's table name.
-        def process_ordering_arguments!(ordering_args)
-          ordering_args.flatten!
-          ordering_args.compact!
-          ordering_args.map! do |arg|
-            next sql_literal(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
-            # TODO: Rails 5.0.x order logic will *always* append the parents name to the column when its an HASH obj
-            #       We should really do this stuff better. Maybe even just ignore `preprocess_order_args` altogether?
-            #       Maybe I'm just stupidly over paranoid on just the 'ORDER BY' for some odd reason.
-            if ActiveRecord::VERSION::MINOR.zero?
+
+        if ActiveRecord.gem_version < Gem::Version.new("5.1")
+          # TODO: Rails 5.0.x order logic will *always* append the parents name to the column when its an HASH obj
+          #       We should really do this stuff better. Maybe even just ignore `preprocess_order_args` altogether?
+          #       Maybe I'm just stupidly over paranoid on just the 'ORDER BY' for some odd reason.
+          def process_ordering_arguments!(ordering_args)
+            ordering_args.flatten!
+            ordering_args.compact!
+            ordering_args.map! do |arg|
+              next sql_literal(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
               arg.each_with_object([]) do |(field, dir), ordering_object|
                 ordering_object << sql_literal(field.to_s).send(dir.to_s.downcase)
               end
-            else
+            end.flatten!
+          end
+        else
+          def process_ordering_arguments!(ordering_args)
+            ordering_args.flatten!
+            ordering_args.compact!
+            ordering_args.map! do |arg|
+              next sql_literal(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
               arg.each_with_object({}) do |(field, dir), ordering_obj|
                 # ActiveRecord will not reflect if the Hash keys are a `Arel::Nodes::SqlLiteral` klass
                 ordering_obj[sql_literal(field.to_s)] = dir.to_s.downcase
               end
             end
-          end.flatten!
+          end
         end
 
         def sql_literal(object)
@@ -126,10 +123,6 @@ module ActiveRecordExtended
         define_method("#{method_name}=") do |value|
           unionize_storage![method_name] = value
         end
-      end
-
-      def build_arel(*aliases)
-        super.tap(&method(:build_unions))
       end
 
       def union(opts = :chain, *args)
@@ -264,5 +257,3 @@ module ActiveRecordExtended
 end
 
 ActiveRecord::Relation.prepend(ActiveRecordExtended::QueryMethods::Unionize)
-ActiveRecord::Relation::Merger.prepend(ActiveRecordExtended::QueryMethods::MergerUnion)
-ActiveRecord::Querying.prepend(ActiveRecordExtended::QueryMethods::QueryDelegationUnionize)

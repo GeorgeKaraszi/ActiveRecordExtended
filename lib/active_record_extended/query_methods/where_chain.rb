@@ -49,7 +49,7 @@ module ActiveRecordExtended
         when Arel::Nodes::In, Arel::Nodes::Equality
           column = left_column(arel) || column_from_association(arel)
 
-          if %i[hstore jsonb].include?(column.type)
+          if [:hstore, :jsonb].include?(column.type)
             Arel::Nodes::ContainsHStore.new(arel.left, arel.right)
           elsif column.try(:array)
             Arel::Nodes::ContainsArray.new(arel.left, arel.right)

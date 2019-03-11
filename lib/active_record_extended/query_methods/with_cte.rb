@@ -2,16 +2,6 @@
 
 module ActiveRecordExtended
   module QueryMethods
-    module MergerCTE
-      def normal_values
-        super + [:with]
-      end
-    end
-
-    module QueryDelegationCTE
-      delegate :with, to: :all
-    end
-
     module WithCTE
       class WithChain
         def initialize(scope)
@@ -59,12 +49,6 @@ module ActiveRecordExtended
         self
       end
 
-      def build_arel(*aliases)
-        super.tap do |arel|
-          build_with(arel) if with_values?
-        end
-      end
-
       def build_with_hashed_value(with_value)
         with_value.map do |name, expression|
           select =
@@ -97,5 +81,3 @@ module ActiveRecordExtended
 end
 
 ActiveRecord::Relation.prepend(ActiveRecordExtended::QueryMethods::WithCTE)
-ActiveRecord::Relation::Merger.prepend(ActiveRecordExtended::QueryMethods::MergerCTE)
-ActiveRecord::Querying.prepend(ActiveRecordExtended::QueryMethods::QueryDelegationCTE)

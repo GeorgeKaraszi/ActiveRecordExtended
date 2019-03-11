@@ -7,6 +7,8 @@ require "active_record/relation/query_methods"
 
 require "active_record_extended/predicate_builder/array_handler_decorator"
 
+require "active_record_extended/active_record/relation_patch"
+
 require "active_record_extended/query_methods/where_chain"
 require "active_record_extended/query_methods/with_cte"
 require "active_record_extended/query_methods/unionize"
