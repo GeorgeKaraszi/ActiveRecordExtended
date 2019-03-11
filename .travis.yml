@@ -22,6 +22,11 @@ matrix:
   allow_failures:
     - rvm: ruby-head
     - gemfile: gemfiles/activerecord-60-beta.gemfile
+  exclude:
+    - rvm: 2.3
+      gemfile: gemfiles/activerecord-60-beta.gemfile
+    - rvm: 2.4
+      gemfile: gemfiles/activerecord-60-beta.gemfile
 
 
 env: DATABASE_URL=postgres://postgres@localhost/active_record_extended_test
