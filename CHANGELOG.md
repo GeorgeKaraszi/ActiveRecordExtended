@@ -1,13 +1,19 @@
 # 1.0.0(Unreleased) - March 11th 2019
 Add support for Postgres Union types and refactor Arel building process into a single module
 
-- `.union`           (UNION)
-- `.union.all`       (UNION ALL)
-- `.union.except`    (EXCEPT)
-- `.union.intersect` (INTERSECT)
-- `.union.as` (From clause alias)
-- `.union.order` (ORDER BY)
-- `.union.reorder`
+- `.union`  (UNION)
+- `.union_all`  (UNION ALL)
+  - or `.union.all` 
+- `union_except`  (EXCEPT)
+  - or `.union.except`
+- `.union.intersect`  (INTERSECT)
+  - or `.union.intersect`
+- `union_as`  (From clause alias name) (defaults to calling class table name)
+  - or `.union.as`
+- `order_union` (ORDER BY)
+  - or `.union.order`
+- `.reorder_union` (overides previously set `order_union`)
+  - or `union.reorder`
 
 # 0.7.0 - September 22nd 2018
 
