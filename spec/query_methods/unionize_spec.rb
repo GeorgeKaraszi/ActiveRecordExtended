@@ -155,12 +155,11 @@ RSpec.describe "Active Record Union Methods" do
       person_a         = Person.create!(number: 1)
       person_b         = Person.create!(number: 10)
       initial_ordering = [person_b, person_a]
-      query = Person.union(Person.where(id: person_a.id), Person.where(id: person_b.id)).order_union(id: :desc)
+      query            = Person.union(Person.where(id: person_a.id), Person.where(id: person_b.id))
+                               .order_union(id: :desc)
 
-      expect { query = query.reorder_union(number: :asc) }
-        .to change { query.to_a }
-        .from(initial_ordering)
-        .to(initial_ordering.reverse)
+      expect(query).to eq(initial_ordering)
+      expect(query.reorder_union(number: :asc)).to eq(initial_ordering.reverse)
     end
   end
 end
