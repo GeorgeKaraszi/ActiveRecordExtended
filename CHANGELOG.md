@@ -6,13 +6,13 @@ Add support for Postgres Union types and refactor Arel building process into a s
   - or `.union.all` 
 - `union_except`  (EXCEPT)
   - or `.union.except`
-- `.union.intersect`  (INTERSECT)
+- `.union_intersect`  (INTERSECT)
   - or `.union.intersect`
 - `union_as`  (From clause alias name) (defaults to calling class table name)
   - or `.union.as`
 - `order_union` (ORDER BY)
   - or `.union.order`
-- `.reorder_union` (overides previously set `order_union`)
+- `.reorder_union` (overides previously set `.order_union`)
   - or `union.reorder`
 
 # 0.7.0 - September 22nd 2018
