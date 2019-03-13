@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require "active_record_extended/query_methods/unionize"
+
 module ActiveRecordExtended
   module RelationPatch
     module QueryDelegation
-      delegate :with, :union, to: :all
+      delegate :with, to: :all
+      delegate(*::ActiveRecordExtended::QueryMethods::Unionize::UNIONIZE_METHODS, to: :all)
     end
 
     module Merger
