@@ -3,56 +3,68 @@
 module ActiveRecordExtended
   module QueryMethods
     module Unionize
+      UNION_RELATION_METHODS = [:order_union, :reorder_union, :union_as].freeze
+      UNIONIZE_METHODS       = [:union, :union_all, :union_except, :union_intersect].freeze
+
       class UnionChain
         def initialize(scope)
           @scope = scope
         end
 
         def as(from_clause_name)
-          @scope.tap { |scope| scope.unionized_name = from_clause_name.to_s }
+          @scope.unionized_name = from_clause_name.to_s
+          @scope
         end
-        alias name as
+        alias union_as as
 
         def order(*ordering_args)
           process_ordering_arguments!(ordering_args)
-          @scope.tap { |scope| scope.union_ordering_values += ordering_args }
+          @scope.union_ordering_values += ordering_args
+          @scope
         end
+        alias order_union order
 
         def reorder(*ordering_args)
           @scope.union_ordering_values.clear
           order(*ordering_args)
         end
+        alias reorder_union reorder
 
         def union(*args)
           append_union_order!(:union, args)
+          @scope
         end
 
         def all(*args)
           append_union_order!(:union_all, args)
+          @scope
         end
+        alias union_all all
 
         def except(*args)
           append_union_order!(:except, args)
+          @scope
         end
+        alias union_except except
 
         def intersect(*args)
           append_union_order!(:intersect, args)
+          @scope
         end
+        alias union_intersect intersect
 
         protected
 
         def append_union_order!(union_type, args)
-          @scope.tap do |scope|
-            flatten_scopes = ::ActiveRecordExtended::Utilities.flatten_to_sql(args)
-            scope.union_values += flatten_scopes
-            calculate_union_operation!(union_type, flatten_scopes.size, scope)
-          end
+          flatten_scopes       = ::ActiveRecordExtended::Utilities.flatten_to_sql(args)
+          @scope.union_values += flatten_scopes
+          calculate_union_operation!(union_type, flatten_scopes.size)
         end
 
-        def calculate_union_operation!(union_type, scope_count, scope = @scope)
-          scope_count           -= 1 unless scope.union_operations?
-          scope_count            = 1 if scope_count <= 0 && scope.union_values.size <= 1
-          scope.union_operations += [union_type] * scope_count
+        def calculate_union_operation!(union_type, scope_count)
+          scope_count             -= 1 unless @scope.union_operations?
+          scope_count              = 1 if scope_count <= 0 && @scope.union_values.size <= 1
+          @scope.union_operations += [union_type] * scope_count
         end
 
         # We'll need to preprocess these arguments for allowing `ActiveRecord::Relation#preprocess_order_args`,
@@ -127,12 +139,20 @@ module ActiveRecordExtended
 
       def union(opts = :chain, *args)
         return UnionChain.new(spawn) if opts == :chain
-        opts.nil? ? self : spawn.union!(opts, *args)
+        opts.nil? ? self : spawn.union!(opts, *args, chain_method: __callee__)
       end
 
-      def union!(opts = :chain, *args)
-        union_chain = UnionChain.new(self)
-        opts == :chain ? union_chain : union_chain.union([opts] + args)
+      (UNIONIZE_METHODS + UNION_RELATION_METHODS).each do |union_method|
+        next if union_method == :union
+        alias_method union_method, :union
+      end
+
+      def union!(opts = :chain, *args, chain_method: :union)
+        union_chain    = UnionChain.new(self)
+        chain_method ||= :union
+        return union_chain if opts == :chain
+
+        union_chain.public_send(chain_method, *([opts] + args))
       end
 
       # Will construct *Just* the union SQL statement that was been built thus far

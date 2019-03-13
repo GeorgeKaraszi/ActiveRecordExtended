@@ -3,9 +3,9 @@
 require "spec_helper"
 
 RSpec.describe "Active Record Union Methods" do
-  let!(:person_one)     { Person.create! }
-  let!(:person_two)     { Person.create! }
-  let!(:person_three)   { Person.create! }
+  let!(:person_one)     { Person.create!(number: 8) }
+  let!(:person_two)     { Person.create!(number: 10) }
+  let!(:person_three)   { Person.create!(number: 1) }
   let!(:person_one_pl)  { ProfileL.create!(person: person_one, likes: 100) }
   let!(:person_two_pl)  { ProfileL.create!(person: person_two, likes: 200) }
 
@@ -100,7 +100,7 @@ RSpec.describe "Active Record Union Methods" do
     let(:query) do
       Person.select("happy_people.id")
             .union(Person.where(id: person_one.id), Person.where(id: person_three.id))
-            .union.as(:happy_people)
+            .union_as(:happy_people)
     end
 
     it "should return two people" do
@@ -118,9 +118,9 @@ RSpec.describe "Active Record Union Methods" do
     end
   end
 
-  describe "union.order" do
+  describe "union.order_union" do
     it "should order the .union commands" do
-      query = Person.union(Person.where(id: person_one.id), Person.where(id: person_three.id)).union.order(id: :desc)
+      query = Person.union(Person.where(id: person_one.id), Person.where(id: person_three.id)).order_union(id: :desc)
       expect(query).to eq([person_three, person_one])
     end
 
@@ -129,13 +129,13 @@ RSpec.describe "Active Record Union Methods" do
         Person.union.all(
           Person.where(id: person_one.id),
           Person.where(id: person_three.id),
-        ).union.order(id: :desc)
+        ).order_union(id: :desc)
 
       expect(query).to eq([person_three, person_one])
     end
 
     it "should order the union.except commands" do
-      query = Person.union.except(Person.order(id: :asc), Person.where(id: person_one.id)).union.order(id: :desc)
+      query = Person.union.except(Person.order(id: :asc), Person.where(id: person_one.id)).order_union(id: :desc)
       expect(query).to eq([person_three, person_two])
     end
 
@@ -144,9 +144,22 @@ RSpec.describe "Active Record Union Methods" do
         Person.union.intersect(
           Person.where("id < ?", person_three.id),
           Person.where("id >= ?", person_one.id),
-        ).union.order(id: :desc)
+        ).order_union(id: :desc)
 
       expect(query).to eq([person_two, person_one])
+    end
+  end
+
+  describe "union.reorder_union" do
+    it "should replace the ordering with the new parameters" do
+      person_a         = Person.create!(number: 1)
+      person_b         = Person.create!(number: 10)
+      initial_ordering = [person_b, person_a]
+      query            = Person.union(Person.where(id: person_a.id), Person.where(id: person_b.id))
+                               .order_union(id: :desc)
+
+      expect(query).to eq(initial_ordering)
+      expect(query.reorder_union(number: :asc)).to eq(initial_ordering.reverse)
     end
   end
 end

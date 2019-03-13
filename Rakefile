@@ -58,6 +58,7 @@ namespace :db do
       create_table :people, force: true do |t|
         t.integer  "tag_ids",      array: true
         t.string   "tags",         array: true
+        t.integer  "number",       default: 0
         t.integer  "personal_id"
         t.hstore   "data"
         t.jsonb    "jsonb_data"
