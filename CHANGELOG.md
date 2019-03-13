@@ -1,4 +1,4 @@
-# 1.0.0(Unreleased) - March 11th 2019
+# 1.0.0(Unreleased) - March 13th 2019
 Add support for Postgres Union types and refactor Arel building process into a single module
 
 - `.union`  (UNION)
