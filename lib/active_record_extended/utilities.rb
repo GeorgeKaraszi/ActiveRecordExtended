@@ -52,14 +52,10 @@ module ActiveRecordExtended
     # When we drop support for Rails 5.[0/1], we then can then drop the '.to_sql' conversation
 
     def to_arel_sql(value)
-      return if value.nil?
+      return                              if value.nil?
+      return Arel.sql(value.spawn.to_sql) if value.is_a?(ActiveRecord::Relation)
 
-      case value
-      when ActiveRecord::Relation
-        Arel.sql(value.spawn.to_sql)
-      else
-        Arel.sql(value.respond_to?(:to_sql) ? value.to_sql : value.to_s)
-      end
+      Arel.sql(value.respond_to?(:to_sql) ? value.to_sql : value.to_s)
     end
 
     def key_generator
