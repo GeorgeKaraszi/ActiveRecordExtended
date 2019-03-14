@@ -11,20 +11,21 @@ module ActiveRecordExtended
     #
     def flatten_to_sql(values)
       return [to_arel_sql(values)].compact unless values.is_a?(Array)
-      values.inject([]) { |new_ary, value| new_ary + flatten_to_sql(value) }.compact
+      values.map(&method(:flatten_to_sql)).reduce(:+)
     end
+    alias to_sql_array flatten_to_sql
 
     # Applies aliases to the given query
     # Ex: `SELECT * FROM users` => `(SELECT * FROM users) AS "members"`
     def nested_alias_escape(query, alias_name)
       sql_query = Arel::Nodes::Grouping.new(to_arel_sql(query))
-      Arel::Nodes::As.new(sql_query, Arel.sql(double_quote(alias_name)))
+      Arel::Nodes::As.new(sql_query, to_arel_sql(double_quote(alias_name)))
     end
 
     # Wraps subquery into an Aliased ARRAY
     # Ex: `SELECT * FROM users` => (ARRAY(SELECT * FROM users)) AS "members"
     def wrap_with_array(arel_or_rel_query, alias_name)
-      query = Arel::Nodes::NamedFunction.new("ARRAY", flatten_to_sql(arel_or_rel_query))
+      query = Arel::Nodes::NamedFunction.new("ARRAY", to_sql_array(arel_or_rel_query))
       nested_alias_escape(query, alias_name)
     end
 
