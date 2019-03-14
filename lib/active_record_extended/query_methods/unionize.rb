@@ -7,6 +7,8 @@ module ActiveRecordExtended
       UNIONIZE_METHODS       = [:union, :union_all, :union_except, :union_intersect].freeze
 
       class UnionChain
+        include ::ActiveRecordExtended::Utilities
+
         def initialize(scope)
           @scope = scope
         end
@@ -56,7 +58,7 @@ module ActiveRecordExtended
         protected
 
         def append_union_order!(union_type, args)
-          flatten_scopes       = ::ActiveRecordExtended::Utilities.flatten_to_sql(args)
+          flatten_scopes       = flatten_to_sql(args)
           @scope.union_values += flatten_scopes
           calculate_union_operation!(union_type, flatten_scopes.size)
         end
