@@ -15,6 +15,7 @@ require "active_record_extended/query_methods/unionize"
 require "active_record_extended/query_methods/any_of"
 require "active_record_extended/query_methods/either"
 require "active_record_extended/query_methods/inet"
+require "active_record_extended/query_methods/select_json"
 
 if ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR <= 1
   if ActiveRecord::VERSION::MINOR.zero?
