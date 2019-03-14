@@ -10,14 +10,14 @@ module ActiveRecordExtended
     # Note: calling `Array.flatten[!]/1` will actually remove all AR relations from the array.
     #
     def flatten_to_sql(values)
-      return [convert_to_arel_sql(values)].compact unless values.is_a?(Array)
+      return [to_arel_sql(values)].compact unless values.is_a?(Array)
       values.inject([]) { |new_ary, value| new_ary + flatten_to_sql(value) }.compact
     end
 
     # Applies aliases to the given query
     # Ex: `SELECT * FROM users` => `(SELECT * FROM users) AS "members"`
     def nested_alias_escape(query, alias_name)
-      sql_query = Arel::Nodes::Grouping.new(convert_to_arel_sql(query))
+      sql_query = Arel::Nodes::Grouping.new(to_arel_sql(query))
       Arel::Nodes::As.new(sql_query, Arel.sql(double_quote(alias_name)))
     end
 
@@ -51,7 +51,7 @@ module ActiveRecordExtended
     # Only Rails 5.2+ maintains bound attributes in Arel, so its better to be safe then sorry.
     # When we drop support for Rails 5.[0/1], we then can then drop the '.to_sql' conversation
 
-    def convert_to_arel_sql(value)
+    def to_arel_sql(value)
       return if value.nil?
 
       case value
