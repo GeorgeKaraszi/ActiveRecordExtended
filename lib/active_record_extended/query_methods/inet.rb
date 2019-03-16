@@ -3,12 +3,6 @@
 module ActiveRecordExtended
   module QueryMethods
     module Inet
-      def contained_within(opts, *rest)
-        ActiveSupport::Deprecation.warn("#contained_within will soon be deprecated for version 1.0 release. "\
-                                        "Please use #inet_contained_within instead.", caller(1))
-        inet_contained_within(opts, *rest)
-      end
-
       # Finds matching inet column records that fall within a given submasked IP range
       #
       # Column(inet) << "127.0.0.1/24"
@@ -21,12 +15,6 @@ module ActiveRecordExtended
       #
       def inet_contained_within(opts, *rest)
         substitute_comparisons(opts, rest, Arel::Nodes::Inet::ContainedWithin, "inet_contained_within")
-      end
-
-      def contained_within_or_equals(opts, *rest)
-        ActiveSupport::Deprecation.warn("#contained_within_or_equals will soon be deprecated for version 1.0 release. "\
-                                        "Please use #inet_contained_within_or_equals instead.", caller(1))
-        inet_contained_within_or_equals(opts, *rest)
       end
 
       # Finds matching inet column records that fall within a given submasked IP range and also finds records that also
@@ -42,12 +30,6 @@ module ActiveRecordExtended
       #
       def inet_contained_within_or_equals(opts, *rest)
         substitute_comparisons(opts, rest, Arel::Nodes::Inet::ContainedWithinEquals, "inet_contained_within_or_equals")
-      end
-
-      def contains_or_equals(opts, *rest)
-        ActiveSupport::Deprecation.warn("#contains_or_equals will soon be deprecated for version 1.0 release. "\
-                                        "Please use #inet_contains_or_equals instead.", caller(1))
-        inet_contains_or_equals(opts, *rest)
       end
 
       # Finds records that contain a submask and the supplied IP address falls within its range.
