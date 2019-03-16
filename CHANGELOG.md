@@ -1,6 +1,7 @@
-# 1.0.0(Unreleased) - March 13th 2019
+# 1.0.0(Unreleased) - March 16th 2019
 Add support for Postgres Union types and refactor Arel building process into a single module
 
+## Union Query Commands
 - `.union`  (UNION)
 - `.union_all`  (UNION ALL)
   - or `.union.all` 
@@ -14,6 +15,13 @@ Add support for Postgres Union types and refactor Arel building process into a s
   - or `.union.order`
 - `.reorder_union` (overides previously set `.order_union`)
   - or `union.reorder`
+  
+## JSON Query Commands
+- `.select_row_to_json` (ROW_TO_JSON)
+- `.json_build_object` (JSON_BUILD_OBJECT)
+- `.jsonb_build_object` (JSONB_BUILD_OBJECT)
+- `.json_build_literal` (JSON_BUILD_OBJECT) (static hash / array implementation)
+- `.jsonb_build_literal` (JSONB_BUILD_OBJECT) (static hash / array implementation)
 
 # 0.7.0 - September 22nd 2018
 
