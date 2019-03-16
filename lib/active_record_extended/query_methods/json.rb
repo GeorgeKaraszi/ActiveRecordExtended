@@ -65,7 +65,8 @@ module ActiveRecordExtended
           col_value         = to_arel_sql(value.presence || tbl_alias)
           json_build_object = arel_klass.new(to_sql_array(col_key, col_value))
 
-          unless /".+"/.match?(col_value)
+          # TODO: Change this to #match?(..) when we drop Rails 5.0 or Ruby 2.4 support
+          unless col_value.index(/".+"/)
             warn("`#{col_value}`: the `value` argument should contain a double quoted key reference for safety")
           end
 
@@ -86,7 +87,7 @@ module ActiveRecordExtended
           end
         end
 
-        def json_object_options(*args)
+        def json_object_options(*args) # rubocop:disable Metrics/AbcSize
           flatten_safely(args).each_with_object(values: []) do |arg, options|
             next if arg.nil?
 
@@ -105,7 +106,7 @@ module ActiveRecordExtended
 
       def select_row_to_json(from = nil, **options, &block)
         from.is_a?(Hash) ? options.merge!(from) : options.reverse_merge!(from: from)
-        options = options.compact
+        options.compact!
         raise ArgumentError, "Required to provide a [from:] options key" unless options.key?(:from)
         JsonChain.new(spawn).row_to_json!(**options, &block)
       end
