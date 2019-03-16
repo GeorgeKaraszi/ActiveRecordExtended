@@ -105,7 +105,7 @@ module ActiveRecordExtended
 
       def select_row_to_json(from = nil, **options, &block)
         from.is_a?(Hash) ? options.merge!(from) : options.reverse_merge!(from: from)
-        options.compact!
+        options = options.compact
         raise ArgumentError, "Required to provide a [from:] options key" unless options.key?(:from)
         JsonChain.new(spawn).row_to_json!(**options, &block)
       end
