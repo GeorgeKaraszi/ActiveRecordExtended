@@ -30,9 +30,13 @@ module Arel
     end
 
     class JsonBuildObject < Arel::Nodes::Function
+      def initialize(*args)
+        super
+        @expressions = Array(@expressions)
+      end
     end
 
-    class JsonbBuildObject < Arel::Nodes::Function
+    class JsonbBuildObject < JsonBuildObject
     end
 
     module Inet
