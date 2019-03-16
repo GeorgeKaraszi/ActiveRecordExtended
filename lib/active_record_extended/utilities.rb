@@ -9,11 +9,22 @@ module ActiveRecordExtended
     #
     # Note: calling `Array.flatten[!]/1` will actually remove all AR relations from the array.
     #
-    def flatten_to_sql(values)
-      return [to_arel_sql(values)].compact unless values.is_a?(Array)
-      values.map(&method(:flatten_to_sql)).reduce(:+)
+    def flatten_to_sql(*values)
+      flatten_safely(values) do |value|
+        value = yield value if block_given?
+        to_arel_sql(value)
+      end
     end
     alias to_sql_array flatten_to_sql
+
+    def flatten_safely(values, &block)
+      unless values.is_a?(Array)
+        values = yield values if block_given?
+        return [values]
+      end
+
+      values.map { |value| flatten_safely(value, &block) }.reduce(:+)
+    end
 
     # Applies aliases to the given query
     # Ex: `SELECT * FROM users` => `(SELECT * FROM users) AS "members"`
@@ -27,6 +38,28 @@ module ActiveRecordExtended
     def wrap_with_array(arel_or_rel_query, alias_name)
       query = Arel::Nodes::NamedFunction.new("ARRAY", to_sql_array(arel_or_rel_query))
       nested_alias_escape(query, alias_name)
+    end
+
+    # Will attempt to digest and resolve the from clause
+    #
+    # If the from clause is a String, it will check to see if a table reference key has been assigned.
+    #   - If one cannot be detected, one will be appended.
+    #   - Rails does not allow assigning table references using the `.from/2` method, when its a string / sym type.
+    #
+    # If the from clause is an AR relation; it will duplicate the object.
+    #   - Ensures any memorizers are reset (ex: `.to_sql` sets a memorizer on the instance)
+    #   - Key's can be assigned using the `.from/2` method.
+    #
+    def from_clause_constructor(from, reference_key)
+      case from
+      when /\s.?#{reference_key}.?$/ # The from clause is a string and has the tbl reference key
+        @scope.unscoped.from(from)
+      when String, Symbol
+        @scope.unscoped.from("#{from} #{reference_key}")
+      else
+        replicate_klass = from.respond_to?(:unscoped) ? from.unscoped : @scope.unscoped
+        replicate_klass.from(from.dup, reference_key)
+      end
     end
 
     # Ensures the given value is properly double quoted.
@@ -45,6 +78,18 @@ module ActiveRecordExtended
       end
     end
 
+    # Ensures the key is properly single quoted and treated as a actual PG key reference.
+    def literal_key(key)
+      case key
+      when TrueClass  then "'t'"
+      when FalseClass then "'f'"
+      when Numeric    then key
+      else
+        key = key.to_s
+        key.start_with?("'") && key.end_with?("'") ? key : "'#{key}'"
+      end
+    end
+
     # Converts a potential subquery into a compatible Arel SQL node.
     #
     # Note:
@@ -53,10 +98,14 @@ module ActiveRecordExtended
     # When we drop support for Rails 5.[0/1], we then can then drop the '.to_sql' conversation
 
     def to_arel_sql(value)
-      return                              if value.nil?
-      return Arel.sql(value.spawn.to_sql) if value.is_a?(ActiveRecord::Relation)
-
-      Arel.sql(value.respond_to?(:to_sql) ? value.to_sql : value.to_s)
+      case value
+      when Arel::Node, Arel::Nodes::SqlLiteral, nil
+        value
+      when ActiveRecord::Relation
+        Arel.sql(value.spawn.to_sql)
+      else
+        Arel.sql(value.respond_to?(:to_sql) ? value.to_sql : value.to_s)
+      end
     end
 
     def key_generator
