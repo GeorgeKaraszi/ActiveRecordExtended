@@ -77,6 +77,28 @@ RSpec.describe "Active Record JSON methods" do
       query = Person.jsonb_build_object(:personal, from: sub_query, as: :cool_dudes)
       expect(query.take).to respond_to(:cool_dudes)
     end
+
+    it "allows for custom value statement" do
+      query = Person.jsonb_build_object(
+        :personal,
+        value: "COALESCE(array_agg(\"personal\"), '{}')",
+        from:  sub_query.where.not(id: person_one),
+        as:    :cool_dudes,
+      )
+
+      expect(query.take.cool_dudes["personal"]).to be_a(Array).and(be_empty)
+    end
+
+    it "will raise a warning if the value doesn't include a double quoted input" do
+      expect do
+        Person.jsonb_build_object(
+          :personal,
+          value: "COALESCE(array_agg(personal), '{}')",
+          from:  sub_query.where.not(id: person_one),
+          as:    :cool_dudes,
+        )
+      end.to output.to_stderr
+    end
   end
 
   describe "Json literal builds" do
