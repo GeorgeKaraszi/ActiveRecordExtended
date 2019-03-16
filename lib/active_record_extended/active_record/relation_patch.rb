@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 require "active_record_extended/query_methods/unionize"
+require "active_record_extended/query_methods/json"
 
 module ActiveRecordExtended
   module RelationPatch
     module QueryDelegation
       delegate :with, to: :all
       delegate(*::ActiveRecordExtended::QueryMethods::Unionize::UNIONIZE_METHODS, to: :all)
+      delegate(*::ActiveRecordExtended::QueryMethods::Json::JSON_QUERY_METHODS, to: :all)
     end
 
     module Merger

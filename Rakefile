@@ -70,6 +70,7 @@ namespace :db do
 
       create_table :tags, force: true do |t|
         t.belongs_to :person, index: true, foreign_key: true
+        t.integer :tag_number, default: 0
       end
 
       create_table :profile_ls, force: true do |t|

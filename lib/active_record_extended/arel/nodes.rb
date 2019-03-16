@@ -19,6 +19,26 @@ module Arel
     class ContainedInArray < Arel::Nodes::Binary
     end
 
+    class RowToJson < Arel::Nodes::Function
+      def initialize(*args)
+        super
+        unless @expressions.is_a?(Array)
+          @expressions = Arel.sql(@expressions) unless @expressions.is_a?(Arel::Nodes::SqlLiteral)
+          @expressions = [@expressions]
+        end
+      end
+    end
+
+    class JsonBuildObject < Arel::Nodes::Function
+      def initialize(*args)
+        super
+        @expressions = Array(@expressions)
+      end
+    end
+
+    class JsonbBuildObject < JsonBuildObject
+    end
+
     module Inet
       class ContainsEquals < Arel::Nodes::Binary
       end

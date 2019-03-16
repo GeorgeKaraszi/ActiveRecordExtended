@@ -47,6 +47,18 @@ module ActiveRecordExtended
         infix_value object, collector, " << "
       end
 
+      def visit_Arel_Nodes_RowToJson(object, collector)
+        aggregate "ROW_TO_JSON", object, collector
+      end
+
+      def visit_Arel_Nodes_JsonBuildObject(object, collector)
+        aggregate "JSON_BUILD_OBJECT", object, collector
+      end
+
+      def visit_Arel_Nodes_JsonbBuildObject(object, collector)
+        aggregate "JSONB_BUILD_OBJECT", object, collector
+      end
+
       def visit_Arel_Nodes_Inet_ContainedWithinEquals(object, collector)
         infix_value object, collector, " <<= "
       end

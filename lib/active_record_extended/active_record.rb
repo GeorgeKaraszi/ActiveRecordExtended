@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# TODO: Remove this when ruby 2.3 support is dropped
+unless Hash.instance_methods(false).include?(:compact!)
+  require "active_support/all"
+end
+
 require "active_record"
 require "active_record/relation"
 require "active_record/relation/merger"
@@ -15,6 +20,7 @@ require "active_record_extended/query_methods/unionize"
 require "active_record_extended/query_methods/any_of"
 require "active_record_extended/query_methods/either"
 require "active_record_extended/query_methods/inet"
+require "active_record_extended/query_methods/json"
 
 if ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR <= 1
   if ActiveRecord::VERSION::MINOR.zero?

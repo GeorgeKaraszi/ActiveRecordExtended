@@ -7,6 +7,8 @@ module ActiveRecordExtended
       UNIONIZE_METHODS       = [:union, :union_all, :union_except, :union_intersect].freeze
 
       class UnionChain
+        include ::ActiveRecordExtended::Utilities
+
         def initialize(scope)
           @scope = scope
         end
@@ -56,7 +58,7 @@ module ActiveRecordExtended
         protected
 
         def append_union_order!(union_type, args)
-          flatten_scopes       = ::ActiveRecordExtended::Utilities.flatten_to_sql(args)
+          flatten_scopes       = flatten_to_sql(args)
           @scope.union_values += flatten_scopes
           calculate_union_operation!(union_type, flatten_scopes.size)
         end
@@ -79,9 +81,9 @@ module ActiveRecordExtended
             ordering_args.flatten!
             ordering_args.compact!
             ordering_args.map! do |arg|
-              next sql_literal(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
+              next to_arel_sql(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
               arg.each_with_object([]) do |(field, dir), ordering_object|
-                ordering_object << sql_literal(field.to_s).send(dir.to_s.downcase)
+                ordering_object << to_arel_sql(field).send(dir.to_s.downcase)
               end
             end.flatten!
           end
@@ -90,17 +92,13 @@ module ActiveRecordExtended
             ordering_args.flatten!
             ordering_args.compact!
             ordering_args.map! do |arg|
-              next sql_literal(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
+              next to_arel_sql(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
               arg.each_with_object({}) do |(field, dir), ordering_obj|
                 # ActiveRecord will not reflect if the Hash keys are a `Arel::Nodes::SqlLiteral` klass
-                ordering_obj[sql_literal(field.to_s)] = dir.to_s.downcase
+                ordering_obj[to_arel_sql(field)] = dir.to_s.downcase
               end
             end
           end
-        end
-
-        def sql_literal(object)
-          Arel.sql(object.to_s)
         end
       end
 
@@ -268,7 +266,7 @@ module ActiveRecordExtended
       def resolve_relation_node(relation_node)
         case relation_node
         when String
-          Arel::Nodes::Grouping.new(Arel::Nodes::SqlLiteral.new(relation_node))
+          Arel::Nodes::Grouping.new(Arel.sql(relation_node))
         else
           relation_node.arel
         end
