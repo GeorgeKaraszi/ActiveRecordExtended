@@ -50,7 +50,7 @@ RSpec.describe "Active Record JSON methods" do
     end
 
     it "defaults the column alias if one is not provided" do
-      query = Person.json_build_object(:personal, from: sub_query)
+      query = Person.json_build_object(:personal, sub_query)
       expect(query.size).to eq(1)
       expect(query.take.results).to match(
         "personal" => match("ids" => match_array([{ "id" => person_one.id }, { "id" => person_two.id }])),
@@ -58,7 +58,7 @@ RSpec.describe "Active Record JSON methods" do
     end
 
     it "allows for re-aliasing the default 'results' column" do
-      query = Person.json_build_object(:personal, from: sub_query, as: :cool_dudes)
+      query = Person.json_build_object(:personal, sub_query, as: :cool_dudes)
       expect(query.take).to respond_to(:cool_dudes)
     end
   end
@@ -67,22 +67,22 @@ RSpec.describe "Active Record JSON methods" do
     let(:sub_query) { Person.select(:id, :number).where(id: person_one.id) }
 
     it "defaults the column alias if one is not provided" do
-      query = Person.jsonb_build_object(:personal, from: sub_query)
+      query = Person.jsonb_build_object(:personal, sub_query)
       expect(query.size).to eq(1)
       expect(query.take.results).to be_a(Hash).and(be_present)
       expect(query.take.results).to match("personal" => match("id" => person_one.id, "number" => person_one.number))
     end
 
     it "allows for re-aliasing the default 'results' column" do
-      query = Person.jsonb_build_object(:personal, from: sub_query, as: :cool_dudes)
+      query = Person.jsonb_build_object(:personal, sub_query, as: :cool_dudes)
       expect(query.take).to respond_to(:cool_dudes)
     end
 
     it "allows for custom value statement" do
       query = Person.jsonb_build_object(
         :personal,
+        sub_query.where.not(id: person_one),
         value: "COALESCE(array_agg(\"personal\"), '{}')",
-        from:  sub_query.where.not(id: person_one),
         as:    :cool_dudes,
       )
 
@@ -93,8 +93,8 @@ RSpec.describe "Active Record JSON methods" do
       expect do
         Person.jsonb_build_object(
           :personal,
+          sub_query.where.not(id: person_one),
           value: "COALESCE(array_agg(personal), '{}')",
-          from:  sub_query.where.not(id: person_one),
           as:    :cool_dudes,
         )
       end.to output.to_stderr
