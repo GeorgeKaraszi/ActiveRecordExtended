@@ -24,8 +24,8 @@
   - [Common Table Expressions (CTE)](#common-table-expressions-cte)
   - [JSON Query Methods](#json-query-methods)
     - [Row To JSON](#row-to-json)
-    - [JSON/B Object Build](#jsonb-object-build)
-    - [JSON/B Object Literal](#jsonb-object-literal)
+    - [JSON/B Build Object](#jsonb-build-object)
+    - [JSON/B Build Literal](#jsonb-build-literal)
   - [Unionization](#unionization)
     - [Union](#union)
     - [Union ALL](#union-all)
@@ -339,14 +339,20 @@ JOIN less_liked ON less_liked.user_id = users.id
 
 ### JSON Query Methods
 #### Row To JSON
-#### JSON/B Object Build
-#### JSON/B Object Literal
-
+[Postgres 'ROW_TO_JSON' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
+#### JSON/B Build Object
+[Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
+#### JSON/B Build Literal
+[Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 ### Unionization
 #### Union
+[Postgres 'UNION' combination](https://www.postgresql.org/docs/current/queries-union.html)
 #### Union ALL
+[Postgres 'UNION ALL' combination](https://www.postgresql.org/docs/current/queries-union.html)
 #### Union Except
+[Postgres 'EXCEPT' combination](https://www.postgresql.org/docs/current/queries-union.html)
 #### Union Intersect
+[Postgres 'INTERSECT' combination](https://www.postgresql.org/docs/current/queries-union.html)
 #### Union As
 #### Union Order
 
