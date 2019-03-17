@@ -4,6 +4,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f22154211bb3a8feb89f/test_coverage)](https://codeclimate.com/github/GeorgeKaraszi/ActiveRecordExtended/test_coverage)
 ## Index
 - [Description and history](#description-and-history)
+- [Compatibility](#compatibility)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Predicate Query Methods](#predicate-query-methods)
@@ -43,6 +44,14 @@ The only problem is that this has created a wild west of environments of sorts. 
 
 Active Record Extended is intended to be a supporting community that will maintain compatibility for the foreseeable future.
 
+
+## Compatibility
+
+This package is designed align and work with any officially supported Ruby and Rails versions.
+ - Minimum Ruby Version: 2.3.x **(EOL warning!)**
+ - Minimum Rails Version: 5.0.x **(EOL warning!)**
+ - Latest Ruby supported: 2.6.x
+ - Latest Rails supported: 5.2.x
 
 ## Usage
 
