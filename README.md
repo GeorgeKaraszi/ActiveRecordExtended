@@ -24,7 +24,8 @@
   - [Common Table Expressions (CTE)](#common-table-expressions-cte)
   - [JSON Query Methods](#json-query-methods)
     - [Row To JSON](#row-to-json)
-    - [JSON(B) Object Build](#json-b-object-build)
+    - [JSON/B Object Build](#jsonb-object-build)
+    - [JSON/B Object Literal](#jsonb-object-literal)
   - [Unionization](#unionization)
     - [Union](#union)
     - [Union ALL](#union-all)
@@ -338,8 +339,8 @@ JOIN less_liked ON less_liked.user_id = users.id
 
 ### JSON Query Methods
 #### Row To JSON
-#### JSON(B) Build Object
-#### JSON(B) Build Literal
+#### JSON/B Object Build
+#### JSON/B Object Literal
 
 ### Unionization
 #### Union
