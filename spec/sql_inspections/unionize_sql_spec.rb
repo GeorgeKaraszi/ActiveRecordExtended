@@ -11,9 +11,10 @@ RSpec.describe "Union SQL Queries" do
   end
 
   shared_examples_for "piping nest CTE tables" do
-    let(:cte_person) { Person.with(all_others: Person.where.not(id: 1)).where(id: 2) }
-    let(:method)     { raise "Required to override this method!" }
-    let(:single_with) { /^WITH .all_others. AS(?!.*WITH \w?)/mi }
+    let(:cte_person)    { Person.with(all_others: Person.where.not(id: 1)).where(id: 2) }
+    let(:method)        { raise "Required to override this method!" }
+    let(:single_with)   { /^WITH .all_others. AS(?!.*WITH \w?)/mi }
+    let(:override_with) { /^WITH .all_others. AS \(.+WHERE .people.\..id. = 10\)/mi }
 
     it "should push the CTE to the callee's level" do
       query = Person.send(method.to_sym, cte_person, other_person).to_sql
@@ -25,7 +26,7 @@ RSpec.describe "Union SQL Queries" do
       query = query.send(method.to_sym, cte_person, other_person).to_sql
 
       expect(query).to match_regex(single_with)
-      expect(query).to match_regex(/^WITH .all_others. AS \(.+WHERE .people.\..id. = 10\)/mi)
+      expect(query).to match_regex(override_with)
     end
   end
 
