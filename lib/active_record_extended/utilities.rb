@@ -69,7 +69,7 @@ module ActiveRecordExtended
     def pipe_cte_with!(subquery)
       return self unless subquery.try(:with_values?)
 
-      cte_ary              = flatten_safely(from_clause.with_values)
+      cte_ary              = flatten_safely(subquery.with_values)
       subquery.with_values = nil # Remove nested queries with values
 
       # Add subquery's CTE's to the parents query stack. (READ THE SPECIAL NOTE ABOVE!)
