@@ -62,6 +62,32 @@ module ActiveRecordExtended
       end
     end
 
+    # Will carry defined CTE tables from the nested sub-query and gradually pushes it up to the parents query stack
+    # I.E: It pushes `WITH [:cte_name:] AS(...), ..` to the top of the query structure tree
+    #
+    # SPECIAL GOTCHA NOTE: (if duplicate keys are found) This will favor the parents query `with's` over nested ones!
+    def pipe_cte_with!(subquery)
+      return self unless subquery.try(:with_values?)
+
+      cte_ary              = flatten_safely(from_clause.with_values)
+      subquery.with_values = nil # Remove nested queries with values
+
+      # Add subquery's CTE's to the parents query stack. (READ THE SPECIAL NOTE ABOVE!)
+      if @scope.with_values?
+        # combine top-level and lower level queries `.with` values into 1 structure
+        with_hash = cte_ary.each_with_object(@scope.with_values.first) do |from_cte, hash|
+          hash.reverse_merge!(from_cte)
+        end
+
+        @scope.with_values = [with_hash]
+      else
+        # Top level has no with values
+        @scope.with!(*cte_ary)
+      end
+
+      self
+    end
+
     # Ensures the given value is properly double quoted.
     # This also ensures we don't have conflicts with reversed keywords.
     #

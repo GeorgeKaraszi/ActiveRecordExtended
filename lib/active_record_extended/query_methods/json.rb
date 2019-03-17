@@ -21,7 +21,7 @@ module ActiveRecordExtended
 
         def row_to_json!(**args, &block)
           build_row_to_json(
-            args.delete(:from),
+            args.delete(:from).tap(&method(:pipe_cte_with!)),
             args.delete(:key) || key_generator,
             args.delete(:as),
             !(!args.delete(:cast_as_array)),
@@ -96,7 +96,7 @@ module ActiveRecordExtended
               options[:value]         ||= arg.delete(:value).presence
               options[:col_alias]     ||= arg.delete(:as)
               options[:cast_to_array] ||= arg.delete(:cast_as_array)
-              options[:from]          ||= arg.delete(:from)
+              options[:from]          ||= arg.delete(:from).tap(&method(:pipe_cte_with!))
             end
 
             options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)

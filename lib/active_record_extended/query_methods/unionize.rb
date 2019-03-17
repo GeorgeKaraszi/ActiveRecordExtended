@@ -58,6 +58,7 @@ module ActiveRecordExtended
         protected
 
         def append_union_order!(union_type, args)
+          args.each(&method(:pipe_cte_with!))
           flatten_scopes       = flatten_to_sql(args)
           @scope.union_values += flatten_scopes
           calculate_union_operation!(union_type, flatten_scopes.size)
