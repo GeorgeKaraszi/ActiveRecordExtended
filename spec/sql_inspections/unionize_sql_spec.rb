@@ -10,28 +10,60 @@ RSpec.describe "Union SQL Queries" do
     it { is_expected.to eq("( (#{person.to_sql}) #{described_union} (#{other_person.to_sql}) )") }
   end
 
+  shared_examples_for "piping nest CTE tables" do
+    let(:cte_person)    { Person.with(all_others: Person.where.not(id: 1)).where(id: 2) }
+    let(:method)        { raise "Required to override this method!" }
+    let(:single_with)   { /^WITH .all_others. AS(?!.*WITH \w?)/mi }
+    let(:override_with) { /^WITH .all_others. AS \(.+WHERE .people.\..id. = 10\)/mi }
+
+    it "should push the CTE to the callee's level" do
+      query = Person.send(method.to_sym, cte_person, other_person).to_sql
+      expect(query).to match_regex(single_with)
+    end
+
+    it "should favor the parents CTE table if names collide" do
+      query = Person.with(all_others: Person.where(id: 10))
+      query = query.send(method.to_sym, cte_person, other_person).to_sql
+
+      expect(query).to match_regex(single_with)
+      expect(query).to match_regex(override_with)
+    end
+  end
+
   describe ".union" do
     let!(:described_union)     { "UNION" }
     subject(:described_method) { Person.union(person, other_person).to_union_sql }
     it_behaves_like "unions"
+    it_behaves_like "piping nest CTE tables" do
+      let!(:method) { :union }
+    end
   end
 
   describe ".union.all" do
     let!(:described_union)     { "UNION ALL" }
     subject(:described_method) { Person.union.all(person, other_person).to_union_sql }
     it_behaves_like "unions"
+    it_behaves_like "piping nest CTE tables" do
+      let!(:method) { :union_all }
+    end
   end
 
   describe ".union.except" do
     let!(:described_union)     { "EXCEPT" }
     subject(:described_method) { Person.union.except(person, other_person).to_union_sql }
     it_behaves_like "unions"
+    it_behaves_like "piping nest CTE tables" do
+      let!(:method) { :union_except }
+    end
   end
 
   describe "union.intersect" do
     let!(:described_union)     { "INTERSECT" }
     subject(:described_method) { Person.union.intersect(person, other_person).to_union_sql }
     it_behaves_like "unions"
+    it_behaves_like "piping nest CTE tables" do
+      let!(:method) { :union_intersect }
+    end
   end
 
   describe "union.as" do

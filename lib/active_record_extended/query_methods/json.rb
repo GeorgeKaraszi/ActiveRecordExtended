@@ -20,13 +20,8 @@ module ActiveRecordExtended
         end
 
         def row_to_json!(**args, &block)
-          build_row_to_json(
-            args.delete(:from),
-            args.delete(:key) || key_generator,
-            args.delete(:as),
-            !(!args.delete(:cast_as_array)),
-            &block
-          )
+          options = json_object_options(args).except(:values, :value)
+          build_row_to_json(**options, &block)
         end
 
         def json_build_object!(*args)
@@ -73,9 +68,9 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_object, col_alias)).from(nested_alias_escape(from, tbl_alias))
         end
 
-        def build_row_to_json(from, top_lvl_key, col_alias, cast_to_array)
-          row_to_json = Arel::Nodes::RowToJson.new(double_quote(top_lvl_key))
-          dummy_table = from_clause_constructor(from, top_lvl_key).select(row_to_json)
+        def build_row_to_json(from:, key: key_generator, col_alias: nil, cast_to_array: false)
+          row_to_json = Arel::Nodes::RowToJson.new(double_quote(key))
+          dummy_table = from_clause_constructor(from, key).select(row_to_json)
           dummy_table = yield dummy_table if block_given?
 
           if col_alias.blank?
@@ -96,7 +91,7 @@ module ActiveRecordExtended
               options[:value]         ||= arg.delete(:value).presence
               options[:col_alias]     ||= arg.delete(:as)
               options[:cast_to_array] ||= arg.delete(:cast_as_array)
-              options[:from]          ||= arg.delete(:from)
+              options[:from]          ||= arg.delete(:from).tap(&method(:pipe_cte_with!))
             end
 
             options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)
