@@ -6,7 +6,7 @@
 - [Description and history](#description-and-history)
 - [Installation](#installation)
 - [Useage](#usage)
-  - [Query Methods](#query-methods)
+  - [Predicate Query Methods](#predicate-query-methods)
     - [Any](#any)
     - [All](#all)
     - [Contains](#contains)
@@ -22,6 +22,16 @@
     - [Either Join](#either-join)
     - [Either Order](#either-order)
   - [Common Table Expressions (CTE)](#common-table-expressions-cte)
+  - [JSON Query Methods](#json-query-methods)
+    - [Row To JSON](#row-to-json)
+    - [JSON(B) Object Build](#json-b-object-build)
+  - [Unionization](#unionization)
+    - [Union](#union)
+    - [Union ALL](#union-all)
+    - [Union Except](#union-except)
+    - [Union Intersect](#union-intersect)
+    - [Union As](#union-as)
+    - [Union Order](#union-order)
 
 ## Description and History
 
@@ -35,7 +45,7 @@ Active Record Extended is intended to be a supporting community that will mainta
 
 ## Usage
 
-### Query Methods
+### Predicate Query Methods
 
 #### Any
 [Postgres 'ANY' expression](https://www.postgresql.org/docs/10/static/functions-comparisons.html#id-1.5.8.28.16)
@@ -325,6 +335,20 @@ FROM "users"
 JOIN highly_liked ON highly_liked.user_id = users.id 
 JOIN less_liked ON less_liked.user_id = users.id
 ```
+
+### JSON Query Methods
+#### Row To JSON
+#### JSON(B) Build Object
+#### JSON(B) Build Literal
+
+### Unionization
+#### Union
+#### Union ALL
+#### Union Except
+#### Union Intersect
+#### Union As
+#### Union Order
+
 
 ## Installation
 
