@@ -5,7 +5,7 @@
 ## Index
 - [Description and history](#description-and-history)
 - [Installation](#installation)
-- [Useage](#usage)
+- [Usage](#usage)
   - [Predicate Query Methods](#predicate-query-methods)
     - [Any](#any)
     - [All](#all)
@@ -340,22 +340,47 @@ JOIN less_liked ON less_liked.user_id = users.id
 ### JSON Query Methods
 #### Row To JSON
 [Postgres 'ROW_TO_JSON' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
+
+[TODO: Fill out examples]
+
 #### JSON/B Build Object
 [Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
+
+[TODO: Fill out examples]
+
 #### JSON/B Build Literal
 [Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
+
+[TODO: Fill out examples]
+
 ### Unionization
 #### Union
 [Postgres 'UNION' combination](https://www.postgresql.org/docs/current/queries-union.html)
+
+[TODO: Fill out examples]
+
 #### Union ALL
 [Postgres 'UNION ALL' combination](https://www.postgresql.org/docs/current/queries-union.html)
+
+[TODO: Fill out examples]
+
 #### Union Except
 [Postgres 'EXCEPT' combination](https://www.postgresql.org/docs/current/queries-union.html)
+
+[TODO: Fill out examples]
+
 #### Union Intersect
 [Postgres 'INTERSECT' combination](https://www.postgresql.org/docs/current/queries-union.html)
+
+[TODO: Fill out examples]
+
 #### Union As
+
+[TODO: Fill out examples]
+
 #### Union Order
 
+[TODO: Fill out examples]
 
 ## Installation
 
