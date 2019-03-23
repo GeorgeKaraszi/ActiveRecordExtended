@@ -160,10 +160,9 @@ module ActiveRecordExtended
         apply_union_ordering(build_union_nodes!(false)).to_sql
       end
 
-      if defined?(::Niceql)
-        def to_nice_union_sql(color = true)
-          ::Niceql::Prettifier.prettify_sql(to_union_sql, color)
-        end
+      def to_nice_union_sql(color = true)
+        return to_union_sql unless defined?(::Niceql)
+        ::Niceql::Prettifier.prettify_sql(to_union_sql, color)
       end
 
       protected
