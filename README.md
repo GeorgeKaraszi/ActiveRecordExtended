@@ -349,9 +349,50 @@ JOIN less_liked ON less_liked.user_id = users.id
 ```
 
 #### Subquery CTE Gotchas
- [TODO: Fill out gotcha issue]
+ In order keep queries PG valid, subquery explicit methods (like Unions and JSON methods) 
+ will be subject to "Piping" the CTE clauses up to the parents query level. 
+ 
+ This also means there's potential for having duplicate CTE names.
+ In order to combat duplicate CTE references with the same name, piping will favor the parents CTE over the nested sub-queries.
+ 
+ This also means that this is a "First come First Served" implementation. 
+ So if you have a parent with no CTE's but two sub-queries with the same CTE name but with different querying statements. 
+ It will process and favor the one that comes first.
+ 
+ Example:
+ ```ruby
+    sub_query      = Person.with(dupped_cte: Person.where(id: 1)).select("dup_cte.id").from(:dup_cte)
+    other_subquery = Person.with(unique_cte: Person.where(id: 5)).select("unique_cte.id").from(:unique_cte)
+    
+    # Will favor this CTE below, over the `sub_query`'s CTE 
+    Person.with(dupped_cte: Person.where.not(id: 1..4)).union(sub_query, other_subquery)
+```
+
+Query Output
+```sql
+WITH "unique_cte" AS (
+  SELECT "people".*
+  FROM "people"
+  WHERE "people"."id" = 5
+), "dupped_cte" AS (
+  SELECT "people".*
+  FROM "people"
+  WHERE NOT ("people"."id" BETWEEN 1 AND 4)
+)
+  SELECT "people".*
+  FROM (( (
+    SELECT dup_cte.id
+    FROM dup_cte
+  ) UNION (
+    SELECT unique_cte.id
+    FROM unique_cte
+  ) )) people
+```
+ 
 
 ### JSON Query Methods
+If any or all of your json sub-queries include a CTE, read the [Subquery CTE Gotchas](#subquery-cte-gotchas) warnings.
+
 #### Row To JSON
 [Postgres 'ROW_TO_JSON' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 
@@ -474,7 +515,7 @@ SELECT (JSON_BUILD_OBJECT('number', 1, 'last_name', 'json', 'pi', 3.14)) AS "res
 
 
 ### Unionization
-If any or all of your union queries include a CTE, read the [Subquery CTE Gotchas](#subquery-cte-gotchas).
+If any or all of your union queries include a CTE, read the [Subquery CTE Gotchas](#subquery-cte-gotchas) warnings.
 
 #### Known issue
 There's an issue with providing a single union clause and chaining it with a different union clause. 
