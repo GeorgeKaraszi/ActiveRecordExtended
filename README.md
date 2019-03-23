@@ -517,6 +517,11 @@ SELECT (JSON_BUILD_OBJECT('number', 1, 'last_name', 'json', 'pi', 3.14)) AS "res
 ### Unionization
 If any or all of your union queries include a CTE, read the [Subquery CTE Gotchas](#subquery-cte-gotchas) warnings.
 
+#### SQL-Query Helpers
+ - `.to_union_sql` : Will return a string of the constructed union query without being nested in the `from` clause.
+ - `.to_nice_union_sql`(requires [NiceQL Gem](https://github.com/alekseyl/niceql) to be install): A formatted `.to_union_sql`
+
+
 #### Known issue
 There's an issue with providing a single union clause and chaining it with a different union clause. 
 This is due to requirements of grouping SQL statements. The issue is being working on, but with no ETA.
