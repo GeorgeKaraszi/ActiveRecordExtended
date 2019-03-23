@@ -44,7 +44,7 @@ Active Record Extended is the continuation of maintaining and improving the work
 Overtime the lack of updating to support the latest versions of ActiveRecord 5.x has caused quite a bit of users forking off the project to create their own patches jobs to maintain compatibility. 
 The only problem is that this has created a wild west of environments of sorts. The problem has grown to the point no one is attempting to directly contribute to the original source. And forked repositories are finding themselves as equally as dead with little to no activity.
 
-Active Record Extended is intended to be a supporting community that will maintain compatibility for the foreseeable future.
+Active Record Extended is essentially providing users with the other half of Postgreses querying abilities. Due to Rails/ActiveRecord/Arel being designed to be DB agnostic, there are a lot of left out features; Either by choice or the simple lack of supporting API's for other databases.
 
 
 ## Compatibility
