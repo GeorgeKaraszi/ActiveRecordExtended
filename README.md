@@ -347,11 +347,85 @@ JOIN highly_liked ON highly_liked.user_id = users.id
 JOIN less_liked ON less_liked.user_id = users.id
 ```
 
+#### Subquery CTE Gotchas
+ [TODO: Fill out gotcha issue]
+
 ### JSON Query Methods
 #### Row To JSON
 [Postgres 'ROW_TO_JSON' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 
-[TODO: Fill out examples]
+The implementation of the`.row_to_json/2` method is designed to be used with sub-queries. As a means for taking complex 
+query logic and transform them into a single or multiple json responses. These responses are required to be assigned 
+to an aliased column on the parent(callee) level.
+
+While quite the mouthful of an explanation. The implementation of combining unrelated or semi-related queries is quite smooth(imo).
+
+```ruby
+    physical_cat  = Category.create!(name: "Physical")
+    products      = 3.times.map { Product.create! }
+    products.each { |product|  100.times { Variant.create!(product: product, category: physical_cat) } }
+    
+    # Since we plan to nest this query, you have access top level information. (I.E categories table)
+    item_query = Variant.select(:name, :id, :category_id, :product_id).where("categories.id = variants.category_id")
+    
+    # You can provide addition scopes that will be applied to the nested query (but will not effect the actual inner query)
+    # This is ideal if you are dealing with but not limited to, CTE's being applied multiple times and require additional constraints 
+    product_query  = 
+    Product.select(:id)
+            .joins(:items)
+            .select_row_to_json(item_query, key: :outer_items, as: :items, cast_as_array: true) do |item_scope|
+              item_scope.where("outer_items.product_id = products.id")
+                # Results to: 
+                #  SELECT ..., ARRAY(SELECT ROW_TO_JSON("outer_items")   
+                #   FROM ([:item_query:]) outer_items
+                #   WHERE outer_items.product_id = products.id
+                # ) AS items
+            end
+                   
+    # Not defining a key will automatically generate a random key between a-z 
+    category_query = Category.select(:name, :id).select_row_to_json(product_query, as: :products, cast_as_array: true)
+    Category.json_build_object(:physical_category, category_query.where(id: physical_cat.id)).results
+    #=> {
+    #        "physical_category" => {
+    #            "name" => "Physical",
+    #            "id" => 1, 
+    #            "products" => [
+    #              {
+    #                "id" => 2,
+    #                "items" => [{"name" => "Bojangels", "id" => 3, "category_id" => 1, "product_id" => 2}, ...] 
+    #              },
+    #              ... 
+    #            ] 
+    #        } 
+    #  } 
+    #
+```
+
+Query Output 
+```sql
+SELECT (JSON_BUILD_OBJECT('physical_category', "physical_category")) AS "results"
+FROM (
+     SELECT "categories"."name", "categories"."id", (ARRAY(
+         SELECT ROW_TO_JSON("j")
+         FROM (
+              SELECT "products"."id", (ARRAY(
+                  SELECT ROW_TO_JSON("outer_item")
+                  FROM (
+                       SELECT "variants"."name", "variants"."id", "variants"."category_id", "variants"."product_id"
+                       FROM "variants"
+                       WHERE (categories.id = variants.category_id)
+                       ) outer_items
+                  WHERE (outer_items.product_id = products.id)
+                )) AS "items"
+              FROM "products"
+              INNER JOIN "items" ON "products"."id" = "items"."product_id"
+              ) j
+       )) AS "products"
+     FROM "categories"
+     WHERE "categories"."id" = 1
+     ) AS "physical_category"
+```
+
 
 #### JSON/B Build Object
 [Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
