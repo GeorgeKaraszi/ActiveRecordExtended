@@ -474,25 +474,178 @@ SELECT (JSON_BUILD_OBJECT('number', 1, 'last_name', 'json', 'pi', 3.14)) AS "res
 
 
 ### Unionization
+If any or all of your union queries include a CTE, read the [Subquery CTE Gotchas](#subquery-cte-gotchas).
+
+#### Known issue
+There's an issue with providing a single union clause and chaining it with a different union clause. 
+This is due to requirements of grouping SQL statements. The issue is being working on, but with no ETA.
+
+This issue only applies to the first initial set of unions and is recommended that you union two relations right off the bat. 
+Afterwords you can union/chain single relations.
+
+Example
+
+```ruby
+
+Person.union(Person.where(id: 1..4)).union_except(Person.where(id: 3..4)).union(Person.where(id: 4))
+#=> Will include all people with an ID between 1 & 3 (throwing the except on ID 4)
+
+# This can be fixed by doing something like
+
+Person.union_except(Person.where(id: 1..4), Person.where(id: 3..4)).union(Person.where(id: 4))
+#=> Will include people with the ids of 1, 2, and 4 (properly excluding the user with the ID of 3)
+```
+
+Problem Query Output
+```sql
+( ( (
+  SELECT "people".*
+  FROM "people"
+  WHERE "people"."id" BETWEEN 1 AND 4
+) UNION (
+  SELECT "people".*
+  FROM "people"
+  WHERE "people"."id" BETWEEN 3 AND 4
+) ) EXCEPT (
+  SELECT "people".*
+  FROM "people"
+  WHERE "people"."id" = 4
+) )
+```
+
+
 #### Union
 [Postgres 'UNION' combination](https://www.postgresql.org/docs/current/queries-union.html)
 
-[TODO: Fill out examples]
+```ruby
+user_1 = Person.where(id: 1)
+user_2 = Person.where(id: 2)
+users  = Person.where(id: 1..3)
+
+Person.union(user_1, user_2, users) #=> [#<Person id: 1, ..>, #<Person id: 2,..>, #<Person id: 3,..>]
+
+# You can also chain union's
+Person.union(user_1).union(user_2).union(users)
+```
+
+Query Output
+```sql
+SELECT "people".*
+  FROM (( ( (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 1
+  ) UNION (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 2
+  ) ) UNION (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 1 AND 3
+  ) )) people
+```
+
 
 #### Union ALL
 [Postgres 'UNION ALL' combination](https://www.postgresql.org/docs/current/queries-union.html)
 
-[TODO: Fill out examples]
+```ruby
+user_1 = Person.where(id: 1)
+user_2 = Person.where(id: 2)
+users  = Person.where(id: 1..3)
+
+Person.union_all(user_1, user_2, users) 
+  #=> [#<Person id: 1, ..>, #<Person id: 2,..>, #<Person id: 1, ..>, #<Person id: 2,..>, #<Person id: 3,..>]
+
+# You can also chain union's
+Person.union_all(user_1).union_all(user_2).union_all(users)
+# Or
+Person.union.all(user1, user_2).union.all(users) 
+```
+
+Query Output
+```sql
+SELECT "people".*
+  FROM (( ( (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 1
+  ) UNION ALL (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 2
+  ) ) UNION ALL (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 1 AND 3
+  ) )) people
+```
 
 #### Union Except
 [Postgres 'EXCEPT' combination](https://www.postgresql.org/docs/current/queries-union.html)
 
-[TODO: Fill out examples]
+```ruby
+users               = Person.where(id: 1..5)
+expect_these_users  = Person.where(id: 2..4)
+
+Person.union_except(users, expect_these_users) #=> [#<Person id: 1, ..>, #<Person id: 5,..>]
+
+# You can also chain union's
+Person.union.except(users, expect_these_users).union(Person.where(id: 20))
+```
+
+Query Output
+```sql
+SELECT "people".*
+  FROM (( ( (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 1 AND 5
+  ) EXCEPT (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 2 AND 4
+  )) people
+```
 
 #### Union Intersect
 [Postgres 'INTERSECT' combination](https://www.postgresql.org/docs/current/queries-union.html)
 
-[TODO: Fill out examples]
+```ruby
+randy = Person.create!
+alice = Person.create!
+ProfileL.create!(person: randy, likes: 100)
+ProfileL.create!(person: alice, likes: 120)
+
+likes_100           = Person.select(:id, "profile_ls.likes").joins(:profile_l).where(profile_ls: { likes: 100 })
+likes_less_than_150 = Person.select(:id, "profile_ls.likes").joins(:profile_l).where("profile_ls.likes < 150")
+Person.union_intersect(likes_100, likes_less_than_150) #=> [randy]
+
+
+
+# You can also chain union's
+Person.union_intersect(likes_100).union_intersect(likes_less_than_150) #=> [randy]
+# Or
+Person.union.intersect(likes_100, likes_less_than_150) #=> [randy] 
+
+```
+
+Query Output
+```sql
+SELECT "people".*
+  FROM (( (
+    SELECT "people"."id", profile_ls.likes
+    FROM "people"
+    INNER JOIN "profile_ls" ON "profile_ls"."person_id" = "people"."id"
+    WHERE "profile_ls"."likes" = 100
+  ) INTERSECT (
+    SELECT "people"."id", profile_ls.likes
+    FROM "people"
+    INNER JOIN "profile_ls" ON "profile_ls"."person_id" = "people"."id"
+    WHERE (profile_ls.likes < 150)
+  ) )) people
+```
 
 #### Union As
 
