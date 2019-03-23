@@ -35,6 +35,7 @@
     - [Union Intersect](#union-intersect)
     - [Union As](#union-as)
     - [Union Order](#union-order)
+    - [Union Reorder](#union-reorder)
 
 ## Description and History
 
@@ -744,6 +745,35 @@ SELECT "people".*
     FROM "people"
     WHERE "people"."id" BETWEEN 3 AND 10
   ) ) ORDER BY id ASC, tags DESC) people
+```
+
+#### Union Reorder
+
+much like Rails `.reorder`; `.reorder_union/1`  will clear the previous order in a new instance and/or apply a new ordering scheme
+```ruby
+query_1     = Person.where(id: 1..3)
+query_2     = Person.where(id: 3)
+query_3     = Person.where(id: 3..10)
+union_query = Person.union_except(query_1, query_2).union(query_3).order_union(:id, tags: :desc)
+union_query.reorder_union(personal_id: :desc, id: :desc)
+```
+
+Query Output
+```sql
+SELECT "people".*
+  FROM (( ( (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 1 AND 3
+  ) EXCEPT (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 3
+  ) ) UNION (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 3 AND 10
+  ) ) ORDER BY personal_id DESC, id DESC) people
 ```
 
 
