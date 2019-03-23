@@ -354,7 +354,7 @@ JOIN less_liked ON less_liked.user_id = users.id
  will be subject to "Piping" the CTE clauses up to the parents query level. 
  
  This also means there's potential for having duplicate CTE names.
- In order to combat duplicate CTE references with the same name, piping will favor the parents CTE over the nested sub-queries.
+ In order to combat duplicate CTE references with the same name, **piping will favor the parents CTE over the nested sub-queries**.
  
  This also means that this is a "First come First Served" implementation. 
  So if you have a parent with no CTE's but two sub-queries with the same CTE name but with different querying statements. 
