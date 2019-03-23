@@ -23,6 +23,7 @@
     - [Either Join](#either-join)
     - [Either Order](#either-order)
   - [Common Table Expressions (CTE)](#common-table-expressions-cte)
+    - [Subquery CTE Gotchas](#subquery-cte-gotchas)
   - [JSON Query Methods](#json-query-methods)
     - [Row To JSON](#row-to-json)
     - [JSON/B Build Object](#jsonb-build-object)
