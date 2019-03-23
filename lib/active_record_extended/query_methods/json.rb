@@ -201,12 +201,12 @@ module ActiveRecordExtended
       # Example:
       #  - Supplying inputs as a Hash
       #      query = User.json_build_literal(number: 1, last_name: "json", pi: 3.14)
-      #      query.take.results #=> { "number" => 1, "last_name" => "john", "pi" => 3.14 }
+      #      query.take.results #=> { "number" => 1, "last_name" => "json", "pi" => 3.14 }
       #
       #  - Supplying inputs as an Array
       #
       #      query = User.json_build_literal(:number, 1, :last_name, "json", :pi, 3.14)
-      #      query.take.results #=> { "number" => 1, "last_name" => "john", "pi" => 3.14 }
+      #      query.take.results #=> { "number" => 1, "last_name" => "json", "pi" => 3.14 }
       #
 
       def json_build_literal(*args)

@@ -431,12 +431,45 @@ FROM (
 #### JSON/B Build Object
 [Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 
-[TODO: Fill out examples]
+The implementation of the`.json_build_object/2` and `.jsonb_build_object/2` methods are designed to be used with sub-queries. 
+As a means for taking complex  query logic and transform them into a single or multiple json responses.
+
+Arguments:
+  - `key`: [Symbol or String]: What should this response return as
+  - `from`: [String, Arel, or ActiveRecord::Relation] : A subquery that can be nested into the top-level from clause
+
+ Options:
+   - `as`: [Symbol or String] (defaults to `"results"`): What the column will be aliased to
+   - `value`: [Symbol or String] (defaults to `key` argument): How the response should handel the json value return
+
+See the included example on [Row To JSON](#row-to-json) to see it in action.
 
 #### JSON/B Build Literal
 [Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 
-[TODO: Fill out examples]
+The implementation of the`.json_build_literal/1` and `.jsonb_build_literal/1`
+ Arguments: 
+    - Requires an Array or Hash set of values
+
+ Options:
+    - `as`: [Symbol or String] (defaults to `"results"`): What the column will be aliased to
+      
+```ruby
+    User.json_build_literal(number: 1, last_name: "json", pi: 3.14).take.results
+     #=> { "number" => 1, "last_name" => "json", "pi" => 3.14 }
+    
+    # Or as array elements
+    User.json_build_literal(:number, 1, :last_name, "json", :pi, 3.14).take.results
+      #=> { "number" => 1, "last_name" => "json", "pi" => 3.14 } 
+     
+```
+
+Query Output:
+```sql
+SELECT (JSON_BUILD_OBJECT('number', 1, 'last_name', 'json', 'pi', 3.14)) AS "results"
+  FROM "users"
+```
+
 
 ### Unionization
 #### Union
