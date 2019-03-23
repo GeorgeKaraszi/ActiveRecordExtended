@@ -649,11 +649,57 @@ SELECT "people".*
 
 #### Union As
 
-[TODO: Fill out examples]
+By default unions are nested in the from clause and are aliased to the parents table name.
+We can change this behavior by chaining the method `.union_as/1`
+
+```ruby
+Person.select("good_people.id").union(Person.where(id: 1), Person.where(id: 2)).union_as(:good_people)
+```
+
+Query Output
+```sql
+SELECT good_people.id
+  FROM (( (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 1
+  ) UNION (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 2
+  ) )) good_people
+```
+
 
 #### Union Order
 
-[TODO: Fill out examples]
+Unions allow for a final outside `ORDER BY` clause. This will ensure that all the results that come back are ordered in an expected return.
+
+```ruby
+query_1 = Person.where(id: 1..3)
+query_2 = Person.where(id: 3)
+query_3 = Person.where(id: 3..10)
+Person.union_except(query_1, query_2).union(query_3).order_union(:id, tags: :desc)
+```
+
+Query Output
+```sql
+SELECT "people".*
+  FROM (( ( (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 1 AND 3
+  ) EXCEPT (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" = 3
+  ) ) UNION (
+    SELECT "people".*
+    FROM "people"
+    WHERE "people"."id" BETWEEN 3 AND 10
+  ) ) ORDER BY id ASC, tags DESC) people
+```
+
 
 ## Installation
 
