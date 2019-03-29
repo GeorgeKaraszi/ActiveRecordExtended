@@ -4,53 +4,41 @@ require "arel/nodes/binary"
 
 module Arel
   module Nodes
-    class Overlap < Arel::Nodes::Binary
-    end
+    %w[
+      Overlap
+      Contains
+      ContainsHStore
+      ContainsArray
+      ContainedInArray
+    ].each { |binary_node_name| const_set(binary_node_name, Class.new(::Arel::Nodes::Binary)) }
 
-    class Contains < Arel::Nodes::Binary
-    end
+    %w[
+      RowToJson
+      JsonBuildObject
+      JsonbBuildObject
+      Array
+      AggArray
+    ].each do |function_node_name|
+      func_klass = Class.new(::Arel::Nodes::Function) do
+        def initialize(*args)
+          super
+          return if @expressions.is_a?(::Array)
 
-    class ContainsHStore < Arel::Nodes::Binary
-    end
-
-    class ContainsArray < Arel::Nodes::Binary
-    end
-
-    class ContainedInArray < Arel::Nodes::Binary
-    end
-
-    class RowToJson < Arel::Nodes::Function
-      def initialize(*args)
-        super
-        unless @expressions.is_a?(Array)
-          @expressions = Arel.sql(@expressions) unless @expressions.is_a?(Arel::Nodes::SqlLiteral)
+          @expressions = ::Arel.sql(@expressions) unless @expressions.is_a?(::Arel::Nodes::SqlLiteral)
           @expressions = [@expressions]
         end
       end
-    end
 
-    class JsonBuildObject < Arel::Nodes::Function
-      def initialize(*args)
-        super
-        @expressions = Array(@expressions)
-      end
-    end
-
-    class JsonbBuildObject < JsonBuildObject
+      const_set(function_node_name, func_klass)
     end
 
     module Inet
-      class ContainsEquals < Arel::Nodes::Binary
-      end
-
-      class ContainedWithin < Arel::Nodes::Binary
-      end
-
-      class ContainedWithinEquals < Arel::Nodes::Binary
-      end
-
-      class ContainsOrContainedWithin < Arel::Nodes::Binary
-      end
+      %w[
+        ContainsEquals
+        ContainedWithin
+        ContainedWithinEquals
+        ContainsOrContainedWithin
+      ].each { |binary_node_name| const_set(binary_node_name, Class.new(::Arel::Nodes::Binary)) }
     end
   end
 end
