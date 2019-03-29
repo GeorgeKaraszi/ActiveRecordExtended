@@ -1,3 +1,6 @@
+# 1.0.1 - Match 29th 2019
+- Increased the required PG gem version range to accept `1.1.x`
+
 # 1.0.0 - March 23rd 2019
 Add support for Postgres Union types and refactor Arel building process into a single module
 
