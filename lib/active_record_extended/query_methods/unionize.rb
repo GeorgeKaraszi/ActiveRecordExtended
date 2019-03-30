@@ -171,7 +171,7 @@ module ActiveRecordExtended
         return unless union_values?
 
         union_nodes      = apply_union_ordering(build_union_nodes!)
-        table_name       = Arel::Nodes::SqlLiteral.new(unionized_name)
+        table_name       = Arel.sql(unionized_name)
         table_alias      = arel.create_table_alias(arel.grouping(union_nodes), table_name)
         arel.from(table_alias)
       end
