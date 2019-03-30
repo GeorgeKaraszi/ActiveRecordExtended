@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe "Array Column Predicates" do
-  let(:arel_table) { Person.arel_table }
+  let(:arel_table) { User.arel_table }
 
   describe "Array Overlap" do
     it "converts Arel overlap statement" do
@@ -17,7 +17,7 @@ RSpec.describe "Array Column Predicates" do
     end
 
     it "works with count (and other predicates)" do
-      expect(Person.where(arel_table[:tag_ids].overlap([1, 2])).count).to eq 0
+      expect(User.where(arel_table[:tag_ids].overlap([1, 2])).count).to eq 0
     end
   end
 
@@ -33,31 +33,31 @@ RSpec.describe "Array Column Predicates" do
     end
 
     it "works with count (and other predicates)" do
-      expect(Person.where(arel_table[:tag_ids].contains([1, 2])).count).to eq 0
+      expect(User.where(arel_table[:tag_ids].contains([1, 2])).count).to eq 0
     end
   end
 
   describe "Any Array Element" do
     it "creates any predicates that contain a string value" do
       query = arel_table.where(arel_table[:tags].any("tag")).to_sql
-      expect(query).to match_regex(/'tag' = ANY\("people"\."tags"\)/)
+      expect(query).to match_regex(/'tag' = ANY\("users"\."tags"\)/)
     end
 
     it "creates any predicates that contain a integer value" do
       query = arel_table.where(arel_table[:tags].any(2)).to_sql
-      expect(query).to match_regex(/2 = ANY\("people"\."tags"\)/)
+      expect(query).to match_regex(/2 = ANY\("users"\."tags"\)/)
     end
   end
 
   describe "All Array Elements" do
     it "create all predicates that contain a string value" do
       query = arel_table.where(arel_table[:tags].all("tag")).to_sql
-      expect(query).to match_regex(/'tag' = ALL\("people"\."tags"\)/)
+      expect(query).to match_regex(/'tag' = ALL\("users"\."tags"\)/)
     end
 
     it "create all predicates that contain a interger value" do
       query = arel_table.where(arel_table[:tags].all(2)).to_sql
-      expect(query).to match_regex(/2 = ALL\("people"\."tags"\)/)
+      expect(query).to match_regex(/2 = ALL\("users"\."tags"\)/)
     end
   end
 end

@@ -1,29 +1,29 @@
 # frozen_string_literal: true
 
 RSpec.describe "Active Record JSON methods" do
-  let!(:person_one) { Person.create! }
-  let!(:person_two) { Person.create! }
+  let!(:user_one) { User.create! }
+  let!(:user_two) { User.create! }
 
   describe ".select_row_to_json" do
-    let!(:tag_one)    { Tag.create!(person: person_one, tag_number: 2) }
-    let!(:tag_two)    { Tag.create!(person: person_two, tag_number: 5) }
-    let(:sub_query)   { Tag.select(:tag_number).where("tags.person_id = people.id") }
+    let!(:tag_one)    { Tag.create!(user: user_one, tag_number: 2) }
+    let!(:tag_two)    { Tag.create!(user: user_two, tag_number: 5) }
+    let(:sub_query)   { Tag.select(:tag_number).where("tags.user_id = users.id") }
 
     it "should nest a json object in the query results" do
-      query = Person.select(:id).select_row_to_json(sub_query, as: :results).where(id: person_one.id)
+      query = User.select(:id).select_row_to_json(sub_query, as: :results).where(id: user_one.id)
       expect(query.size).to eq(1)
       expect(query.take.results).to be_a(Hash).and(match("tag_number" => 2))
     end
 
     # ugh wording here sucks, brain is fried.
     it "accepts a block for appending additional scopes to the middle-top level" do
-      query = Person.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results) do |scope|
+      query = User.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results) do |scope|
         scope.where("tag_row.tag_number = 5")
       end
 
       expect(query.size).to eq(2)
       query.each do |result|
-        if result.id == person_one.id
+        if result.id == user_one.id
           expect(result.results).to be_blank
         else
           expect(result.results).to be_present.and(match("tag_number" => 5))
@@ -32,56 +32,56 @@ RSpec.describe "Active Record JSON methods" do
     end
 
     it "allows for casting results in an aggregate-able Array function" do
-      query = Person.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results, cast_as_array: true)
+      query = User.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results, cast_as_array: true)
       expect(query.take.results).to be_a(Array).and(be_present)
       expect(query.take.results.first).to be_a(Hash)
     end
 
     it "raises an error if a from clause key is missing" do
       expect do
-        Person.select(:id).select_row_to_json(key: :tag_row, as: :results)
+        User.select(:id).select_row_to_json(key: :tag_row, as: :results)
       end.to raise_error(ArgumentError)
     end
   end
 
   describe ".json_build_object" do
     let(:sub_query) do
-      Person.select_row_to_json(from: Person.select(:id), cast_as_array: true, as: :ids).where(id: person_one.id)
+      User.select_row_to_json(from: User.select(:id), cast_as_array: true, as: :ids).where(id: user_one.id)
     end
 
     it "defaults the column alias if one is not provided" do
-      query = Person.json_build_object(:personal, sub_query)
+      query = User.json_build_object(:personal, sub_query)
       expect(query.size).to eq(1)
       expect(query.take.results).to match(
-        "personal" => match("ids" => match_array([{ "id" => person_one.id }, { "id" => person_two.id }])),
+        "personal" => match("ids" => match_array([{ "id" => user_one.id }, { "id" => user_two.id }])),
       )
     end
 
     it "allows for re-aliasing the default 'results' column" do
-      query = Person.json_build_object(:personal, sub_query, as: :cool_dudes)
+      query = User.json_build_object(:personal, sub_query, as: :cool_dudes)
       expect(query.take).to respond_to(:cool_dudes)
     end
   end
 
   describe ".jsonb_build_object" do
-    let(:sub_query) { Person.select(:id, :number).where(id: person_one.id) }
+    let(:sub_query) { User.select(:id, :number).where(id: user_one.id) }
 
     it "defaults the column alias if one is not provided" do
-      query = Person.jsonb_build_object(:personal, sub_query)
+      query = User.jsonb_build_object(:personal, sub_query)
       expect(query.size).to eq(1)
       expect(query.take.results).to be_a(Hash).and(be_present)
-      expect(query.take.results).to match("personal" => match("id" => person_one.id, "number" => person_one.number))
+      expect(query.take.results).to match("personal" => match("id" => user_one.id, "number" => user_one.number))
     end
 
     it "allows for re-aliasing the default 'results' column" do
-      query = Person.jsonb_build_object(:personal, sub_query, as: :cool_dudes)
+      query = User.jsonb_build_object(:personal, sub_query, as: :cool_dudes)
       expect(query.take).to respond_to(:cool_dudes)
     end
 
     it "allows for custom value statement" do
-      query = Person.jsonb_build_object(
+      query = User.jsonb_build_object(
         :personal,
-        sub_query.where.not(id: person_one),
+        sub_query.where.not(id: user_one),
         value: "COALESCE(array_agg(\"personal\"), '{}')",
         as:    :cool_dudes,
       )
@@ -91,9 +91,9 @@ RSpec.describe "Active Record JSON methods" do
 
     it "will raise a warning if the value doesn't include a double quoted input" do
       expect do
-        Person.jsonb_build_object(
+        User.jsonb_build_object(
           :personal,
-          sub_query.where.not(id: person_one),
+          sub_query.where.not(id: user_one),
           value: "COALESCE(array_agg(personal), '{}')",
           as:    :cool_dudes,
         )
@@ -109,19 +109,19 @@ RSpec.describe "Active Record JSON methods" do
       let(:method) { raise "You are expected to over ride this!" }
 
       it "will accept a hash arguments that will return itself" do
-        query = Person.send(method.to_sym, original_hash)
+        query = User.send(method.to_sym, original_hash)
         expect(query.take.results).to be_a(Hash).and(be_present)
         expect(query.take.results).to match(original_hash.stringify_keys)
       end
 
       it "will accept a standard array of key values" do
-        query = Person.send(method.to_sym, hash_as_array_objs)
+        query = User.send(method.to_sym, hash_as_array_objs)
         expect(query.take.results).to be_a(Hash).and(be_present)
         expect(query.take.results).to match(original_hash.stringify_keys)
       end
 
       it "will accept a splatted array of key-values" do
-        query = Person.send(method.to_sym, *hash_as_array_objs)
+        query = User.send(method.to_sym, *hash_as_array_objs)
         expect(query.take.results).to be_a(Hash).and(be_present)
         expect(query.take.results).to match(original_hash.stringify_keys)
       end

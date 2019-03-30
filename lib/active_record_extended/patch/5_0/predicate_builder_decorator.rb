@@ -6,20 +6,20 @@
 #
 # Without joins
 # Before:
-#   Person.where.contains(data: { nickname: "george" })
+#   User.where.contains(data: { nickname: "george" })
 #     #=> "SELECT \"people\".* FROM \"people\" WHERE (\"data\".\"nickname\" @> 'george')"
 #
 # After:
-#  Person.where.contains(data: { nickname: "george" })
+#  User.where.contains(data: { nickname: "george" })
 #   #=> "SELECT \"people\".* FROM \"people\" WHERE (\"people\".\"data\" @> '\"nickname\"=>\"george\"')"
 #
 # With Joins
 # Before:
-#   Tag.joins(:person).where.contains(people: { data: { nickname: "george" } })
+#   Tag.joins(:user).where.contains(people: { data: { nickname: "george" } })
 #   #=> NoMethodError: undefined method `type' for nil:NilClass
 #
 # After:
-#  Tag.joins(:person).where.contains(people: { data: { nickname: "george" } })
+#  Tag.joins(:user).where.contains(people: { data: { nickname: "george" } })
 #  #=> "SELECT \"tags\".* FROM \"tags\" INNER JOIN \"people\" ON \"people\".\"id\" = \"tags\".\"person_id\"
 #         WHERE (\"people\".\"data\" @> '\"nickname\"=>\"george\"')"
 #
