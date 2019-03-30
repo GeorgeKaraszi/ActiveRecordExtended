@@ -59,6 +59,22 @@ module ActiveRecordExtended
         aggregate "JSONB_BUILD_OBJECT", object, collector
       end
 
+      def visit_Arel_Nodes_ToJson(object, collector)
+        aggregate "TO_JSON", object, collector
+      end
+
+      def visit_Arel_Nodes_ToJsonb(object, collector)
+        aggregate "TO_JSONB", object, collector
+      end
+
+      def visit_Arel_Nodes_Array(object, collector)
+        aggregate "ARRAY", object, collector
+      end
+
+      def visit_Arel_Nodes_ArrayAgg(object, collector)
+        aggregate "ARRAY_AGG", object, collector
+      end
+
       def visit_Arel_Nodes_Inet_ContainedWithinEquals(object, collector)
         infix_value object, collector, " <<= "
       end
