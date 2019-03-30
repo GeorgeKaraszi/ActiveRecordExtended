@@ -3,19 +3,19 @@
 require "spec_helper"
 
 RSpec.describe "Active Record WITH CTE tables" do
-  let(:with_personal_query) { /WITH.+personal_id_one.+AS \(SELECT.+people.+FROM.+WHERE.+people.+personal_id.+ = 1\)/ }
+  let(:with_personal_query) { /WITH.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/ }
 
   it "should contain WITH statement that creates the CTE table" do
-    query = Person.with(personal_id_one: Person.where(personal_id: 1))
-                  .joins("JOIN personal_id_one ON personal_id_one.id = people.id")
+    query = User.with(personal_id_one: User.where(personal_id: 1))
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
                   .to_sql
     expect(query).to match_regex(with_personal_query)
   end
 
   it "will maintain the CTE table when merging" do
-    query = Person.all
-                  .merge(Person.with(personal_id_one: Person.where(personal_id: 1)))
-                  .joins("JOIN personal_id_one ON personal_id_one.id = people.id")
+    query = User.all
+                  .merge(User.with(personal_id_one: User.where(personal_id: 1)))
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
                   .to_sql
 
     expect(query).to match_regex(with_personal_query)
@@ -23,17 +23,17 @@ RSpec.describe "Active Record WITH CTE tables" do
 
   context "when multiple CTE's" do
     let(:chained_with) do
-      Person.with(personal_id_one: Person.where(personal_id: 1))
-            .with(personal_id_two: Person.where(personal_id: 2))
-            .joins("JOIN personal_id_one ON personal_id_one.id = people.id")
-            .joins("JOIN personal_id_two ON personal_id_two.id = people.id")
+      User.with(personal_id_one: User.where(personal_id: 1))
+            .with(personal_id_two: User.where(personal_id: 2))
+            .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+            .joins("JOIN personal_id_two ON personal_id_two.id = users.id")
             .to_sql
     end
 
     let(:with_arguments) do
-      Person.with(personal_id_one: Person.where(personal_id: 1), personal_id_two: Person.where(personal_id: 2))
-            .joins("JOIN personal_id_one ON personal_id_one.id = people.id")
-            .joins("JOIN personal_id_two ON personal_id_two.id = people.id")
+      User.with(personal_id_one: User.where(personal_id: 1), personal_id_two: User.where(personal_id: 2))
+            .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+            .joins("JOIN personal_id_two ON personal_id_two.id = users.id")
             .to_sql
     end
     it "Should only contain a single WITH statement" do
@@ -49,13 +49,13 @@ RSpec.describe "Active Record WITH CTE tables" do
 
   context "when chaining the recursive method" do
     let(:with_recursive_personal_query) do
-      /WITH.+RECURSIVE.+personal_id_one.+AS \(SELECT.+people.+FROM.+WHERE.+people.+personal_id.+ = 1\)/
+      /WITH.+RECURSIVE.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
     end
 
     let(:with_recursive) do
-      Person.with
-            .recursive(personal_id_one: Person.where(personal_id: 1))
-            .joins("JOIN personal_id_one ON personal_id_one.id = people.id")
+      User.with
+            .recursive(personal_id_one: User.where(personal_id: 1))
+            .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
             .to_sql
     end
 

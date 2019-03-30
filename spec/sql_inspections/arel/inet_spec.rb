@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe "Inet Column Predicates" do
-  let(:arel_table) { Person.arel_table }
+  let(:arel_table) { User.arel_table }
 
   describe "#inet_contained_within" do
     it "converts Arel inet contained within statement" do
@@ -12,7 +12,7 @@ RSpec.describe "Inet Column Predicates" do
     end
 
     it "works with count" do
-      expect(Person.where(arel_table[:ip].inet_contained_within(IPAddr.new("127.0.0.1"))).count).to eq(0)
+      expect(User.where(arel_table[:ip].inet_contained_within(IPAddr.new("127.0.0.1"))).count).to eq(0)
     end
   end
 
@@ -23,7 +23,7 @@ RSpec.describe "Inet Column Predicates" do
     end
 
     it "works with count" do
-      expect(Person.where(arel_table[:ip].inet_contained_within_or_equals(IPAddr.new("127.0.0.1"))).count).to eq(0)
+      expect(User.where(arel_table[:ip].inet_contained_within_or_equals(IPAddr.new("127.0.0.1"))).count).to eq(0)
     end
   end
 
@@ -34,7 +34,7 @@ RSpec.describe "Inet Column Predicates" do
     end
 
     it "works with count" do
-      expect(Person.where(arel_table[:ip].inet_contains_or_equals(IPAddr.new("127.0.0.1"))).count).to eq(0)
+      expect(User.where(arel_table[:ip].inet_contains_or_equals(IPAddr.new("127.0.0.1"))).count).to eq(0)
     end
   end
 
@@ -45,7 +45,7 @@ RSpec.describe "Inet Column Predicates" do
     end
 
     it "works with count" do
-      expect(Person.where(arel_table[:ip].inet_contains("127.0.0.1")).count).to eq(0)
+      expect(User.where(arel_table[:ip].inet_contains("127.0.0.1")).count).to eq(0)
     end
   end
 
@@ -59,8 +59,8 @@ RSpec.describe "Inet Column Predicates" do
     end
 
     it "works with count" do
-      expect(Person.where(arel_table[:ip].inet_contains_or_is_contained_within("127.0.0.1")).count).to eq(0)
-      expect(Person.where(arel_table[:ip].inet_contains_or_is_contained_within(IPAddr.new("127.0.0.1"))).count).to eq(0)
+      expect(User.where(arel_table[:ip].inet_contains_or_is_contained_within("127.0.0.1")).count).to eq(0)
+      expect(User.where(arel_table[:ip].inet_contains_or_is_contained_within(IPAddr.new("127.0.0.1"))).count).to eq(0)
     end
   end
 end
