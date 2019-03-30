@@ -36,7 +36,24 @@ module ActiveRecordExtended
     # Wraps subquery into an Aliased ARRAY
     # Ex: `SELECT * FROM users` => (ARRAY(SELECT * FROM users)) AS "members"
     def wrap_with_array(arel_or_rel_query, alias_name)
-      query = Arel::Nodes::NamedFunction.new("ARRAY", to_sql_array(arel_or_rel_query))
+      query = Arel::Nodes::Array.new(to_sql_array(arel_or_rel_query))
+      nested_alias_escape(query, alias_name)
+    end
+
+    # Wraps query into an aggregated array
+    # EX: `(ARRAY_AGG((SELECT * FROM users)) AS "members"`
+    #     `(ARRAY_AGG(DISTINCT (SELECT * FROM users)) AS "members"`
+    #     `SELECT ARRAY_AGG((id)) AS "ids" FROM users`
+    #     `SELECT ARRAY_AGG(DISTINCT (id)) AS "ids" FROM users`
+    def wrap_with_agg_array(arel_or_rel_query, alias_name, casting_option = :agg)
+      if needs_to_be_grouped?(arel_or_rel_query)
+        grouped_query = Arel::Nodes::Grouping.new(to_arel_sql(arel_or_rel_query))
+        query         = Arel::Nodes::ArrayAgg.new(grouped_query)
+      else
+        query = Arel::Nodes::ArrayAgg.new(to_sql_array(arel_or_rel_query))
+      end
+
+      query.distinct = [:agg_distinct, :array_agg_distinct].include?(casting_option)
       nested_alias_escape(query, alias_name)
     end
 
@@ -132,6 +149,10 @@ module ActiveRecordExtended
       else
         Arel.sql(value.respond_to?(:to_sql) ? value.to_sql : value.to_s)
       end
+    end
+
+    def needs_to_be_grouped?(query)
+      query.respond_to?(:to_sql) || (query.is_a?(String) && /^SELECT.+/i.match?(query))
     end
 
     def key_generator
