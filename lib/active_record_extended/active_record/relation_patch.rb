@@ -6,7 +6,7 @@ require "active_record_extended/query_methods/json"
 module ActiveRecordExtended
   module RelationPatch
     module QueryDelegation
-      delegate :with, to: :all
+      delegate :with, :foster_select, to: :all
       delegate(*::ActiveRecordExtended::QueryMethods::Unionize::UNIONIZE_METHODS, to: :all)
       delegate(*::ActiveRecordExtended::QueryMethods::Json::JSON_QUERY_METHODS, to: :all)
     end
