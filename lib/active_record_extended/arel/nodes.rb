@@ -16,16 +16,16 @@ module Arel
       RowToJson
       JsonBuildObject
       JsonbBuildObject
+      ToJson
+      ToJsonb
       Array
-      AggArray
+      ArrayAgg
     ].each do |function_node_name|
       func_klass = Class.new(::Arel::Nodes::Function) do
         def initialize(*args)
           super
           return if @expressions.is_a?(::Array)
-
-          @expressions = ::Arel.sql(@expressions) unless @expressions.is_a?(::Arel::Nodes::SqlLiteral)
-          @expressions = [@expressions]
+          @expressions = @expressions.is_a?(::Arel::Node) ? [@expressions] : [::Arel.sql(@expressions)]
         end
       end
 
