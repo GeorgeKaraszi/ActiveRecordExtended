@@ -46,7 +46,6 @@ The only problem is that this has created a wild west of environments of sorts. 
 
 Active Record Extended is essentially providing users with the other half of Postgreses querying abilities. Due to Rails/ActiveRecord/Arel being designed to be DB agnostic, there are a lot of left out features; Either by choice or the simple lack of supporting API's for other databases. However some features are not exactly PG explicit. Some are just helper methods to express an idea much more easily.
 
-
 ## Compatibility
 
 This package is designed align and work with any officially supported Ruby and Rails versions.
@@ -55,6 +54,18 @@ This package is designed align and work with any officially supported Ruby and R
  - Latest Ruby supported: 2.6.x
  - Latest Rails supported: 6.0.x
  - Postgres: 9.6-current(11) (probably works with most older versions to a certain point)
+
+## Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'active_record_extended'
+```
+
+And then execute:
+
+    $ bundle
 
 ## Usage
 
@@ -775,23 +786,6 @@ SELECT "people".*
     WHERE "people"."id" BETWEEN 3 AND 10
   ) ) ORDER BY personal_id DESC, id DESC) people
 ```
-
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'active_record_extended'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install active_record_extended
 
 ## License
 
