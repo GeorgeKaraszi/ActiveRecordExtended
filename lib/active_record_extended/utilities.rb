@@ -45,15 +45,10 @@ module ActiveRecordExtended
     #     `(ARRAY_AGG(DISTINCT (SELECT * FROM users)) AS "members"`
     #     `SELECT ARRAY_AGG((id)) AS "ids" FROM users`
     #     `SELECT ARRAY_AGG(DISTINCT (id)) AS "ids" FROM users`
-    def wrap_with_agg_array(arel_or_rel_query, alias_name, casting_option = :agg)
-      if needs_to_be_grouped?(arel_or_rel_query)
-        grouped_query = Arel::Nodes::Grouping.new(to_arel_sql(arel_or_rel_query))
-        query         = Arel::Nodes::ArrayAgg.new(grouped_query)
-      else
-        query = Arel::Nodes::ArrayAgg.new(to_sql_array(arel_or_rel_query))
-      end
-
-      query.distinct = [:agg_distinct, :array_agg_distinct].include?(casting_option)
+    def wrap_with_agg_array(arel_or_rel_query, alias_name, casting_option = :agg, distinct = false)
+      query          = group_when_needed(arel_or_rel_query)
+      query          = Arel::Nodes::ArrayAgg.new(to_sql_array(query))
+      query.distinct = distinct || [:agg_distinct, :array_agg_distinct].include?(casting_option)
       nested_alias_escape(query, alias_name)
     end
 
@@ -114,7 +109,9 @@ module ActiveRecordExtended
       return if value.nil?
 
       case value.to_s
-      when "*", /^".+"$/ # Ignore keys that contain double quotes or a Arel.star (*)[all columns]
+        # Ignore keys that contain double quotes or a Arel.star (*)[all columns]
+        # or if a table has already been explicitly declared (ex: users.id)
+      when "*", /((^".+"$)|(^[[:alpha:]]+\.[[:alnum:]]+))/
         value
       else
         PG::Connection.quote_ident(value.to_s)
@@ -149,6 +146,11 @@ module ActiveRecordExtended
       else
         Arel.sql(value.respond_to?(:to_sql) ? value.to_sql : value.to_s)
       end
+    end
+
+    def group_when_needed(arel_or_rel_query)
+      return arel_or_rel_query unless needs_to_be_grouped?(arel_or_rel_query)
+      Arel::Nodes::Grouping.new(to_arel_sql(arel_or_rel_query))
     end
 
     def needs_to_be_grouped?(query)
