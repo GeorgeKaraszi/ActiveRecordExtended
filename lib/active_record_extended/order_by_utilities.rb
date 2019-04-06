@@ -5,7 +5,7 @@ require "active_record"
 module ActiveRecordExtended
   module OrderByUtilities
     def inline_order_by(arel_node, ordering_args)
-      return arel_node unless scope_preprocess_ordering_args(ordering_args)
+      return arel_node unless scope_preprocess_order_args(ordering_args)
 
       Arel::Nodes::InfixOperation.new("ORDER BY", arel_node, ordering_args)
     end

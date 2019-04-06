@@ -80,7 +80,7 @@ module ActiveRecordExtended
             dummy_table
           elsif cast_to_agg
             @scope.select(wrap_with_agg_array(dummy_table, col_alias, cast_as))
-          elsif cast_as
+          elsif cast_with
             @scope.select(wrap_with_array(dummy_table, col_alias))
           else
             @scope.select(nested_alias_escape(dummy_table, col_alias))
