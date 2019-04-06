@@ -55,8 +55,9 @@ namespace :db do
     ActiveRecord::Schema.define do
       enable_extension "hstore"
 
-      create_table :people, force: true do |t|
-        t.integer  "tag_ids",      array: true
+      create_table :users, force: true do |t|
+        t.integer  "tag_ids", array: true
+        t.string   "name"
         t.string   "tags",         array: true
         t.integer  "number",       default: 0
         t.integer  "personal_id"
@@ -69,17 +70,17 @@ namespace :db do
       end
 
       create_table :tags, force: true do |t|
-        t.belongs_to :person, index: true, foreign_key: true
+        t.belongs_to :user, index: true, foreign_key: true
         t.integer :tag_number, default: 0
       end
 
       create_table :profile_ls, force: true do |t|
-        t.belongs_to :person, index: true, foreign_key: true
+        t.belongs_to :user, index: true, foreign_key: true
         t.integer :likes
       end
 
       create_table :profile_rs, force: true do |t|
-        t.belongs_to :person, index: true, foreign_key: true
+        t.belongs_to :user, index: true, foreign_key: true
         t.integer :dislikes
       end
 

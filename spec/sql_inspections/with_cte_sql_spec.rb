@@ -7,16 +7,16 @@ RSpec.describe "Active Record WITH CTE tables" do
 
   it "should contain WITH statement that creates the CTE table" do
     query = User.with(personal_id_one: User.where(personal_id: 1))
-                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-                  .to_sql
+                .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                .to_sql
     expect(query).to match_regex(with_personal_query)
   end
 
   it "will maintain the CTE table when merging" do
     query = User.all
-                  .merge(User.with(personal_id_one: User.where(personal_id: 1)))
-                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-                  .to_sql
+                .merge(User.with(personal_id_one: User.where(personal_id: 1)))
+                .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                .to_sql
 
     expect(query).to match_regex(with_personal_query)
   end
@@ -24,17 +24,17 @@ RSpec.describe "Active Record WITH CTE tables" do
   context "when multiple CTE's" do
     let(:chained_with) do
       User.with(personal_id_one: User.where(personal_id: 1))
-            .with(personal_id_two: User.where(personal_id: 2))
-            .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-            .joins("JOIN personal_id_two ON personal_id_two.id = users.id")
-            .to_sql
+          .with(personal_id_two: User.where(personal_id: 2))
+          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+          .joins("JOIN personal_id_two ON personal_id_two.id = users.id")
+          .to_sql
     end
 
     let(:with_arguments) do
       User.with(personal_id_one: User.where(personal_id: 1), personal_id_two: User.where(personal_id: 2))
-            .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-            .joins("JOIN personal_id_two ON personal_id_two.id = users.id")
-            .to_sql
+          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+          .joins("JOIN personal_id_two ON personal_id_two.id = users.id")
+          .to_sql
     end
     it "Should only contain a single WITH statement" do
       expect(with_arguments.scan(/WITH/).count).to eq(1)
@@ -54,9 +54,9 @@ RSpec.describe "Active Record WITH CTE tables" do
 
     let(:with_recursive) do
       User.with
-            .recursive(personal_id_one: User.where(personal_id: 1))
-            .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-            .to_sql
+          .recursive(personal_id_one: User.where(personal_id: 1))
+          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+          .to_sql
     end
 
     it "generates an expression with recursive" do

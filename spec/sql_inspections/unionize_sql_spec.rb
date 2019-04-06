@@ -110,10 +110,10 @@ RSpec.describe "Union SQL Queries" do
 
       it "should only append an order by to the very end of a union statements" do
         query = User.union.order(id: :asc, tags: :desc)
-                      .union(user.order(id: :asc, tags: :desc))
-                      .union(user.order(:id, :tags))
-                      .union(other_user.order(id: :desc, tags: :desc))
-                      .to_union_sql
+                    .union(user.order(id: :asc, tags: :desc))
+                    .union(user.order(:id, :tags))
+                    .union(other_user.order(id: :desc, tags: :desc))
+                    .to_union_sql
 
         index = query.index(query_regex)
         expect(index).to be_truthy

@@ -43,7 +43,7 @@ RSpec.describe "Active Record Any / None of Methods" do
       it "Finds records that are queried from two or more has_many associations" do
         user_one_tag = Tag.create!(user_id: one.id)
         user_two_tag = Tag.create!(user_id: two.id)
-        query          = Tag.where.any_of(one.hm_tags, two.hm_tags)
+        query = Tag.where.any_of(one.hm_tags, two.hm_tags)
 
         expect(query).to include(tag_one, tag_two, user_one_tag, user_two_tag)
         expect(query).to_not include(tag_three)
@@ -52,7 +52,7 @@ RSpec.describe "Active Record Any / None of Methods" do
       it "Finds records that are dynamically joined" do
         user_one_tag = Tag.where(users: { id: one.id }).includes(:user).references(:user)
         user_two_tag = Tag.where(users: { id: two.id }).joins(:user)
-        query          = Tag.where.any_of(user_one_tag, user_two_tag)
+        query = Tag.where.any_of(user_one_tag, user_two_tag)
 
         expect(query).to include(tag_one, tag_two)
         expect(query).to_not include(tag_three)
@@ -102,7 +102,7 @@ RSpec.describe "Active Record Any / None of Methods" do
       it "Finds records that are queried from two or more has_many associations" do
         user_one_tag = Tag.create!(user_id: one.id)
         user_two_tag = Tag.create!(user_id: two.id)
-        query          = Tag.where.none_of(one.hm_tags, two.hm_tags)
+        query = Tag.where.none_of(one.hm_tags, two.hm_tags)
 
         expect(query).to include(tag_three)
         expect(query).to_not include(tag_one, tag_two, user_one_tag, user_two_tag)
@@ -111,7 +111,7 @@ RSpec.describe "Active Record Any / None of Methods" do
       it "Finds records that are dynamically joined" do
         user_one_tag = Tag.where(users: { id: one.id }).includes(:user).references(:user)
         user_two_tag = Tag.where(users: { id: two.id }).joins(:user)
-        query          = Tag.where.none_of(user_one_tag, user_two_tag)
+        query = Tag.where.none_of(user_one_tag, user_two_tag)
 
         expect(query).to include(tag_three)
         expect(query).to_not include(tag_one, tag_two)
