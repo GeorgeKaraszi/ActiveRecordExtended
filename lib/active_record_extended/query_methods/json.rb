@@ -60,8 +60,7 @@ module ActiveRecordExtended
           col_value         = to_arel_sql(value.presence || tbl_alias)
           json_build_object = arel_klass.new(to_sql_array(col_key, col_value))
 
-          # TODO: Change this to #match?(..) when we drop Rails 5.0 or Ruby 2.4 support
-          unless col_value.index(/".+"/)
+          unless /".+"/.match?(col_value)
             warn("`#{col_value}`: the `value` argument should contain a double quoted key reference for safety")
           end
 
