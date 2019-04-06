@@ -84,8 +84,14 @@ module ActiveRecordExtended
           collector << " ORDER BY "
           collector = inject_join(object.orderings, collector, ", ")
         end
-
         collector << ")"
+
+        if object.alias
+          collector << " AS "
+          visit object.alias, collector
+        else
+          collector
+        end
       end
 
       def visit_Arel_Nodes_Inet_ContainedWithinEquals(object, collector)
