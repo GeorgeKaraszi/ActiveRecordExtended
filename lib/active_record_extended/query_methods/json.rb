@@ -68,8 +68,8 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_object, col_alias)).from(nested_alias_escape(from, tbl_alias))
         end
 
-        def build_row_to_json(from:, key: key_generator, col_alias: nil, cast_as: false)
-          cast_to_agg = /^array_agg/.match?(cast_as.to_s)
+        def build_row_to_json(from:, key: key_generator, col_alias: nil, cast_with: false)
+          cast_to_agg = /^array_agg/.match?(cast_with.to_s)
           row_to_json = Arel::Nodes::RowToJson.new(double_quote(key))
           row_to_json = Arel::Node::ToJsonb.new(row_to_json) if cast_to_agg
 
@@ -87,7 +87,7 @@ module ActiveRecordExtended
           end
         end
 
-        # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_as option
+        # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_with option
         def json_object_options(*args) # rubocop:disable Metrics/AbcSize
           flatten_safely(args).each_with_object(values: []) do |arg, options|
             next if arg.nil?
@@ -96,7 +96,7 @@ module ActiveRecordExtended
               options[:key]           ||= arg.delete(:key)
               options[:value]         ||= arg.delete(:value).presence
               options[:col_alias]     ||= arg.delete(:as)
-              options[:cast_as]       ||= arg.delete(:cast_as) || arg.delete(:cast_as_array)
+              options[:cast_with]     ||= arg.delete(:cast_with) || arg.delete(:cast_as_array)
               options[:from]          ||= arg.delete(:from).tap(&method(:pipe_cte_with!))
             end
 
