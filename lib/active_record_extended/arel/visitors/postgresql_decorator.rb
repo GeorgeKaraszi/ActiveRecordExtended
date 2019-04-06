@@ -75,6 +75,19 @@ module ActiveRecordExtended
         aggregate "ARRAY_AGG", object, collector
       end
 
+      def visit_Arel_Nodes_AggregateFunctionName(object, collector)
+        collector << "#{object.name}("
+        collector << "DISTINCT " if object.distinct
+        collector = inject_join(object.expressions, collector, ", ")
+
+        if object.orderings
+          collector << " ORDER BY "
+          collector = inject_join(object.orderings, collector, ", ")
+        end
+
+        collector << ")"
+      end
+
       def visit_Arel_Nodes_Inet_ContainedWithinEquals(object, collector)
         infix_value object, collector, " <<= "
       end

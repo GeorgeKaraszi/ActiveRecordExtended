@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "arel/nodes/binary"
+require "arel/nodes/function"
 
 module Arel
   module Nodes
