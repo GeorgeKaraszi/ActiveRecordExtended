@@ -25,6 +25,7 @@ require "active_record_extended/query_methods/select"
 
 if ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR <= 1
   if ActiveRecord::VERSION::MINOR.zero?
+    require "active_record_extended/patch/5_0/regex_match"
     require "active_record_extended/patch/5_0/predicate_builder_decorator"
   end
   require "active_record_extended/patch/5_1/where_clause"
