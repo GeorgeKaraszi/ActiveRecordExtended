@@ -1,3 +1,16 @@
+# master (unreleased)
+- Introduce `.foster_select` a helper for select statements that can handel aliasing and provides casting options for many common aggregate functions.
+Supports any aggregate that does not require multiple arguments (`COUNT`, `AVG`, `MAX`, `ARRAY_AGG`, etc..): [Aggregate Functions](https://www.postgresql.org/docs/current/functions-aggregate.html)
+  - Supports Aggregate `DISTINCT` and `ORDER BY` inner expressions.
+- Reduced the code foot-print for declaring new Arel functions
+- Introduce new `Arel::Nodes::AggregateFunctionName` for dealing with inline-ing `ORDER BY` (will be expanded to handel `FILTER` next)
+- Introduce `cast_with:` for `.select_row_to_json`. 
+  - Supported options: `true (array)`, `:array`, `array_agg`, `array_agg_distinct`
+  
+### 2.0 Deprecation Warning
+- In order to keep options standardized, `.select_row_to_json` will be dropping `cast_to_array` in favor of the `cast_with` option.
+    
+
 # 1.0.1 - Match 29th 2019
 - Increased the required PG gem version range to accept `1.1.x`
 
