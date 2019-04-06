@@ -8,6 +8,7 @@ module ActiveRecordExtended
 
       class UnionChain
         include ::ActiveRecordExtended::Utilities
+        include ::ActiveRecordExtended::OrderByUtilities
 
         def initialize(scope)
           @scope = scope
@@ -68,38 +69,6 @@ module ActiveRecordExtended
           scope_count             -= 1 unless @scope.union_operations?
           scope_count              = 1 if scope_count <= 0 && @scope.union_values.size <= 1
           @scope.union_operations += [union_type] * scope_count
-        end
-
-        # We'll need to preprocess these arguments for allowing `ActiveRecord::Relation#preprocess_order_args`,
-        # to check for sanitization issues and convert over to `Arel::Nodes::[Ascending/Descending]`.
-        # Without reflecting / prepending the parent's table name.
-
-        if ActiveRecord.gem_version < Gem::Version.new("5.1")
-          # TODO: Rails 5.0.x order logic will *always* append the parents name to the column when its an HASH obj
-          #       We should really do this stuff better. Maybe even just ignore `preprocess_order_args` altogether?
-          #       Maybe I'm just stupidly over paranoid on just the 'ORDER BY' for some odd reason.
-          def process_ordering_arguments!(ordering_args)
-            ordering_args.flatten!
-            ordering_args.compact!
-            ordering_args.map! do |arg|
-              next to_arel_sql(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
-              arg.each_with_object([]) do |(field, dir), ordering_object|
-                ordering_object << to_arel_sql(field).send(dir.to_s.downcase)
-              end
-            end.flatten!
-          end
-        else
-          def process_ordering_arguments!(ordering_args)
-            ordering_args.flatten!
-            ordering_args.compact!
-            ordering_args.map! do |arg|
-              next to_arel_sql(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
-              arg.each_with_object({}) do |(field, dir), ordering_obj|
-                # ActiveRecord will not reflect if the Hash keys are a `Arel::Nodes::SqlLiteral` klass
-                ordering_obj[to_arel_sql(field)] = dir.to_s.downcase
-              end
-            end
-          end
         end
       end
 
@@ -246,11 +215,7 @@ module ActiveRecordExtended
       #
       def apply_union_ordering(union_nodes)
         return union_nodes unless union_ordering_values?
-
-        # Sanitation check / resolver (ActiveRecord::Relation#preprocess_order_args)
-        preprocess_order_args(union_ordering_values)
-        union_ordering_values.uniq!
-        Arel::Nodes::InfixOperation.new("ORDER BY", union_nodes, union_ordering_values)
+        UnionChain.new(self).inline_order_by(union_nodes, union_ordering_values)
       end
 
       private
