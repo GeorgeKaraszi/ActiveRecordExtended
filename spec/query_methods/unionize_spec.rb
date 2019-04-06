@@ -98,9 +98,10 @@ RSpec.describe "Active Record Union Methods" do
 
   describe "union.as" do
     let(:query) do
-      User.select("happy_users.id")
-            .union(User.where(id: user_one.id), User.where(id: user_three.id))
-            .union_as(:happy_users)
+      User
+        .select("happy_users.id")
+        .union(User.where(id: user_one.id), User.where(id: user_three.id))
+        .union_as(:happy_users)
     end
 
     it "should return two users" do
@@ -152,11 +153,10 @@ RSpec.describe "Active Record Union Methods" do
 
   describe "union.reorder_union" do
     it "should replace the ordering with the new parameters" do
-      user_a         = User.create!(number: 1)
-      user_b         = User.create!(number: 10)
+      user_a           = User.create!(number: 1)
+      user_b           = User.create!(number: 10)
       initial_ordering = [user_b, user_a]
-      query            = User.union(User.where(id: user_a.id), User.where(id: user_b.id))
-                               .order_union(id: :desc)
+      query            = User.union(User.where(id: user_a.id), User.where(id: user_b.id)).order_union(id: :desc)
 
       expect(query).to eq(initial_ordering)
       expect(query.reorder_union(number: :asc)).to eq(initial_ordering.reverse)

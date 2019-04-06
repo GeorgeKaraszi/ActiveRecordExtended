@@ -12,14 +12,14 @@ RSpec.describe "Active Record With CTE Query Methods" do
     context "when using as a standalone query" do
       it "should only return a person with less than 300 likes" do
         query = User.with(profile: ProfileL.where("likes < 300"))
-                      .joins("JOIN profile ON profile.id = users.id")
+                    .joins("JOIN profile ON profile.id = users.id")
 
         expect(query).to match_array([user_one])
       end
 
       it "should return anyone with likes greater than or equal to 200" do
         query = User.with(profile: ProfileL.where("likes >= 200"))
-                      .joins("JOIN profile ON profile.id = users.id")
+                    .joins("JOIN profile ON profile.id = users.id")
 
         expect(query).to match_array([user_one, user_two])
       end
