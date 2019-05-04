@@ -4,7 +4,7 @@ PATH
     active_record_extended (1.0.1)
       activerecord (>= 5.0, < 6.1)
       ar_outer_joins (~> 0.2)
-      pg (>= 0, < 1.3)
+      pg (< 2.0)
 
 GEM
   remote: https://rubygems.org/
@@ -101,4 +101,4 @@ DEPENDENCIES
   simplecov (~> 0.16)
 
 BUNDLED WITH
-   1.16.6
+   1.17.3

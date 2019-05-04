@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "activerecord", ">= 5.0", "< 6.1"
   spec.add_dependency "ar_outer_joins", "~> 0.2"
-  spec.add_dependency "pg", ">= 0", "< 1.3"
+  spec.add_dependency "pg", "< 2.0"
 
   spec.add_development_dependency "bundler", ">= 1.16", "< 2.1"
   spec.add_development_dependency "database_cleaner", "~> 1.6"
