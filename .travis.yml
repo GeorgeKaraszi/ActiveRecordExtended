@@ -12,7 +12,6 @@ before_install: gem install bundler
 branches:
   only:
     - master
-    - 1.1.0
 gemfile:
   - gemfiles/activerecord-50.gemfile
   - gemfiles/activerecord-51.gemfile
