@@ -1,9 +1,10 @@
-sudo: false
+sudo: required
 language: ruby
 rvm:
   - 2.3
   - 2.4
   - 2.5
+  - 2.6
   - ruby-head
 
 before_install: gem install bundler
@@ -11,21 +12,31 @@ before_install: gem install bundler
 branches:
   only:
     - master
+    - 1.1.0
 gemfile:
   - gemfiles/activerecord-50.gemfile
   - gemfiles/activerecord-51.gemfile
   - gemfiles/activerecord-52.gemfile
-  - gemfiles/activerecord-52+.gemfile
+  - gemfiles/activerecord-60.gemfile
 
 matrix:
   allow_failures:
     - rvm: ruby-head
-    - gemfile: gemfiles/activerecord-52+.gemfile
+  exclude:
+    - rvm: 2.3
+      gemfile: gemfiles/activerecord-60.gemfile
+    - rvm: 2.4
+      gemfile: gemfiles/activerecord-60.gemfile
 
 
-env: DATABASE_URL=postgres://postgres@localhost/active_record_extended_test
+env:
+  global:
+    - DATABASE_URL=postgres://postgres@localhost/active_record_extended_test
+    - PGPORT=5433
 
 before_script:
+  - sudo sed -i -e '/local.*peer/s/postgres/all/' -e 's/peer\|md5/trust/g' /etc/postgresql/*/main/pg_hba.conf
+  - sudo service postgresql restart
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
@@ -39,4 +50,8 @@ cache:
   - bundler
 
 addons:
-  postgresql: '9.6'
+  postgresql: "10"
+  apt:
+    packages:
+      - postgresql-10
+      - postgresql-client-10
