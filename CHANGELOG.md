@@ -1,3 +1,7 @@
+# 1.1.0 - May 4th 2019
+- ActiveRecord/Rails 6.0 support
+- Allow for any pg gem version below v2.0
+
 # 1.0.1 - Match 29th 2019
 - Increased the required PG gem version range to accept `1.1.x`
 
