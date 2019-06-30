@@ -21,10 +21,13 @@ module Arel
     def contains(other)
       Nodes::Contains.new self, Nodes.build_quoted(other, self)
     end
-    alias inet_contains contains
 
     def contained_in_array(other)
       Nodes::ContainedInArray.new self, Nodes.build_quoted(other, self)
+    end
+
+    def inet_contains(other)
+      Nodes::Inet::Contains.new self, Nodes.build_quoted(other, self)
     end
 
     def inet_contains_or_is_contained_within(other)

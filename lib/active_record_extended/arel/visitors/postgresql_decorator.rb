@@ -23,7 +23,7 @@ module ActiveRecordExtended
         elsif left_column.try(:array)
           visit_Arel_Nodes_ContainsArray(object, collector)
         else
-          infix_value object, collector, " >> "
+          visit_Arel_Nodes_Inet_Contains(object, collector)
         end
       end
 
@@ -92,6 +92,10 @@ module ActiveRecordExtended
         else
           collector
         end
+      end
+
+      def visit_Arel_Nodes_Inet_Contains(object, collector)
+        infix_value object, collector, " >> "
       end
 
       def visit_Arel_Nodes_Inet_ContainedWithinEquals(object, collector)
