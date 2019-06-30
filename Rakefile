@@ -69,6 +69,11 @@ namespace :db do
         t.datetime "updated_at"
       end
 
+      create_table :namespaced_records, force: true do |t|
+        t.inet "ip"
+        t.cidr "subnet"
+      end
+
       create_table :tags, force: true do |t|
         t.belongs_to :user, index: true, foreign_key: true
         t.integer :tag_number, default: 0

@@ -20,6 +20,19 @@ class User < ApplicationRecord
   #
 end
 
+module Namespaced 
+  def self.table_name_prefix
+    'namespaced_'
+  end
+
+  class Record < ApplicationRecord
+    # attributes
+    # t.inet :ip
+    # t.cidr :subnet
+    #
+  end
+end
+
 class Tag < ApplicationRecord
   belongs_to :user
   # attributes: tag_number
