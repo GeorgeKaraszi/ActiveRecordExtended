@@ -3,6 +3,8 @@
 require "spec_helper"
 
 RSpec.describe "Active Record Inet Query Methods" do
+  before { stub_const('User', Namespaced::Record) }
+
   describe "#inet_contained_within" do
     let!(:local_1)     { User.create!(ip: "127.0.0.1") }
     let!(:local_44)    { User.create!(ip: "127.0.0.44") }

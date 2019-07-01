@@ -35,6 +35,7 @@ module Arel
 
     module Inet
       %w[
+        Contains
         ContainsEquals
         ContainedWithin
         ContainedWithinEquals
