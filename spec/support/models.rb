@@ -20,9 +20,9 @@ class User < ApplicationRecord
   #
 end
 
-module Namespaced 
+module Namespaced
   def self.table_name_prefix
-    'namespaced_'
+    "namespaced_"
   end
 
   class Record < ApplicationRecord
