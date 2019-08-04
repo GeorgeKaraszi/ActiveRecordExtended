@@ -79,15 +79,6 @@ module ActiveRecordExtended
           @scope._select!(to_casted_query(query, alias_name, options))
         end
 
-        # Processes "ORDER BY" expressions for supported aggregate functions
-        def order_by_expression(order_by)
-          return false unless order_by.present?
-
-          Array.wrap(order_by)
-               .tap(&method(:process_ordering_arguments!))
-               .tap(&method(:scope_preprocess_order_args))
-        end
-
         # Wraps the query with the requested query method
         # Example:
         #   to_casted_query("memberships.cost", :total_revenue, :sum)
