@@ -75,8 +75,8 @@ module ActiveRecordExtended
           cast_opts   = options.delete(:cast_with)
           col_alias   = options.delete(:col_alias)
           key         = options.delete(:key)
-          row_to_json = Arel::Nodes::RowToJson.new(double_quote(key))
-          row_to_json = Arel::Node::ToJsonb.new(row_to_json) if cast_opts[:to_jsonb]
+          row_to_json = ::Arel::Nodes::RowToJson.new(double_quote(key))
+          row_to_json = ::Arel::Nodes::ToJsonb.new(row_to_json) if cast_opts[:to_jsonb]
 
           dummy_table = from_clause_constructor(from, key).select(row_to_json)
           dummy_table = dummy_table.instance_eval(&block) if block_given?
@@ -118,10 +118,10 @@ module ActiveRecordExtended
           skip_convert = [Symbol, TrueClass, FalseClass]
           Array(cast_with).each_with_object({}) do |arg, options|
             arg                 = arg.to_s.to_sym unless skip_convert.include?(arg.class)
-            options[:to_jsonb]  = TO_JSONB_OPTIONS.include?(arg)
-            options[:array]     = ARRAY_OPTIONS.include?(arg)
-            options[:array_agg] = arg == :array_agg
-            options[:distinct]  = arg == :distinct
+            options[:to_jsonb]  = true if TO_JSONB_OPTIONS.include?(arg)
+            options[:array]     = true if ARRAY_OPTIONS.include?(arg)
+            options[:array_agg] = true if arg == :array_agg
+            options[:distinct]  = true if arg == :distinct
           end
         end
       end

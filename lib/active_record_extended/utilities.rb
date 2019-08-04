@@ -53,7 +53,11 @@ module ActiveRecordExtended
       distinct       = !(!distinct)
       order_exp      = distinct ? nil : order_by # Can't order a distinct agg
       query          = group_when_needed(arel_or_rel_query)
-      query          = Arel::Nodes::ArrayAgg.new(to_sql_array(query), distinct).order_by(order_exp)
+      query          =
+        Arel::Nodes::AggregateFunctionName
+        .new("ARRAY_AGG", to_sql_array(query), distinct)
+        .order_by(order_exp)
+
       nested_alias_escape(query, alias_name)
     end
 

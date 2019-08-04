@@ -32,6 +32,7 @@ LineLength:
   Max: 120
   Exclude:
     - examples/**/*
+    - spec/**/*
 
 BracesAroundHashParameters:
   EnforcedStyle: context_dependent
