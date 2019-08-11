@@ -71,27 +71,31 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_object, col_alias)).from(nested_alias_escape(from, tbl_alias))
         end
 
-        def build_row_to_json(from:, **options, &block) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
-          cast_opts   = options.delete(:cast_with)
-          col_alias   = options.delete(:col_alias)
-          key         = options.delete(:key)
+        def build_row_to_json(from:, **options, &block)
+          key         = options[:key]
           row_to_json = ::Arel::Nodes::RowToJson.new(double_quote(key))
-          row_to_json = ::Arel::Nodes::ToJsonb.new(row_to_json) if cast_opts[:to_jsonb]
+          row_to_json = ::Arel::Nodes::ToJsonb.new(row_to_json) if options.dig(:cast_with, :to_jsonb)
 
           dummy_table = from_clause_constructor(from, key).select(row_to_json)
           dummy_table = dummy_table.instance_eval(&block) if block_given?
-          return dummy_table if col_alias.blank?
+          return dummy_table if options[:col_alias].blank?
 
-          query =
-            if cast_opts[:array_agg] || cast_opts[:distinct]
-              wrap_with_agg_array(dummy_table, col_alias, order_by: options[:order_by], distinct: cast_opts[:distinct])
-            elsif cast_opts[:array]
-              wrap_with_array(dummy_table, col_alias, order_by: options[:order_by])
-            else
-              nested_alias_escape(dummy_table, col_alias)
-            end
-
+          query = wrap_row_to_json(dummy_table, options)
           @scope.select(query)
+        end
+
+        def wrap_row_to_json(dummy_table, options)
+          cast_opts = options[:cast_with]
+          col_alias = options[:col_alias]
+          order_by  = options[:order_by]
+
+          if cast_opts[:array_agg] || cast_opts[:distinct]
+            wrap_with_agg_array(dummy_table, col_alias, order_by: order_by, distinct: cast_opts[:distinct])
+          elsif cast_opts[:array]
+            wrap_with_array(dummy_table, col_alias, order_by: order_by)
+          else
+            nested_alias_escape(dummy_table, col_alias)
+          end
         end
 
         # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_with option
