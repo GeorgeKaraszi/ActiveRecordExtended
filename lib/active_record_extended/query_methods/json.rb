@@ -71,7 +71,7 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_object, col_alias)).from(nested_alias_escape(from, tbl_alias))
         end
 
-        def build_row_to_json(from:, **options, &block)
+        def build_row_to_json(from:, **options, &block) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
           cast_opts   = options.delete(:cast_with)
           col_alias   = options.delete(:col_alias)
           key         = options.delete(:key)
@@ -113,15 +113,15 @@ module ActiveRecordExtended
         end
 
         def casting_options(cast_with)
-          return {} if cast_with.nil?
+          return {} if cast_with.blank?
 
           skip_convert = [Symbol, TrueClass, FalseClass]
-          Array(cast_with).each_with_object({}) do |arg, options|
-            arg                 = arg.to_s.to_sym unless skip_convert.include?(arg.class)
-            options[:to_jsonb]  = true if TO_JSONB_OPTIONS.include?(arg)
-            options[:array]     = true if ARRAY_OPTIONS.include?(arg)
-            options[:array_agg] = true if arg == :array_agg
-            options[:distinct]  = true if arg == :distinct
+          Array(cast_with).compact.each_with_object({}) do |arg, options|
+            arg                  = arg.to_sym unless skip_convert.include?(arg.class)
+            options[:to_jsonb]  |= TO_JSONB_OPTIONS.include?(arg)
+            options[:array]     |= ARRAY_OPTIONS.include?(arg)
+            options[:array_agg] |= arg == :array_agg
+            options[:distinct]  |= arg == :distinct
           end
         end
       end
