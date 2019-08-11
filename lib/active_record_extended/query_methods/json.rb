@@ -147,7 +147,8 @@ module ActiveRecordExtended
       #     * :distinct  (auto applies :array_agg & :to_jsonb)
       #
       #   - order_by [Symbol or hash]: Applies an ordering operation (similar to ActiveRecord #order)
-      #     - NOTE: this option will be ignored if you need to order a DISTINCT Aggregated Array, since postgres will thrown an error.
+      #     - NOTE: this option will be ignored if you need to order a DISTINCT Aggregated Array,
+      #             since postgres will thrown an error.
       #
       #
       #
@@ -214,7 +215,14 @@ module ActiveRecordExtended
       # - Ordering an Aggregated Array
       #
       #  Subquery = Group.select(:name, :category_id)
-      #  User.joins(:people_groups).select_row_to_json(subquery, key: :group, cast_with: :array_agg, order_by: { people_groups: :category_id })
+      #  User
+      #   .joins(:people_groups)
+      #  .select_row_to_json(
+      #     subquery,
+      #     key: :group,
+      #     cast_with: :array_agg,
+      #     order_by: { people_groups: :category_id }
+      #   )
       #   #=>  ```sql
       #     SELECT ARRAY_AGG((
       #           SELECT ROW_TO_JSON("group")
