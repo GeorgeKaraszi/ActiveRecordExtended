@@ -4,8 +4,8 @@ module ActiveRecordExtended
   module QueryMethods
     module Select
       class SelectHelper
-        include ::ActiveRecordExtended::Utilities
-        include ::ActiveRecordExtended::OrderByUtilities
+        include ::ActiveRecordExtended::Utilities::Support
+        include ::ActiveRecordExtended::Utilities::OrderBy
 
         AGGREGATE_ONE_LINERS = /^(exists|sum|max|min|avg|count|jsonb?_agg|(bit|bool)_(and|or)|xmlagg|array_agg)$/.freeze
 

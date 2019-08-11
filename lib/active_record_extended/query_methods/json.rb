@@ -12,8 +12,8 @@ module ActiveRecordExtended
       ].freeze
 
       class JsonChain
-        include ::ActiveRecordExtended::Utilities
-        include ::ActiveRecordExtended::OrderByUtilities
+        include ::ActiveRecordExtended::Utilities::Support
+        include ::ActiveRecordExtended::Utilities::OrderBy
 
         DEFAULT_ALIAS    = '"results"'
         TO_JSONB_OPTIONS = [:array_agg, :distinct, :to_jsonb].to_set.freeze
