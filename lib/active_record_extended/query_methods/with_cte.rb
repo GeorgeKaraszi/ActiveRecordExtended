@@ -54,12 +54,12 @@ module ActiveRecordExtended
           select =
             case expression
             when String
-              Arel::Nodes::SqlLiteral.new("(#{expression})")
+              Arel.sql("(#{expression})")
             when ActiveRecord::Relation, Arel::SelectManager
-              Arel::Nodes::SqlLiteral.new("(#{expression.to_sql})")
+              Arel.sql("(#{expression.to_sql})")
             end
           next if select.nil?
-          Arel::Nodes::As.new(Arel::Nodes::SqlLiteral.new(PG::Connection.quote_ident(name.to_s)), select)
+          Arel::Nodes::As.new(Arel.sql(PG::Connection.quote_ident(name.to_s)), select)
         end
       end
 

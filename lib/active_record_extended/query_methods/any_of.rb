@@ -28,7 +28,7 @@ module ActiveRecordExtended
       private
 
       def hash_map_queries(queries)
-        if queries.count == 1 && queries.first.is_a?(Hash)
+        if queries.size == 1 && queries.first.is_a?(Hash)
           queries.first.each_pair.map { |attr, predicate| Hash[attr, predicate] }
         else
           queries
@@ -38,9 +38,10 @@ module ActiveRecordExtended
       def build_query(queries)
         query_map = construct_query_mappings(queries)
         query     = yield(query_map[:arel_query], query_map[:binds])
-        query.joins(query_map[:joins].to_a)
-             .includes(query_map[:includes].to_a)
-             .references(query_map[:references].to_a)
+        query
+          .joins(query_map[:joins].to_a)
+          .includes(query_map[:includes].to_a)
+          .references(query_map[:references].to_a)
       end
 
       def construct_query_mappings(queries) # rubocop:disable Metrics/AbcSize

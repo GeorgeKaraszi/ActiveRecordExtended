@@ -12,8 +12,8 @@ module ActiveRecordExtended
       ].freeze
 
       class JsonChain
-        include ::ActiveRecordExtended::Utilities
-        include ::ActiveRecordExtended::OrderByUtilities
+        include ::ActiveRecordExtended::Utilities::Support
+        include ::ActiveRecordExtended::Utilities::OrderBy
 
         DEFAULT_ALIAS    = '"results"'
         TO_JSONB_OPTIONS = [:array_agg, :distinct, :to_jsonb].to_set.freeze
@@ -24,27 +24,27 @@ module ActiveRecordExtended
         end
 
         def row_to_json!(**args, &block)
-          options = json_object_options(args).except(:values, :value)
+          options = json_object_options(args, except: [:values, :value])
           build_row_to_json(**options, &block)
         end
 
         def json_build_object!(*args)
-          options = json_object_options(args).except!(:values)
+          options = json_object_options(args, except: [:values, :cast_with, :order_by])
           build_json_object(Arel::Nodes::JsonBuildObject, **options)
         end
 
         def jsonb_build_object!(*args)
-          options = json_object_options(args).except!(:values)
+          options = json_object_options(args, except: [:values, :cast_with, :order_by])
           build_json_object(Arel::Nodes::JsonbBuildObject, **options)
         end
 
         def json_build_literal!(*args)
-          options = json_object_options(args).slice(:values, :col_alias)
+          options = json_object_options(args, only: [:values, :col_alias])
           build_json_literal(Arel::Nodes::JsonBuildObject, **options)
         end
 
         def jsonb_build_literal!(*args)
-          options = json_object_options(args).slice(:values, :col_alias)
+          options = json_object_options(args, only: [:values, :col_alias])
           build_json_literal(Arel::Nodes::JsonbBuildObject, **options)
         end
 
@@ -57,7 +57,7 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_obj, col_alias))
         end
 
-        def build_json_object(arel_klass, from:, key: key_generator, value: nil, col_alias: DEFAULT_ALIAS, **_options)
+        def build_json_object(arel_klass, from:, key: key_generator, value: nil, col_alias: DEFAULT_ALIAS)
           tbl_alias         = double_quote(key)
           col_alias         = double_quote(col_alias)
           col_key           = literal_key(key)
@@ -72,56 +72,74 @@ module ActiveRecordExtended
         end
 
         def build_row_to_json(from:, **options, &block)
-          cast_opts   = options.delete(:cast_with)
-          col_alias   = options.delete(:col_alias)
-          key         = options.delete(:key)
+          key         = options[:key]
           row_to_json = ::Arel::Nodes::RowToJson.new(double_quote(key))
-          row_to_json = ::Arel::Nodes::ToJsonb.new(row_to_json) if cast_opts[:to_jsonb]
+          row_to_json = ::Arel::Nodes::ToJsonb.new(row_to_json) if options.dig(:cast_with, :to_jsonb)
 
           dummy_table = from_clause_constructor(from, key).select(row_to_json)
           dummy_table = dummy_table.instance_eval(&block) if block_given?
-          return dummy_table if col_alias.blank?
+          return dummy_table if options[:col_alias].blank?
 
-          query =
-            if cast_opts[:array_agg] || cast_opts[:distinct]
-              wrap_with_agg_array(dummy_table, col_alias, order_by: options[:order_by], distinct: cast_opts[:distinct])
-            elsif cast_opts[:array]
-              wrap_with_array(dummy_table, col_alias, order_by: options[:order_by])
-            else
-              nested_alias_escape(dummy_table, col_alias)
-            end
-
+          query = wrap_row_to_json(dummy_table, options)
           @scope.select(query)
         end
 
+        def wrap_row_to_json(dummy_table, options)
+          cast_opts = options[:cast_with]
+          col_alias = options[:col_alias]
+          order_by  = options[:order_by]
+
+          if cast_opts[:array_agg] || cast_opts[:distinct]
+            wrap_with_agg_array(dummy_table, col_alias, order_by: order_by, distinct: cast_opts[:distinct])
+          elsif cast_opts[:array]
+            wrap_with_array(dummy_table, col_alias, order_by: order_by)
+          else
+            nested_alias_escape(dummy_table, col_alias)
+          end
+        end
+
         # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_with option
-        def json_object_options(*args) # rubocop:disable Metrics/AbcSize
-          flatten_safely(args).each_with_object(values: []) do |arg, options|
+        def json_object_options(args, except: [], only: []) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+          options   = {}
+          lean_opts = lambda do |key, &block|
+            if only.present?
+              options[key] ||= block.call if only.include?(key)
+            elsif !except.include?(key)
+              options[key] ||= block.call
+            end
+          end
+
+          flatten_safely(args) do |arg|
             next if arg.nil?
 
             if arg.is_a?(Hash)
-              options[:key]       ||= arg.delete(:key) || key_generator
-              options[:value]     ||= arg.delete(:value).presence
-              options[:col_alias] ||= arg.delete(:as)
-              options[:cast_with] ||= casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array))
-              options[:order_by]  ||= order_by_expression(arg.delete(:order_by))
-              options[:from]      ||= arg.delete(:from).tap(&method(:pipe_cte_with!))
+              lean_opts.call(:key)       { arg.delete(:key) || key_generator }
+              lean_opts.call(:value)     { arg.delete(:value).presence }
+              lean_opts.call(:col_alias) { arg.delete(:as) }
+              lean_opts.call(:order_by)  { order_by_expression(arg.delete(:order_by)) }
+              lean_opts.call(:from)      { arg.delete(:from).tap(&method(:pipe_cte_with!)) }
+              lean_opts.call(:cast_with) { casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array)) }
             end
 
-            options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)
-          end.compact
+            unless except.include?(:values)
+              options[:values] ||= []
+              options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)
+            end
+          end
+
+          options.tap(&:compact!)
         end
 
         def casting_options(cast_with)
-          return {} if cast_with.nil?
+          return {} if cast_with.blank?
 
           skip_convert = [Symbol, TrueClass, FalseClass]
-          Array(cast_with).each_with_object({}) do |arg, options|
-            arg                 = arg.to_s.to_sym unless skip_convert.include?(arg.class)
-            options[:to_jsonb]  = true if TO_JSONB_OPTIONS.include?(arg)
-            options[:array]     = true if ARRAY_OPTIONS.include?(arg)
-            options[:array_agg] = true if arg == :array_agg
-            options[:distinct]  = true if arg == :distinct
+          Array(cast_with).compact.each_with_object({}) do |arg, options|
+            arg                  = arg.to_sym unless skip_convert.include?(arg.class)
+            options[:to_jsonb]  |= TO_JSONB_OPTIONS.include?(arg)
+            options[:array]     |= ARRAY_OPTIONS.include?(arg)
+            options[:array_agg] |= arg == :array_agg
+            options[:distinct]  |= arg == :distinct
           end
         end
       end
