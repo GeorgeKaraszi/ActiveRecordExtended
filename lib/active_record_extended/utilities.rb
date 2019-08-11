@@ -35,7 +35,11 @@ module ActiveRecordExtended
 
     # Wraps subquery into an Aliased ARRAY
     # Ex: `SELECT * FROM users` => (ARRAY(SELECT * FROM users)) AS "members"
-    def wrap_with_array(arel_or_rel_query, alias_name)
+    def wrap_with_array(arel_or_rel_query, alias_name, order_by: false)
+      if order_by && arel_or_rel_query.is_a?(ActiveRecord::Relation)
+        arel_or_rel_query = arel_or_rel_query.order(order_by)
+      end
+
       query = Arel::Nodes::Array.new(to_sql_array(arel_or_rel_query))
       nested_alias_escape(query, alias_name)
     end
@@ -45,10 +49,15 @@ module ActiveRecordExtended
     #     `(ARRAY_AGG(DISTINCT (SELECT * FROM users)) AS "members"`
     #     `SELECT ARRAY_AGG((id)) AS "ids" FROM users`
     #     `SELECT ARRAY_AGG(DISTINCT (id)) AS "ids" FROM users`
-    def wrap_with_agg_array(arel_or_rel_query, alias_name, casting_option = :agg, distinct = false)
+    def wrap_with_agg_array(arel_or_rel_query, alias_name, order_by: false, distinct: false)
+      distinct       = !(!distinct)
+      order_exp      = distinct ? nil : order_by # Can't order a distinct agg
       query          = group_when_needed(arel_or_rel_query)
-      query          = Arel::Nodes::ArrayAgg.new(to_sql_array(query))
-      query.distinct = distinct || [:agg_distinct, :array_agg_distinct].include?(casting_option)
+      query          =
+        Arel::Nodes::AggregateFunctionName
+        .new("ARRAY_AGG", to_sql_array(query), distinct)
+        .order_by(order_exp)
+
       nested_alias_escape(query, alias_name)
     end
 

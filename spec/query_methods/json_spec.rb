@@ -31,6 +31,21 @@ RSpec.describe "Active Record JSON methods" do
       end
     end
 
+    it "accepts a scope-block without arguments" do
+      query = User.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results) do
+        where("tag_row.tag_number = 5")
+      end
+
+      expect(query.size).to eq(2)
+      query.each do |result|
+        if result.id == user_one.id
+          expect(result.results).to be_blank
+        else
+          expect(result.results).to be_present.and(match("tag_number" => 5))
+        end
+      end
+    end
+
     it "allows for casting results in an aggregate-able Array function" do
       query = User.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results, cast_as_array: true)
       expect(query.take.results).to be_a(Array).and(be_present)

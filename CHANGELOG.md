@@ -1,14 +1,21 @@
 # master (unreleased)
+
+## Changes
 - Introduce `.foster_select` a helper for select statements that can handel aliasing and provides casting options for many common aggregate functions.
 Supports any aggregate that does not require multiple arguments (`COUNT`, `AVG`, `MAX`, `ARRAY_AGG`, etc..): [Aggregate Functions](https://www.postgresql.org/docs/current/functions-aggregate.html)
   - Supports Aggregate `DISTINCT` and `ORDER BY` inner expressions.
 - Reduced the code foot-print for declaring new Arel functions
 - Introduce new `Arel::Nodes::AggregateFunctionName` for dealing with inline-ing `ORDER BY` (will be expanded to handel `FILTER` next)
-- Introduce `cast_with:` for `.select_row_to_json`. 
-  - Supported options: `true (array)`, `:array`, `array_agg`, `array_agg_distinct`
+
+#### `.select_row_to_json` Changes
+- Argument-less scoped blocks (inner-block argument is now optional)
+- `cast_with:` 
+  - Supported options: `true` (array), `:array`, `:array_agg`, `distinct`, and `:to_jsonb`
+- `order_by:` : Accepts ActiveRecord like options for ordering responses from an array or aggregated array
   
 ### 2.0 Deprecation Warning
-- In order to keep options standardized, `.select_row_to_json` will be dropping `cast_to_array` in favor of the `cast_with` option.
+- In order to keep options standardized, `.select_row_to_json` will be dropping `cast_to_array` in favor of the `cast_with` option;
+  Furthermore, the default `true` for `cast_with` option will be deprecated as well in favor of more verbose `:array` option
     
 # 1.1.0 - May 4th 2019
 - ActiveRecord/Rails 6.0 support

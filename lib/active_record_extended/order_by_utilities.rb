@@ -18,6 +18,47 @@ module ActiveRecordExtended
       ordering_args
     end
 
+    # Processes "ORDER BY" expressions for supported aggregate functions
+    def order_by_expression(order_by)
+      return false unless order_by && order_by.presence.present?
+
+      to_ordered_table_path(order_by)
+        .tap(&method(:process_ordering_arguments!))
+        .tap(&method(:scope_preprocess_order_args))
+    end
+
+    #
+    # Turns a hash into a dot notation path.
+    #
+    # Example:
+    # - Using pre-set directions:
+    #   [{ products: { position: :asc, id: :desc } }]
+    #     #=> [{ "products.position" => :asc, "products.id" => :desc }]
+    #
+    # - Using fallback directions:
+    #   [{products: :position}]
+    #     #=> [{"products.position" => :asc}]
+    #
+    def to_ordered_table_path(args)
+      flatten_safely(Array.wrap(args)) do |arg|
+        next arg unless arg.is_a?(Hash)
+
+        arg.each_with_object({}) do |(tbl_or_col, obj), new_hash|
+          if obj.is_a?(Hash)
+            obj.each_pair do |o_key, o_value|
+              new_hash["#{tbl_or_col}.#{o_key}"] = o_value
+            end
+          elsif ::ActiveRecord::QueryMethods::VALID_DIRECTIONS.include?(obj)
+            new_hash[tbl_or_col] = obj
+          elsif obj.nil?
+            new_hash[tbl_or_col.to_s] = :asc
+          else
+            new_hash["#{tbl_or_col}.#{obj}"] = :asc
+          end
+        end
+      end
+    end
+
     # We'll need to preprocess these arguments for allowing `ActiveRecord::Relation#preprocess_order_args`,
     # to check for sanitization issues and convert over to `Arel::Nodes::[Ascending/Descending]`.
     # Without reflecting / prepending the parent's table name.

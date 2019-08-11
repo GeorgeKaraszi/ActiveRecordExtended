@@ -13,7 +13,11 @@ module ActiveRecordExtended
 
       class JsonChain
         include ::ActiveRecordExtended::Utilities
-        DEFAULT_ALIAS = '"results"'
+        include ::ActiveRecordExtended::OrderByUtilities
+
+        DEFAULT_ALIAS    = '"results"'
+        TO_JSONB_OPTIONS = [:array_agg, :distinct, :to_jsonb].to_set.freeze
+        ARRAY_OPTIONS    = [:array, true].freeze
 
         def initialize(scope)
           @scope = scope
@@ -53,7 +57,7 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_obj, col_alias))
         end
 
-        def build_json_object(arel_klass, from:, key: key_generator, value: nil, col_alias: DEFAULT_ALIAS)
+        def build_json_object(arel_klass, from:, key: key_generator, value: nil, col_alias: DEFAULT_ALIAS, **_options)
           tbl_alias         = double_quote(key)
           col_alias         = double_quote(col_alias)
           col_key           = literal_key(key)
@@ -67,23 +71,27 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_object, col_alias)).from(nested_alias_escape(from, tbl_alias))
         end
 
-        def build_row_to_json(from:, key: key_generator, col_alias: nil, cast_with: false)
-          cast_to_agg = /^array_agg/.match?(cast_with.to_s)
-          row_to_json = Arel::Nodes::RowToJson.new(double_quote(key))
-          row_to_json = Arel::Node::ToJsonb.new(row_to_json) if cast_to_agg
+        def build_row_to_json(from:, **options, &block)
+          cast_opts   = options.delete(:cast_with)
+          col_alias   = options.delete(:col_alias)
+          key         = options.delete(:key)
+          row_to_json = ::Arel::Nodes::RowToJson.new(double_quote(key))
+          row_to_json = ::Arel::Nodes::ToJsonb.new(row_to_json) if cast_opts[:to_jsonb]
 
           dummy_table = from_clause_constructor(from, key).select(row_to_json)
-          dummy_table = yield dummy_table if block_given?
+          dummy_table = dummy_table.instance_eval(&block) if block_given?
+          return dummy_table if col_alias.blank?
 
-          if col_alias.blank?
-            dummy_table
-          elsif cast_to_agg
-            @scope.select(wrap_with_agg_array(dummy_table, col_alias, cast_as))
-          elsif cast_with
-            @scope.select(wrap_with_array(dummy_table, col_alias))
-          else
-            @scope.select(nested_alias_escape(dummy_table, col_alias))
-          end
+          query =
+            if cast_opts[:array_agg] || cast_opts[:distinct]
+              wrap_with_agg_array(dummy_table, col_alias, order_by: options[:order_by], distinct: cast_opts[:distinct])
+            elsif cast_opts[:array]
+              wrap_with_array(dummy_table, col_alias, order_by: options[:order_by])
+            else
+              nested_alias_escape(dummy_table, col_alias)
+            end
+
+          @scope.select(query)
         end
 
         # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_with option
@@ -92,15 +100,29 @@ module ActiveRecordExtended
             next if arg.nil?
 
             if arg.is_a?(Hash)
-              options[:key]           ||= arg.delete(:key)
-              options[:value]         ||= arg.delete(:value).presence
-              options[:col_alias]     ||= arg.delete(:as)
-              options[:cast_with]     ||= arg.delete(:cast_with) || arg.delete(:cast_as_array)
-              options[:from]          ||= arg.delete(:from).tap(&method(:pipe_cte_with!))
+              options[:key]       ||= arg.delete(:key) || key_generator
+              options[:value]     ||= arg.delete(:value).presence
+              options[:col_alias] ||= arg.delete(:as)
+              options[:cast_with] ||= casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array))
+              options[:order_by]  ||= order_by_expression(arg.delete(:order_by))
+              options[:from]      ||= arg.delete(:from).tap(&method(:pipe_cte_with!))
             end
 
             options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)
           end.compact
+        end
+
+        def casting_options(cast_with)
+          return {} if cast_with.nil?
+
+          skip_convert = [Symbol, TrueClass, FalseClass]
+          Array(cast_with).each_with_object({}) do |arg, options|
+            arg                 = arg.to_s.to_sym unless skip_convert.include?(arg.class)
+            options[:to_jsonb]  = true if TO_JSONB_OPTIONS.include?(arg)
+            options[:array]     = true if ARRAY_OPTIONS.include?(arg)
+            options[:array_agg] = true if arg == :array_agg
+            options[:distinct]  = true if arg == :distinct
+          end
         end
       end
 
@@ -116,8 +138,21 @@ module ActiveRecordExtended
       #         - This is useful if you would like to add additional mid-level clauses (see mid-level scope example)
       #
       #   - cast_as_array [boolean] (default=false): Determines if the query should be nested inside an Array() function
+      #     * Will be deprecated in V2.0 in favor of `cast_with` argument
       #
-      # Example:
+      #   - cast_with [Symbol or Array of symbols]: Actions to transform your query
+      #     * :to_jsonb
+      #     * :array
+      #     * :array_agg (including just :array with this option will favor :array_agg)
+      #     * :distinct  (auto applies :array_agg & :to_jsonb)
+      #
+      #   - order_by [Symbol or hash]: Applies an ordering operation (similar to ActiveRecord #order)
+      #     - NOTE: this option will be ignored if you need to order a DISTINCT Aggregated Array,
+      #             since postgres will thrown an error.
+      #
+      #
+      #
+      # Examples:
       #   subquery = Group.select(:name, :category_id).where("user_id = users.id")
       #   User.select(:name, email).select_row_to_json(subquery, as: :users_groups, cast_as_array: true)
       #     #=> [<#User name:.., email:.., users_groups: [{ name: .., category_id: .. }, ..]]
@@ -128,8 +163,74 @@ module ActiveRecordExtended
       #   User.select_row_to_json(subquery, key: :group, cast_as_array: true) do |scope|
       #     scope.where(group: { name: "Nerd Core" })
       #   end
+      #    #=>  ```sql
+      #       SELECT ARRAY(
+      #             SELECT ROW_TO_JSON("group")
+      #             FROM(SELECT name, category_id FROM groups) AS group
+      #             WHERE group.name = 'Nerd Core'
+      #       )
+      #    ```
       #
-
+      #
+      # - Array of JSONB objects
+      #
+      #   subquery = Group.select(:name, :category_id)
+      #   User.select_row_to_json(subquery, key: :group, cast_with: [:array, :to_jsonb]) do |scope|
+      #     scope.where(group: { name: "Nerd Core" })
+      #   end
+      #   #=>  ```sql
+      #       SELECT ARRAY(
+      #             SELECT TO_JSONB(ROW_TO_JSON("group"))
+      #             FROM(SELECT name, category_id FROM groups) AS group
+      #             WHERE group.name = 'Nerd Core'
+      #       )
+      #   ```
+      #
+      # - Distinct Aggregated Array
+      #
+      #   subquery = Group.select(:name, :category_id)
+      #   User.select_row_to_json(subquery, key: :group, cast_with: [:array_agg, :distinct]) do |scope|
+      #     scope.where(group: { name: "Nerd Core" })
+      #   end
+      #   #=>  ```sql
+      #      SELECT ARRAY_AGG(DISTINCT (
+      #            SELECT TO_JSONB(ROW_TO_JSON("group"))
+      #            FROM(SELECT name, category_id FROM groups) AS group
+      #            WHERE group.name = 'Nerd Core'
+      #      ))
+      #   ```
+      #
+      # - Ordering a Non-aggregated Array
+      #
+      #  subquery = Group.select(:name, :category_id)
+      #  User.select_row_to_json(subquery, key: :group, cast_with: :array, order_by: { group: { name: :desc } })
+      #  #=>  ```sql
+      #     SELECT ARRAY(
+      #           SELECT ROW_TO_JSON("group")
+      #           FROM(SELECT name, category_id FROM groups) AS group
+      #           ORDER BY group.name DESC
+      #     )
+      #  ```
+      #
+      # - Ordering an Aggregated Array
+      #
+      #  Subquery = Group.select(:name, :category_id)
+      #  User
+      #   .joins(:people_groups)
+      #  .select_row_to_json(
+      #     subquery,
+      #     key: :group,
+      #     cast_with: :array_agg,
+      #     order_by: { people_groups: :category_id }
+      #   )
+      #   #=>  ```sql
+      #     SELECT ARRAY_AGG((
+      #           SELECT ROW_TO_JSON("group")
+      #           FROM(SELECT name, category_id FROM groups) AS group
+      #           ORDER BY group.name DESC
+      #     ) ORDER BY people_groups.category_id ASC)
+      #   ```
+      #
       def select_row_to_json(from = nil, **options, &block)
         from.is_a?(Hash) ? options.merge!(from) : options.reverse_merge!(from: from)
         options.compact!
@@ -168,21 +269,6 @@ module ActiveRecordExtended
       #        .take
       #        .results["gang_members"] #=> "BANG!"
       #
-      #
-      # - Adding mid-level scopes
-      #
-      #   subquery = Group.select(:name, :category_id)
-      #   User.select_row_to_json(subquery, key: :group, cast_as_array: true) do |scope|
-      #     scope.where(group: { name: "Nerd Core" })
-      #   end  #=>  ```sql
-      #       SELECT ARRAY(
-      #             SELECT ROW_TO_JSON("group")
-      #             FROM(SELECT name, category_id FROM groups) AS group
-      #             WHERE group.name = 'Nerd Core'
-      #       )
-      #     ```
-      #
-
       def json_build_object(key, from, **options)
         options[:key]  = key
         options[:from] = from
