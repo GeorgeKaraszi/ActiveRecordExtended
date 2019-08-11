@@ -96,7 +96,8 @@ module ActiveRecordExtended
 
         # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_with option
         def json_object_options(args, except: [], only: []) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
-          lean_opts = lambda do |options, key, &block|
+          options   = {}
+          lean_opts = lambda do |key, &block|
             if only.present?
               options[key] ||= block.call if only.include?(key)
             elsif !except.include?(key)
@@ -104,24 +105,25 @@ module ActiveRecordExtended
             end
           end
 
-          flatten_safely(args).each_with_object({}) do |arg, options|
+          flatten_safely(args) do |arg|
             next if arg.nil?
-            options.delete(:values) if except.include?(:values)
 
             if arg.is_a?(Hash)
-              lean_opts.call(options, :key)       { arg.delete(:key) || key_generator }
-              lean_opts.call(options, :value)     { arg.delete(:value).presence }
-              lean_opts.call(options, :col_alias) { arg.delete(:as) }
-              lean_opts.call(options, :order_by)  { order_by_expression(arg.delete(:order_by)) }
-              lean_opts.call(options, :from)      { arg.delete(:from).tap(&method(:pipe_cte_with!)) }
-              lean_opts.call(options, :cast_with) { casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array)) }
+              lean_opts.call(:key)       { arg.delete(:key) || key_generator }
+              lean_opts.call(:value)     { arg.delete(:value).presence }
+              lean_opts.call(:col_alias) { arg.delete(:as) }
+              lean_opts.call(:order_by)  { order_by_expression(arg.delete(:order_by)) }
+              lean_opts.call(:from)      { arg.delete(:from).tap(&method(:pipe_cte_with!)) }
+              lean_opts.call(:cast_with) { casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array)) }
             end
 
             unless except.include?(:values)
               options[:values] ||= []
               options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)
             end
-          end.compact
+          end
+
+          options.tap(&:compact!)
         end
 
         def casting_options(cast_with)
