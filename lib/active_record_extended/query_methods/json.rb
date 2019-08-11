@@ -24,27 +24,27 @@ module ActiveRecordExtended
         end
 
         def row_to_json!(**args, &block)
-          options = json_object_options(args).except(:values, :value)
+          options = json_object_options(args, except: [:values, :value])
           build_row_to_json(**options, &block)
         end
 
         def json_build_object!(*args)
-          options = json_object_options(args).except!(:values, :cast_with, :order_by)
+          options = json_object_options(args, except: [:values, :cast_with, :order_by])
           build_json_object(Arel::Nodes::JsonBuildObject, **options)
         end
 
         def jsonb_build_object!(*args)
-          options = json_object_options(args).except!(:values, :cast_with, :order_by)
+          options = json_object_options(args, except: [:values, :cast_with, :order_by])
           build_json_object(Arel::Nodes::JsonbBuildObject, **options)
         end
 
         def json_build_literal!(*args)
-          options = json_object_options(args).slice(:values, :col_alias)
+          options = json_object_options(args, only: [:values, :col_alias])
           build_json_literal(Arel::Nodes::JsonBuildObject, **options)
         end
 
         def jsonb_build_literal!(*args)
-          options = json_object_options(args).slice(:values, :col_alias)
+          options = json_object_options(args, only: [:values, :col_alias])
           build_json_literal(Arel::Nodes::JsonbBuildObject, **options)
         end
 
@@ -95,20 +95,32 @@ module ActiveRecordExtended
         end
 
         # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_with option
-        def json_object_options(*args) # rubocop:disable Metrics/AbcSize
-          flatten_safely(args).each_with_object(values: []) do |arg, options|
+        def json_object_options(args, except: [], only: []) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+          lean_opts = lambda do |options, key, &block|
+            if only.present?
+              options[key] ||= block.call if only.include?(key)
+            elsif !except.include?(key)
+              options[key] ||= block.call
+            end
+          end
+
+          flatten_safely(args).each_with_object({}) do |arg, options|
             next if arg.nil?
+            options.delete(:values) if except.include?(:values)
 
             if arg.is_a?(Hash)
-              options[:key]       ||= arg.delete(:key) || key_generator
-              options[:value]     ||= arg.delete(:value).presence
-              options[:col_alias] ||= arg.delete(:as)
-              options[:cast_with] ||= casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array))
-              options[:order_by]  ||= order_by_expression(arg.delete(:order_by))
-              options[:from]      ||= arg.delete(:from).tap(&method(:pipe_cte_with!))
+              lean_opts.call(options, :key)       { arg.delete(:key) || key_generator }
+              lean_opts.call(options, :value)     { arg.delete(:value).presence }
+              lean_opts.call(options, :col_alias) { arg.delete(:as) }
+              lean_opts.call(options, :order_by)  { order_by_expression(arg.delete(:order_by)) }
+              lean_opts.call(options, :from)      { arg.delete(:from).tap(&method(:pipe_cte_with!)) }
+              lean_opts.call(options, :cast_with) { casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array)) }
             end
 
-            options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)
+            unless except.include?(:values)
+              options[:values] ||= []
+              options[:values] << (arg.respond_to?(:to_a) ? arg.to_a : arg)
+            end
           end.compact
         end
 

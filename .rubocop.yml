@@ -32,7 +32,7 @@ Layout/AlignHash:
   EnforcedHashRocketStyle: table
 
 LineLength:
-  Max: 120
+  Max: 125
   Exclude:
     - examples/**/*
     - spec/**/*
