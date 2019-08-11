@@ -29,12 +29,12 @@ module ActiveRecordExtended
         end
 
         def json_build_object!(*args)
-          options = json_object_options(args).except!(:values)
+          options = json_object_options(args).except!(:values, :cast_with, :order_by)
           build_json_object(Arel::Nodes::JsonBuildObject, **options)
         end
 
         def jsonb_build_object!(*args)
-          options = json_object_options(args).except!(:values)
+          options = json_object_options(args).except!(:values, :cast_with, :order_by)
           build_json_object(Arel::Nodes::JsonbBuildObject, **options)
         end
 
@@ -57,7 +57,7 @@ module ActiveRecordExtended
           @scope.select(nested_alias_escape(json_build_obj, col_alias))
         end
 
-        def build_json_object(arel_klass, from:, key: key_generator, value: nil, col_alias: DEFAULT_ALIAS, **_options)
+        def build_json_object(arel_klass, from:, key: key_generator, value: nil, col_alias: DEFAULT_ALIAS)
           tbl_alias         = double_quote(key)
           col_alias         = double_quote(col_alias)
           col_key           = literal_key(key)
