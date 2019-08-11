@@ -6,6 +6,7 @@ Supports any aggregate that does not require multiple arguments (`COUNT`, `AVG`,
   - Supports Aggregate `DISTINCT` and `ORDER BY` inner expressions.
 - Reduced the code foot-print for declaring new Arel functions
 - Introduce new `Arel::Nodes::AggregateFunctionName` for dealing with inline-ing `ORDER BY` (will be expanded to handel `FILTER` next)
+- Code cleanup and some minor performance tweaks
 
 #### `.select_row_to_json` Changes
 - Argument-less scoped blocks (inner-block argument is now optional)
