@@ -1,4 +1,4 @@
-# master (unreleased)
+# 1.2.0 - August 11th 2019
 
 ## Changes
 - Introduce `.foster_select` a helper for select statements that can handel aliasing and provides casting options for many common aggregate functions.
@@ -8,11 +8,15 @@ Supports any aggregate that does not require multiple arguments (`COUNT`, `AVG`,
 - Introduce new `Arel::Nodes::AggregateFunctionName` for dealing with inline-ing `ORDER BY` (will be expanded to handel `FILTER` next)
 - Code cleanup and some minor performance tweaks
 
-#### `.select_row_to_json` Changes
+##### Changes to `.select_row_to_json`
 - Argument-less scoped blocks (inner-block argument is now optional)
 - `cast_with:` 
   - Supported options: `true` (array), `:array`, `:array_agg`, `distinct`, and `:to_jsonb`
 - `order_by:` : Accepts ActiveRecord like options for ordering responses from an array or aggregated array
+
+### Bugfixes
+- [#26](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/26) Support for class namespace for `inet_contains` [@znakaska](https://github.com/znakaska)
+- [#27](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/27) Fixed `TO_JSONB` class name typo that would cause an exception
   
 ### 2.0 Deprecation Warning
 - In order to keep options standardized, `.select_row_to_json` will be dropping `cast_to_array` in favor of the `cast_with` option;
