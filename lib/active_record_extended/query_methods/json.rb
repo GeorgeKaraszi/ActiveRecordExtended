@@ -138,8 +138,20 @@ module ActiveRecordExtended
       #         - This is useful if you would like to add additional mid-level clauses (see mid-level scope example)
       #
       #   - cast_as_array [boolean] (default=false): Determines if the query should be nested inside an Array() function
+      #     * Will be deprecated in V2.0 in favor of `cast_with` argument
       #
-      # Example:
+      #   - cast_with [Symbol or Array of symbols]: Actions to transform your query
+      #     * :to_jsonb
+      #     * :array
+      #     * :array_agg (including just :array with this option will favor :array_agg)
+      #     * :distinct  (auto applies :array_agg & :to_jsonb)
+      #
+      #   - order_by [Symbol or hash]: Applies an ordering operation (similar to ActiveRecord #order)
+      #     - NOTE: this option will be ignored if you need to order a DISTINCT Aggregated Array, since postgres will thrown an error.
+      #
+      #
+      #
+      # Examples:
       #   subquery = Group.select(:name, :category_id).where("user_id = users.id")
       #   User.select(:name, email).select_row_to_json(subquery, as: :users_groups, cast_as_array: true)
       #     #=> [<#User name:.., email:.., users_groups: [{ name: .., category_id: .. }, ..]]
@@ -150,8 +162,67 @@ module ActiveRecordExtended
       #   User.select_row_to_json(subquery, key: :group, cast_as_array: true) do |scope|
       #     scope.where(group: { name: "Nerd Core" })
       #   end
+      #    #=>  ```sql
+      #       SELECT ARRAY(
+      #             SELECT ROW_TO_JSON("group")
+      #             FROM(SELECT name, category_id FROM groups) AS group
+      #             WHERE group.name = 'Nerd Core'
+      #       )
+      #    ```
       #
-
+      #
+      # - Array of JSONB objects
+      #
+      #   subquery = Group.select(:name, :category_id)
+      #   User.select_row_to_json(subquery, key: :group, cast_with: [:array, :to_jsonb]) do |scope|
+      #     scope.where(group: { name: "Nerd Core" })
+      #   end
+      #   #=>  ```sql
+      #       SELECT ARRAY(
+      #             SELECT TO_JSONB(ROW_TO_JSON("group"))
+      #             FROM(SELECT name, category_id FROM groups) AS group
+      #             WHERE group.name = 'Nerd Core'
+      #       )
+      #   ```
+      #
+      # - Distinct Aggregated Array
+      #
+      #   subquery = Group.select(:name, :category_id)
+      #   User.select_row_to_json(subquery, key: :group, cast_with: [:array_agg, :distinct]) do |scope|
+      #     scope.where(group: { name: "Nerd Core" })
+      #   end
+      #   #=>  ```sql
+      #      SELECT ARRAY_AGG(DISTINCT (
+      #            SELECT TO_JSONB(ROW_TO_JSON("group"))
+      #            FROM(SELECT name, category_id FROM groups) AS group
+      #            WHERE group.name = 'Nerd Core'
+      #      ))
+      #   ```
+      #
+      # - Ordering a Non-aggregated Array
+      #
+      #  subquery = Group.select(:name, :category_id)
+      #  User.select_row_to_json(subquery, key: :group, cast_with: :array, order_by: { group: { name: :desc } })
+      #  #=>  ```sql
+      #     SELECT ARRAY(
+      #           SELECT ROW_TO_JSON("group")
+      #           FROM(SELECT name, category_id FROM groups) AS group
+      #           ORDER BY group.name DESC
+      #     )
+      #  ```
+      #
+      # - Ordering an Aggregated Array
+      #
+      #  Subquery = Group.select(:name, :category_id)
+      #  User.joins(:people_groups).select_row_to_json(subquery, key: :group, cast_with: :array_agg, order_by: { people_groups: :category_id })
+      #   #=>  ```sql
+      #     SELECT ARRAY_AGG((
+      #           SELECT ROW_TO_JSON("group")
+      #           FROM(SELECT name, category_id FROM groups) AS group
+      #           ORDER BY group.name DESC
+      #     ) ORDER BY people_groups.category_id ASC)
+      #   ```
+      #
       def select_row_to_json(from = nil, **options, &block)
         from.is_a?(Hash) ? options.merge!(from) : options.reverse_merge!(from: from)
         options.compact!
@@ -190,21 +261,6 @@ module ActiveRecordExtended
       #        .take
       #        .results["gang_members"] #=> "BANG!"
       #
-      #
-      # - Adding mid-level scopes
-      #
-      #   subquery = Group.select(:name, :category_id)
-      #   User.select_row_to_json(subquery, key: :group, cast_as_array: true) do |scope|
-      #     scope.where(group: { name: "Nerd Core" })
-      #   end  #=>  ```sql
-      #       SELECT ARRAY(
-      #             SELECT ROW_TO_JSON("group")
-      #             FROM(SELECT name, category_id FROM groups) AS group
-      #             WHERE group.name = 'Nerd Core'
-      #       )
-      #     ```
-      #
-
       def json_build_object(key, from, **options)
         options[:key]  = key
         options[:from] = from
