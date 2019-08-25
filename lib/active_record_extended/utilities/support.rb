@@ -30,7 +30,7 @@ module ActiveRecordExtended
       # Applies aliases to the given query
       # Ex: `SELECT * FROM users` => `(SELECT * FROM users) AS "members"`
       def nested_alias_escape(query, alias_name)
-        sql_query = Arel::Nodes::Grouping.new(to_arel_sql(query))
+        sql_query = generate_grouping(query)
         Arel::Nodes::As.new(sql_query, to_arel_sql(double_quote(alias_name)))
       end
 
@@ -160,11 +160,21 @@ module ActiveRecordExtended
 
       def group_when_needed(arel_or_rel_query)
         return arel_or_rel_query unless needs_to_be_grouped?(arel_or_rel_query)
-        Arel::Nodes::Grouping.new(to_arel_sql(arel_or_rel_query))
+        generate_grouping(arel_or_rel_query)
       end
 
       def needs_to_be_grouped?(query)
         query.respond_to?(:to_sql) || (query.is_a?(String) && /^SELECT.+/i.match?(query))
+      end
+
+      def generate_grouping(expr)
+        ::Arel::Nodes::Grouping.new(to_arel_sql(expr))
+      end
+
+      def generate_named_function(function_name, *args)
+        args.map!(&method(:to_arel_sql))
+        function_name = function_name.to_s.upcase
+        ::Arel::Nodes::NamedFunction.new(to_arel_sql(function_name), args)
       end
 
       def key_generator
