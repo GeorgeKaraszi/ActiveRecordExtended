@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "niceql"
-require "pp"
 
 RSpec.describe "Active Record WINDOW Query inspection" do
   describe "#define_window" do
