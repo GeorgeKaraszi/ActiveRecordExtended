@@ -36,6 +36,9 @@
     - [Union As](#union-as)
     - [Union Order](#union-order)
     - [Union Reorder](#union-reorder)
+  - [Window Functions](#window-functions)
+    - [Define Window](#define-window)
+    - [Select Window](#select-window)
 
 ## Description and History
 
@@ -785,6 +788,80 @@ SELECT "people".*
     FROM "people"
     WHERE "people"."id" BETWEEN 3 AND 10
   ) ) ORDER BY personal_id DESC, id DESC) people
+```
+
+#### Window Functions
+[Postgres Window Functions](https://www.postgresql.org/docs/current/tutorial-window.html)
+
+Let's address the elephant in the room. Arel has had, for a long time now, window function capabilities; 
+However they've never seen the lime light in ActiveRecord's query logic. 
+The following brings the dormant Arel methods up to the ActiveRecord Querying level.
+
+#### Define Window
+
+To set up a window function, we first must establish the window and we do this by using the `.define_window/1` method.
+This method also requires you to call chain `.partition_by/2`
+
+`.define_window/1` - Establishes the name of the window you'll reference later on in [.select_window](#select-window) 
+   - Aliased name of window
+    
+`.partition_by/2`  - Establishes the windows operations a [pre-defined window function](https://www.postgresql.org/docs/current/functions-window.html) will leverage.
+   - column name being partitioned against
+   - (**optional**) `order_by`: Processes how the window should be ordered
+
+```ruby
+User
+.define_window(:number_window).partition_by(:number, order_by: { id: :desc })
+.define_window(:name_window).partition_by(:name, order_by: :id)
+.define_window(:no_order_name).partition_by(:name)
+```
+
+Query Output
+```sql
+SELECT *
+FROM users
+WINDOW number_window AS (PARTITION BY number ORDER BY id DESC),
+       name_window   AS (PARTITION BY name ORDER BY id),
+       no_order_name AS (PARTITION BY name)
+```
+
+#### Select Window
+
+Once you've define a window, the next step to to utilize it on one of the many provided postgres window functions.
+
+`.select_window/3`
+  - [window function name](https://www.postgresql.org/docs/current/functions-window.html)
+  - (**optional**) Window function arguments (treated as a splatted array)
+  - (**optional**) `as:` : Alias name of the final result
+  - `over:` : name of [defined window](#define-window)
+
+```ruby
+User.create!(name: "Alice", number: 100) #=> id: 1
+User.create!(name: "Randy", number: 100) #=> id: 2
+User.create!(name: "Bob", number: 300)   #=> id: 3
+
+User
+.define_window(:number_window).partition_by(:number, order_by: { id: :desc })
+.select(:id, :name)
+.select_window(:row_number, over: :number_window, as: :row_id)
+.select_window(:first_value, :name, over: :number_window, as: :first_value_name)
+#=> [
+ #  { id: 1, name: "Alice", row_id: 2, first_value_name: "Randy" }
+ #  { id: 2, name: "Randy", row_id: 1, first_value_name: "Randy" }
+ #  { id: 3, name: "Bob",   row_id: 1, first_value_name: "Bob" }
+ # ]
+ # 
+
+```
+
+Query Output
+```sql
+SELECT "users"."id", 
+        "users"."name", 
+        (ROW_NUMBER() OVER number_window)      AS "row_id", 
+        (FIRST_VALUE(name) OVER number_window) AS "first_value_name"
+FROM "users" 
+WINDOW number_window AS (PARTITION BY number ORDER BY id DESC)
 ```
 
 ## License
