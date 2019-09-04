@@ -795,7 +795,7 @@ SELECT "people".*
 
 Let's address the elephant in the room. Arel has had, for a long time now, window function capabilities; 
 However they've never seen the lime light in ActiveRecord's query logic. 
-The following brings the dormant Arel methods upto the ActiveRecord Querying level.
+The following brings the dormant Arel methods up to the ActiveRecord Querying level.
 
 #### Define Window
 

@@ -1,4 +1,4 @@
-# master (unreleased)
+# 1.3.0 - September 9th 2019
 
 - Add [Postgres Window Functions](https://www.postgresql.org/docs/current/functions-window.html) to ActiveRecord querying level.
   - introduces two new methods that are used in conjunction: `.define_window` & `.select_window`
@@ -6,13 +6,13 @@
  Defines one or many windows that will be place at the bottom of your query. 
  This will also require you to define a partition via `.parition_by(:column)/2`.
  
- - `parition_by/2` arguments:
+ - `partition_by/2` arguments:
     - column name being partitioned
     - `order_by` Processes how the window should be orders
     
 Example:
  
- - `User.define_window(:w).parition_by(:name, order_by: :join_date)`
+ - `User.define_window(:w).partition_by(:name, order_by: :join_date)`
  
 ###  `select_window/4`
 
