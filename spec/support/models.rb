@@ -20,6 +20,12 @@ class User < ApplicationRecord
   #
 end
 
+class StiRecord < ApplicationRecord
+  # t.string "type"
+end
+
+class AdminSti < StiRecord; end
+
 module Namespaced
   def self.table_name_prefix
     "namespaced_"

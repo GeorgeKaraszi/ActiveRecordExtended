@@ -81,7 +81,7 @@ module ActiveRecordExtended
         else
           replicate_klass = from.respond_to?(:unscoped) ? from.unscoped : @scope.unscoped
           replicate_klass.from(from.dup, reference_key)
-        end
+        end.unscope(:where)
       end
 
       # Will carry defined CTE tables from the nested sub-query and gradually pushes it up to the parents query stack

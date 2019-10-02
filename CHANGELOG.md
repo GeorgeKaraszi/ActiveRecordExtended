@@ -1,3 +1,8 @@
+# Master unreleased
+
+Bug fix:
+ - Prevent STI models from appending where clauses to `select_row_to_json(b)` method scopes
+
 # 1.3.0 - September 9th 2019
 
 - Add [Postgres Window Functions](https://www.postgresql.org/docs/current/functions-window.html) to ActiveRecord querying level.
