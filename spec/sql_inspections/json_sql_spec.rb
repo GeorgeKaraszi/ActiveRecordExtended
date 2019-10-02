@@ -53,6 +53,13 @@ RSpec.describe "JSON Methods SQL Queries" do
         end
       end
     end
+
+    context "when the subquery is a STI record type" do
+      it "should not append sti 'type IN(..)' where clauses to the nested query" do
+        query = User.select_row_to_json(AdminSti.where(id: 10), cast_with: :array, key: :convert_this, as: :results).to_sql
+        expect(query).to match_regex(/SELECT \(ARRAY\(SELECT ROW_TO_JSON\("convert_this"\) FROM \(.*\) convert_this\)\) AS .+/)
+      end
+    end
   end
 
   describe ".json_build_object" do

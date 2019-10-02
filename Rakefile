@@ -69,6 +69,10 @@ namespace :db do
         t.datetime "updated_at"
       end
 
+      create_table :sti_records, force: true do |t|
+        t.string "type", default: "StiRecord"
+      end
+
       create_table :namespaced_records, force: true do |t|
         t.inet "ip"
         t.cidr "subnet"
