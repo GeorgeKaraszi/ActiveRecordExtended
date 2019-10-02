@@ -1,4 +1,4 @@
-# Master unreleased
+# 1.3.1 - October 2nd 2019
 
 Bug fix:
  - Prevent STI models from appending where clauses to `select_row_to_json(b)` method scopes
