@@ -24,8 +24,8 @@ module ActiveRecordExtended
         return false unless order_by && order_by.presence.present?
 
         to_ordered_table_path(order_by)
-          .tap(&method(:process_ordering_arguments!))
-          .tap(&method(:scope_preprocess_order_args))
+          .tap { |order_args| process_ordering_arguments!(order_args) }
+          .tap { |order_args| scope_preprocess_order_args(order_args) }
       end
 
       #

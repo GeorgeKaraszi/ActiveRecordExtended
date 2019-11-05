@@ -172,7 +172,7 @@ module ActiveRecordExtended
       end
 
       def generate_named_function(function_name, *args)
-        args.map!(&method(:to_arel_sql))
+        args.map! { |arg| to_arel_sql(arg) }
         function_name = function_name.to_s.upcase
         ::Arel::Nodes::NamedFunction.new(to_arel_sql(function_name), args)
       end
