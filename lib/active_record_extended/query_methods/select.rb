@@ -65,7 +65,7 @@ module ActiveRecordExtended
         def hash_to_dot_notation(column)
           case column
           when Hash, Array
-            column.to_a.flat_map(&method(:hash_to_dot_notation)).join(".")
+            column.to_a.flat_map { |col| hash_to_dot_notation(col) }.join(".")
           when String, Symbol
             /^([[:alpha:]]+)$/.match?(column.to_s) ? double_quote(column) : column
           else
@@ -92,7 +92,7 @@ module ActiveRecordExtended
           when "array", "true"
             wrap_with_array(query, alias_name)
           when AGGREGATE_ONE_LINERS
-            expr         = to_sql_array(query, &method(:group_when_needed))
+            expr         = to_sql_array(query) { |value| group_when_needed(value) }
             casted_query = ::Arel::Nodes::AggregateFunctionName.new(cast_with, expr, distinct).order_by(order_expr)
             nested_alias_escape(casted_query, alias_name)
           else

@@ -1,3 +1,8 @@
+# 1.4.0 - (Unreleased)
+
+Performance tweaks:
+ - Reduce object creations when using the ruby shorthand `&method()`.
+
 # 1.3.1 - October 2nd 2019
 
 Bug fix:

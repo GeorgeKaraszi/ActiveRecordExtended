@@ -51,7 +51,7 @@ module ActiveRecordExtended
         private
 
         def build_json_literal(arel_klass, values:, col_alias: DEFAULT_ALIAS)
-          json_values    = flatten_to_sql(values.to_a, &method(:literal_key))
+          json_values    = flatten_to_sql(values.to_a) { |value| literal_key(value) }
           col_alias      = double_quote(col_alias)
           json_build_obj = arel_klass.new(json_values)
           @scope.select(nested_alias_escape(json_build_obj, col_alias))
@@ -117,7 +117,7 @@ module ActiveRecordExtended
               lean_opts.call(:value)     { arg.delete(:value).presence }
               lean_opts.call(:col_alias) { arg.delete(:as) }
               lean_opts.call(:order_by)  { order_by_expression(arg.delete(:order_by)) }
-              lean_opts.call(:from)      { arg.delete(:from).tap(&method(:pipe_cte_with!)) }
+              lean_opts.call(:from)      { arg.delete(:from).tap { |from_clause| pipe_cte_with!(from_clause) } }
               lean_opts.call(:cast_with) { casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array)) }
             end
 
