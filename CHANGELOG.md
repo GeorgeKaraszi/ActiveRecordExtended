@@ -1,7 +1,7 @@
-# 1.4.0 - (Unreleased)
+# 1.4.0 - November 6th 2019
 
 Performance tweaks:
- - Reduce object creations when using the ruby shorthand `&method()`.
+ - [#33](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/33) Reduce object creations when using the ruby shorthand `&method()`.
 
 # 1.3.1 - October 2nd 2019
 
