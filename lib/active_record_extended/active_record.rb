@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-# TODO: Remove this when ruby 2.3 support is dropped
-unless Hash.instance_methods(false).include?(:compact!)
-  require "active_support/all"
-end
-
 require "active_record"
 require "active_record/relation"
 require "active_record/relation/merger"

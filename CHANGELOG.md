@@ -1,3 +1,8 @@
+# Master - (Unreleased)
+
+Deprecations:
+- Dropping support for Ruby v2.3.x
+
 # 1.4.0 - November 6th 2019
 
 Performance tweaks:
