@@ -10,7 +10,7 @@ AllCops:
 # [i] Overrides #
 #################
 
-CollectionMethods:
+Style/CollectionMethods:
   # Mapping from undesired method to desired_method
   # e.g. to use `detect` over `find`:
   #
@@ -18,29 +18,33 @@ CollectionMethods:
   #   PreferredMethods:
   #     find: detect
   PreferredMethods:
+    collect: 'map'
     reduce: 'inject'
     find: 'detect'
     each_with_index: 'each.with_index'
 
 # Align ends correctly.
-EndAlignment:
+Layout/EndAlignment:
   EnforcedStyleAlignWith: variable
 
+Layout/BlockAlignment:
+  EnforcedStyleAlignWith: start_of_block
+
 Layout/AlignHash:
-  Enabled: true,
+  Enabled: true
   EnforcedColonStyle: table
   EnforcedHashRocketStyle: table
 
-LineLength:
+Metrics/LineLength:
   Max: 125
   Exclude:
     - examples/**/*
     - spec/**/*
 
-BracesAroundHashParameters:
+Style/BracesAroundHashParameters:
   EnforcedStyle: context_dependent
 
-StringLiterals:
+Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Metrics/AbcSize:
