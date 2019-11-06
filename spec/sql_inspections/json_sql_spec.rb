@@ -27,7 +27,6 @@ RSpec.describe "JSON Methods SQL Queries" do
     context "When adding cast_with: option" do
       it "should wrap the row_to_json expression with to_jsonb" do
         query = User.select_row_to_json(User.where(id: 10), cast_with: :to_jsonb, key: :convert_this, as: :results).to_sql
-        puts query
         expect(query).to match_regex(/SELECT \(SELECT TO_JSONB\(ROW_TO_JSON\("convert_this"\)\) FROM \(.+\).+\) AS "results"/)
       end
 

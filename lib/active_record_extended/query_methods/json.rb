@@ -98,7 +98,6 @@ module ActiveRecordExtended
           end
         end
 
-        # TODO: [V2 release] Drop support for option :cast_as_array in favor of a more versatile :cast_with option
         def json_object_options(args, except: [], only: []) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
           options   = {}
           lean_opts = lambda do |key, &block|
@@ -118,7 +117,7 @@ module ActiveRecordExtended
               lean_opts.call(:col_alias) { arg.delete(:as) }
               lean_opts.call(:order_by)  { order_by_expression(arg.delete(:order_by)) }
               lean_opts.call(:from)      { arg.delete(:from).tap { |from_clause| pipe_cte_with!(from_clause) } }
-              lean_opts.call(:cast_with) { casting_options(arg.delete(:cast_with) || arg.delete(:cast_as_array)) }
+              lean_opts.call(:cast_with) { casting_options(arg.delete(:cast_with)) }
             end
 
             unless except.include?(:values)
@@ -155,9 +154,6 @@ module ActiveRecordExtended
       #   - key: [Symbol or String] (default=[random letter]) What the row clause will be set as.
       #         - This is useful if you would like to add additional mid-level clauses (see mid-level scope example)
       #
-      #   - cast_as_array [boolean] (default=false): Determines if the query should be nested inside an Array() function
-      #     * Will be deprecated in V2.0 in favor of `cast_with` argument
-      #
       #   - cast_with [Symbol or Array of symbols]: Actions to transform your query
       #     * :to_jsonb
       #     * :array
@@ -172,13 +168,13 @@ module ActiveRecordExtended
       #
       # Examples:
       #   subquery = Group.select(:name, :category_id).where("user_id = users.id")
-      #   User.select(:name, email).select_row_to_json(subquery, as: :users_groups, cast_as_array: true)
+      #   User.select(:name, email).select_row_to_json(subquery, as: :users_groups, cast_with: :array)
       #     #=> [<#User name:.., email:.., users_groups: [{ name: .., category_id: .. }, ..]]
       #
       #  - Adding mid-level scopes:
       #
       #   subquery = Group.select(:name, :category_id)
-      #   User.select_row_to_json(subquery, key: :group, cast_as_array: true) do |scope|
+      #   User.select_row_to_json(subquery, key: :group, cast_with: :array) do |scope|
       #     scope.where(group: { name: "Nerd Core" })
       #   end
       #    #=>  ```sql
@@ -273,7 +269,7 @@ module ActiveRecordExtended
       #   - Generic example:
       #
       #   subquery = Group.select(:name, :category_id).where("user_id = users.id")
-      #   User.select(:name, email).select_row_to_json(subquery, as: :users_groups, cast_as_array: true)
+      #   User.select(:name, email).select_row_to_json(subquery, as: :users_groups, cast_with: :array)
       #     #=> [<#User name:.., email:.., users_groups: [{ name: .., category_id: .. }, ..]]
       #
       #  - Setting a custom value:
