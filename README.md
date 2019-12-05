@@ -430,7 +430,7 @@ While quite the mouthful of an explanation. The implementation of combining unre
     product_query  = 
     Product.select(:id)
             .joins(:items)
-            .select_row_to_json(item_query, key: :outer_items, as: :items, cast_as_array: true) do |item_scope|
+            .select_row_to_json(item_query, key: :outer_items, as: :items, cast_with: :array) do |item_scope|
               item_scope.where("outer_items.product_id = products.id")
                 # Results to: 
                 #  SELECT ..., ARRAY(SELECT ROW_TO_JSON("outer_items")   
@@ -440,7 +440,7 @@ While quite the mouthful of an explanation. The implementation of combining unre
             end
                    
     # Not defining a key will automatically generate a random key between a-z 
-    category_query = Category.select(:name, :id).select_row_to_json(product_query, as: :products, cast_as_array: true)
+    category_query = Category.select(:name, :id).select_row_to_json(product_query, as: :products, cast_with: :array)
     Category.json_build_object(:physical_category, category_query.where(id: physical_cat.id)).results
     #=> {
     #        "physical_category" => {
