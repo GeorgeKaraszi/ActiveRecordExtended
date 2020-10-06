@@ -149,7 +149,7 @@ module ActiveRecordExtended
 
       def to_arel_sql(value)
         case value
-        when Arel::Node, Arel::Nodes::SqlLiteral, nil
+        when Arel::Nodes, Arel::Nodes::SqlLiteral, nil
           value
         when ActiveRecord::Relation
           Arel.sql(value.spawn.to_sql)
