@@ -78,9 +78,9 @@ module ActiveRecordExtended
       def generate_where_clause(query)
         case query
         when String, Hash
-          @scope.where(query)
+          @scope.unscoped.where(query)
         when Array
-          @scope.where(*query)
+          @scope.unscoped.where(*query)
         else
           query
         end
