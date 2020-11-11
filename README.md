@@ -3,6 +3,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/98ecffc0239417098cbc/maintainability)](https://codeclimate.com/github/GeorgeKaraszi/active_record_extended/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f22154211bb3a8feb89f/test_coverage)](https://codeclimate.com/github/GeorgeKaraszi/ActiveRecordExtended/test_coverage)
 ## Index
+##### Some changes for check pipeline status
 - [Description and history](#description-and-history)
 - [Compatibility](#compatibility)
 - [Installation](#installation)
