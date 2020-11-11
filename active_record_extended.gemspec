@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.require_paths         = ["lib"]
   spec.required_ruby_version = ">= 2.4"
 
-  spec.add_dependency "activerecord", ">= 5.1", "< 6.1"
+  spec.add_dependency "activerecord", ">= 5.1", "< 6.2"
   spec.add_dependency "ar_outer_joins", "~> 0.2"
   spec.add_dependency "pg", "< 3.0"
 

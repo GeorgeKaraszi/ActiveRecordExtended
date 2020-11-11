@@ -103,6 +103,14 @@ module ActiveRecordExtended
         end
       end
     end
+
+    def build_where_clause_for(scope, opts, rest)
+      if ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 1
+        scope.send(:build_where_clause, opts, rest)
+      else
+        scope.send(:where_clause_factory).build(opts, rest)
+      end
+    end
   end
 end
 
@@ -112,9 +120,9 @@ module ActiveRecord
       prepend ActiveRecordExtended::WhereChain
 
       def build_where_chain(opts, rest, &block)
-        where_clause = @scope.send(:where_clause_factory).build(opts, rest)
+        where_clause = build_where_clause_for(@scope, opts, rest)
         @scope.tap do |scope|
-          scope.references!(PredicateBuilder.references(opts)) if opts.is_a?(Hash)
+          scope.references!(PredicateBuilder.references(opts.stringify_keys)) if opts.is_a?(Hash)
           scope.where_clause += where_clause.modified_predicates(&block)
         end
       end

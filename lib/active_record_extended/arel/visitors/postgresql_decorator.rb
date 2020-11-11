@@ -75,6 +75,16 @@ module ActiveRecordExtended
         aggregate "ARRAY_AGG", object, collector
       end
 
+      def visit_Arel_Nodes_With(o, collector)
+        collector << "WITH "
+        inject_join o.children, collector, ", "
+      end
+
+      def visit_Arel_Nodes_WithRecursive(o, collector)
+        collector << "WITH RECURSIVE "
+        inject_join o.children, collector, ", "
+      end
+
       def visit_Arel_Nodes_AggregateFunctionName(object, collector)
         collector << "#{object.name}("
         collector << "DISTINCT " if object.distinct
