@@ -12,6 +12,7 @@ Bug fix:
  - Fixed (Rails 6.0+) `.with` Subqueries that contain CTE's of their own, are now piped to the parent like other methods.
  - Fixed duplicate where constraints when using `where.any_of` / `where.none_of`
  - Fixed Rails 6.1 `Arel::Node` missing error.
+ - Fixed Ruby 2.7 warning: `Using the last argument as keyword parameters is deprecated`
 
 # 1.4.0 - November 6th 2019
 

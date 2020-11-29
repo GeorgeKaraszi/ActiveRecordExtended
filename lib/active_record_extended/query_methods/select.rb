@@ -57,7 +57,7 @@ module ActiveRecordExtended
             distinct:  !(!hash_of_options.delete(:distinct)),
           }
           query_statement = hash_to_dot_notation(hash_of_options.delete(:__select_statement) || hash_of_options.first)
-          select!(query_statement, alias_name, enforced_options)
+          select!(query_statement, alias_name, **enforced_options)
         end
 
         # Turn a hash chain into a query statement:
@@ -76,7 +76,7 @@ module ActiveRecordExtended
         # Add's select statement values to the current relation, select statement lists
         def select!(query, alias_name = nil, **options)
           pipe_cte_with!(query)
-          @scope._select!(to_casted_query(query, alias_name, options))
+          @scope._select!(to_casted_query(query, alias_name, **options))
         end
 
         # Wraps the query with the requested query method
