@@ -47,7 +47,7 @@ RSpec.describe "Active Record JSON methods" do
     end
 
     it "allows for casting results in an aggregate-able Array function" do
-      query = User.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results, cast_as_array: true)
+      query = User.select(:id).select_row_to_json(sub_query, key: :tag_row, as: :results, cast_with: :array)
       expect(query.take.results).to be_a(Array).and(be_present)
       expect(query.take.results.first).to be_a(Hash)
     end
@@ -61,7 +61,7 @@ RSpec.describe "Active Record JSON methods" do
 
   describe ".json_build_object" do
     let(:sub_query) do
-      User.select_row_to_json(from: User.select(:id), cast_as_array: true, as: :ids).where(id: user_one.id)
+      User.select_row_to_json(from: User.select(:id), cast_with: :array, as: :ids).where(id: user_one.id)
     end
 
     it "defaults the column alias if one is not provided" do
