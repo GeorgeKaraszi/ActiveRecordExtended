@@ -1,12 +1,15 @@
 # Unreleased
 
+Deprecations:
+ - Rails 5.0.x Has been fully deprecated
+ - JSON methods option: `cast_as_array` has been officially deprecated. Please use `cast_with: :array` instead.
+
 Breaking Changes:
  - Redesigned CTE's structure. CTE tables are now held in their relations WithCTE class.
  - Redesigned CTE structure method `.with` & `.with!` only accepts `Hash/Keyword` and `WithCTE` instance arguments.
    -  Dev Note: In an effort to trying to maintain as many ways of accepting CTE's in various forms 
       (Array's, Strings, Hashes, etc..) was becoming overwhelming to maintain and wasn't realistic to continue this path.
       And since you can't have duplicate CTE's with the same name, a Hash makes perfect sense.
- - `cast_as_array` has been officially deprecated. Please use `cast_with: :array` instead.
  
 Bug fix:
  - Fixed `.with` CTE recursive flag not transferring when merging subqueries.

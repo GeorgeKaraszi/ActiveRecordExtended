@@ -135,9 +135,9 @@ module ActiveRecordExtended
       # Converts a potential subquery into a compatible Arel SQL node.
       #
       # Note:
-      # We convert relations to SQL to maintain compatibility with Rails 5.[0/1].
+      # We convert relations to SQL to maintain compatibility with Rails 5.1.
       # Only Rails 5.2+ maintains bound attributes in Arel, so its better to be safe then sorry.
-      # When we drop support for Rails 5.[0/1], we then can then drop the '.to_sql' conversation
+      # When we drop support for Rails 5.1, we then can then drop the '.to_sql' conversation
 
       def to_arel_sql(value)
         case value
