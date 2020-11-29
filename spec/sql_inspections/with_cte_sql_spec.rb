@@ -21,6 +21,20 @@ RSpec.describe "Active Record WITH CTE tables" do
     expect(query).to match_regex(with_personal_query)
   end
 
+  it "will pipe Children CTE's into the Parent relation" do
+    personal_id_one_query = User.where(personal_id: 1)
+    personal_id_two_query = User.where(personal_id: 2)
+
+    sub_query       = personal_id_two_query.with(personal_id_one: personal_id_one_query)
+    query           = User.all.with(personal_id_two: sub_query)
+    expected_order  = User.with(
+      personal_id_two: personal_id_two_query,
+      personal_id_one: personal_id_one_query,
+    )
+
+    expect(query.to_sql).to eq(expected_order.to_sql)
+  end
+
   context "when multiple CTE's" do
     let(:chained_with) do
       User.with(personal_id_one: User.where(personal_id: 1))
@@ -36,6 +50,7 @@ RSpec.describe "Active Record WITH CTE tables" do
           .joins("JOIN personal_id_two ON personal_id_two.id = users.id")
           .to_sql
     end
+
     it "Should only contain a single WITH statement" do
       expect(with_arguments.scan(/WITH/).count).to eq(1)
       expect(with_arguments.scan(/AS/).count).to eq(2)
@@ -60,7 +75,21 @@ RSpec.describe "Active Record WITH CTE tables" do
     end
 
     it "generates an expression with recursive" do
-      expect(with_recursive).to match_regex(with_recursive_personal_query)
+      query = User.with
+                  .recursive(personal_id_one: User.where(personal_id: 1))
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
+
+      expect(query).to match_regex(with_recursive_personal_query)
+    end
+
+    it "will maintain the CTE table when merging" do
+      sub_query = User.with.recursive(personal_id_one: User.where(personal_id: 1))
+      query     = User.merge(sub_query)
+                      .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                      .to_sql
+
+      expect(query).to match_regex(with_recursive_personal_query)
     end
   end
 end

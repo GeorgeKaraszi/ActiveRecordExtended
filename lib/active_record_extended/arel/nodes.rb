@@ -26,7 +26,7 @@ module Arel
         def initialize(*args)
           super
           return if @expressions.is_a?(::Array)
-          @expressions = @expressions.is_a?(::Arel::Node) ? [@expressions] : [::Arel.sql(@expressions)]
+          @expressions = @expressions.is_a?(::Arel::Nodes::Node) ? [@expressions] : [::Arel.sql(@expressions)]
         end
       end
 

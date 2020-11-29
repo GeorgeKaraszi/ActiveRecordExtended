@@ -14,7 +14,22 @@ module ActiveRecordExtended
 
     module Merger
       def normal_values
-        super + [:with, :union, :define_window]
+        super + [:union, :define_window]
+      end
+
+      def merge
+        merge_ctes!
+        super
+      end
+
+      def merge_ctes!
+        return unless other.with_values?
+
+        if other.recursive_value? && !relation.recursive_value?
+          relation.with!(:chain).recursive(other.cte)
+        else
+          relation.with!(other.cte)
+        end
       end
     end
 

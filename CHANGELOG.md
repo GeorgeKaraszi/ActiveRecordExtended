@@ -1,3 +1,18 @@
+# Unreleased
+
+Breaking Changes:
+ - Redesigned CTE's structure. CTE tables are now held in their relations WithCTE class.
+ - Redesigned CTE structure method `.with` & `.with!` only accepts `Hash/Keyword` and `WithCTE` instance arguments.
+   -  Dev Note: In an effort to trying to maintain as many ways of accepting CTE's in various forms 
+      (Array's, Strings, Hashes, etc..) was becoming overwhelming to maintain and wasn't realistic to continue this path.
+      And since you can't have duplicate CTE's with the same name, a Hash makes perfect sense.
+ 
+Bug fix:
+ - Fixed `.with` CTE recursive flag not transferring when merging subqueries.
+ - Fixed (Rails 6.0+) `.with` Subqueries that contain CTE's of their own, are now piped to the parent like other methods.
+ - Fixed duplicate where constraints when using `where.any_of` / `where.none_of`
+ - Fixed Rails 6.1 `Arel::Node` missing error.
+
 # 1.4.0 - November 6th 2019
 
 Performance tweaks:
