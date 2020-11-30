@@ -6,21 +6,22 @@ module ActiveRecordExtended
       class WithCTE
         include ::ActiveRecordExtended::Utilities::Support
         include Enumerable
-        extend Forwardable
+        extend  Forwardable
         attr_reader :with_values, :with_keys
+
         def_delegators :@with_values, :empty?, :blank?, :present?
 
         def initialize(scope)
-          @scope = scope.spawn
+          @scope = scope
           reset!
         end
 
         # @return [Enumerable] Returns the order for which CTE's were imported as.
-        def each(&block)
+        def each
           return to_enum(:each) unless block_given?
 
           with_keys.each do |key|
-            block.call(key, with_values[key])
+            yield(key, with_values[key])
           end
         end
         alias each_pair each
@@ -35,11 +36,8 @@ module ActiveRecordExtended
         def reverse_merge!(value)
           return if value.nil? || value.empty?
 
-          value.each do |name, expression|
+          value.each_pair do |name, expression|
             next if with_values.key?(name)
-
-            @with_keys        << name
-            @with_values[name] = expression
 
             # Ensure we follow FIFO pattern.
             # If the parent has similar CTE alias keys, we want to favor the parent's expressions over its children's.
@@ -47,6 +45,9 @@ module ActiveRecordExtended
               reverse_merge!(expression.cte)
               expression.cte.reset!
             end
+
+            @with_keys << name
+            @with_values[name] = expression
           end
 
           value.reset! if value.is_a?(WithCTE)
@@ -111,8 +112,10 @@ module ActiveRecordExtended
       def with!(opts = :chain, *_rest)
         return WithChain.new(self) if opts == :chain
 
-        (self.cte ||= WithCTE.new(self)).reverse_merge!(opts)
-        self
+        tap do |scope|
+          scope.cte ||= WithCTE.new(self)
+          scope.cte.reverse_merge!(opts)
+        end
       end
 
       def build_with(arel)
