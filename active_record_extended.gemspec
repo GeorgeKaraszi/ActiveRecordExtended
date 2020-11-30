@@ -19,13 +19,13 @@ Gem::Specification.new do |spec|
   spec.test_files    = `git ls-files -- spec/*`.split("\n")
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activerecord", ">= 5.0", "< 6.1"
+  spec.add_dependency "activerecord", ">= 5.1", "< 6.1"
   spec.add_dependency "ar_outer_joins", "~> 0.2"
-  spec.add_dependency "pg", "< 2.0"
+  spec.add_dependency "pg", "< 3.0"
 
-  spec.add_development_dependency "bundler", ">= 1.16", "< 2.1"
+  spec.add_development_dependency "bundler", ">= 1.16", "< 3.0"
   spec.add_development_dependency "database_cleaner", "~> 1.6"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rake", ">= 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "simplecov", "~> 0.16"
 end
