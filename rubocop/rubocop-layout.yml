@@ -1,0 +1,37 @@
+#################
+#  Layout Cops  #
+#################
+
+# Align ends correctly.
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: variable
+
+Layout/HashAlignment:
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
+
+Layout/MultilineHashKeyLineBreaks:
+  Enabled: true
+
+Layout/FirstHashElementLineBreak:
+  Enabled: true
+
+Layout/FirstMethodArgumentLineBreak:
+  Enabled: true
+
+Layout/LineLength:
+  Max: 150
+  Exclude:
+    - examples/**/*
+    - spec/**/*
+
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+  AllowAliasSyntax: true
+  AllowedMethods: ['delegate', 'alias_method']
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Layout/BeginEndAlignment:
+  Enabled: true

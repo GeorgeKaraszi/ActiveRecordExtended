@@ -1,0 +1,51 @@
+####################
+# Performance Cops #
+####################
+
+Performance/BigDecimalWithNumericArgument:
+  Enabled: true
+
+Performance/RedundantSortBlock:
+  Enabled: true
+
+Performance/RedundantStringChars:
+  Enabled: true
+
+Performance/ReverseFirst:
+  Enabled: true
+
+Performance/SortReverse:
+  Enabled: true
+
+Performance/Squeeze:
+  Enabled: true
+
+Performance/CollectionLiteralInLoop:
+  Enabled: true
+  Exclude:
+    - spec/**/*.rb
+
+Performance/ArraySemiInfiniteRangeSlice:
+  Enabled: true
+
+Performance/BlockGivenWithExplicitBlock:
+  Enabled: true
+
+Performance/ConstantRegexp:
+  Enabled: true
+
+Performance/MethodObjectAsBlock:
+  Enabled: true
+
+#############################
+# Disabled Performance cops #
+#############################
+
+Performance/AncestorsInclude:
+  Enabled: false
+
+Performance/StringInclude:
+  Enabled: false
+
+Performance/Sum:
+  Enabled: false

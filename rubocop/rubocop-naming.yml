@@ -1,0 +1,23 @@
+#################
+#  Naming Cops  #
+#################
+
+Naming/VariableNumber:
+  Enabled: true
+  Exclude:
+    - spec/**/*.rb
+
+Naming/FileName:
+  Enabled: true
+  Exclude:
+    - gemfiles/**/*.gemfile
+
+#################
+# Disabled cops #
+#################
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false

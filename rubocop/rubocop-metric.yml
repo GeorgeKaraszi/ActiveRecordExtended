@@ -1,0 +1,37 @@
+#################
+#  Metric Cops  #
+#################
+
+Metrics/ModuleLength:
+  Exclude:
+    - spec/**/*
+    - app/query_factories/**/*
+
+# Spec's, tasks, config's, and the Gemfile cannot by design be reduced.
+# Thus excluding them makes logical sense
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
+    - lib/tasks/*
+    - config/**/*
+    - Gemfile
+
+Metrics/AbcSize:
+  Max: 23
+  Exclude:
+    - spec/**/*
+
+#################
+# Disabled cops #
+#################
+
+# No reason to penalized classes for having instance and class methods (ie scopes)
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
