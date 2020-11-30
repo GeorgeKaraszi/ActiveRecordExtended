@@ -93,7 +93,7 @@ module ActiveRecordExtended
 
         # Add subquery CTE's to the parents query stack. (READ THE SPECIAL NOTE ABOVE!)
         if @scope.with_values?
-          @scope.cte.reverse_merge!(subquery.cte)
+          @scope.cte.pipe_cte_with!(subquery.cte)
         else
           # Top level has no with values
           @scope.with!(subquery.cte)

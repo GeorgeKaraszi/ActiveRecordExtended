@@ -29,11 +29,11 @@ module ActiveRecordExtended
         # @param [Hash, WithCTE] value
         def with_values=(value)
           reset!
-          reverse_merge!(value)
+          pipe_cte_with!(value)
         end
 
         # @param [Hash, WithCTE] value
-        def reverse_merge!(value)
+        def pipe_cte_with!(value)
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|
@@ -42,7 +42,7 @@ module ActiveRecordExtended
             # Ensure we follow FIFO pattern.
             # If the parent has similar CTE alias keys, we want to favor the parent's expressions over its children's.
             if expression.is_a?(ActiveRecord::Relation) && expression.with_values?
-              reverse_merge!(expression.cte)
+              pipe_cte_with!(expression.cte)
               expression.cte.reset!
             end
 
@@ -68,7 +68,7 @@ module ActiveRecordExtended
         def recursive(args)
           @scope.tap do |scope|
             scope.recursive_value = true
-            scope.cte.reverse_merge!(args)
+            scope.cte.pipe_cte_with!(args)
           end
         end
       end
@@ -117,7 +117,7 @@ module ActiveRecordExtended
 
         tap do |scope|
           scope.cte ||= WithCTE.new(self)
-          scope.cte.reverse_merge!(opts)
+          scope.cte.pipe_cte_with!(opts)
         end
       end
 
