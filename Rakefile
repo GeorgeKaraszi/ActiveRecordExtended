@@ -117,5 +117,5 @@ end
 
 def fetch_input(message)
   print message
-  STDIN.gets.chomp
+  $stdin.gets.chomp
 end

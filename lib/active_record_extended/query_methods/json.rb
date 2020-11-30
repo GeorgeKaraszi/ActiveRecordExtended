@@ -8,7 +8,7 @@ module ActiveRecordExtended
         :json_build_object,
         :jsonb_build_object,
         :json_build_literal,
-        :jsonb_build_literal,
+        :jsonb_build_literal
       ].freeze
 
       class JsonChain
@@ -77,7 +77,7 @@ module ActiveRecordExtended
           row_to_json = ::Arel::Nodes::ToJsonb.new(row_to_json) if options.dig(:cast_with, :to_jsonb)
 
           dummy_table = from_clause_constructor(from, key).select(row_to_json)
-          dummy_table = dummy_table.instance_eval(&block) if block_given?
+          dummy_table = dummy_table.instance_eval(&block) if block
           return dummy_table if options[:col_alias].blank?
 
           query = wrap_row_to_json(dummy_table, options)
@@ -248,7 +248,8 @@ module ActiveRecordExtended
       def select_row_to_json(from = nil, **options, &block)
         from.is_a?(Hash) ? options.merge!(from) : options.reverse_merge!(from: from)
         options.compact!
-        raise ArgumentError, "Required to provide a non-nilled from clause" unless options.key?(:from)
+        raise ArgumentError.new("Required to provide a non-nilled from clause") unless options.key?(:from)
+
         JsonChain.new(spawn).row_to_json!(**options, &block)
       end
 

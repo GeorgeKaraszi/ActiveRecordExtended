@@ -16,7 +16,7 @@ module ActiveRecordExtended
           @scope.window_values! << {
             window_name:  to_arel_sql(@window_name),
             partition_by: flatten_to_sql(partitions),
-            order_by:     order_by_expression(order_by),
+            order_by:     order_by_expression(order_by)
           }
 
           @scope

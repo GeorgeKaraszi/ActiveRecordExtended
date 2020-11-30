@@ -54,7 +54,7 @@ module ActiveRecordExtended
           enforced_options = {
             cast_with: hash_of_options.delete(:cast_with),
             order_by:  hash_of_options.delete(:order_by),
-            distinct:  !(!hash_of_options.delete(:distinct)),
+            distinct:  !(!hash_of_options.delete(:distinct))
           }
           query_statement = hash_to_dot_notation(hash_of_options.delete(:__select_statement) || hash_of_options.first)
           select!(query_statement, alias_name, **enforced_options)
@@ -102,7 +102,8 @@ module ActiveRecordExtended
       end
 
       def foster_select(*args)
-        raise ArgumentError, "Call `.forster_select' with at least one field" if args.empty?
+        raise ArgumentError.new("Call `.forster_select' with at least one field") if args.empty?
+
         spawn._foster_select!(*args)
       end
 

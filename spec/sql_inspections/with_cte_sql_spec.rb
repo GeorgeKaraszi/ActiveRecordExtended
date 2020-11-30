@@ -29,7 +29,7 @@ RSpec.describe "Active Record WITH CTE tables" do
     query           = User.all.with(personal_id_two: sub_query)
     expected_order  = User.with(
       personal_id_one: personal_id_one_query,
-      personal_id_two: personal_id_two_query,
+      personal_id_two: personal_id_two_query
     )
 
     expect(query.to_sql).to eq(expected_order.to_sql)

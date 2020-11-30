@@ -61,7 +61,7 @@ RSpec.describe "Active Record Any / None of Methods" do
       it "Return matched records of a joined table on the parent level" do
         query = Tag.joins(:user).where.any_of(
           { users: { personal_id: 1 } },
-          { users: { personal_id: 3 } },
+          { users: { personal_id: 3 } }
         )
 
         expect(query).to include(tag_one, tag_three)
@@ -120,7 +120,7 @@ RSpec.describe "Active Record Any / None of Methods" do
       it "Return matched records of a joined table on the parent level" do
         query = Tag.joins(:user).where.none_of(
           { users: { personal_id: 1 } },
-          { users: { personal_id: 3 } },
+          { users: { personal_id: 3 } }
         )
 
         expect(query).to include(tag_two)

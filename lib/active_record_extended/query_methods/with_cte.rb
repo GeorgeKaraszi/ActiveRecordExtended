@@ -80,7 +80,8 @@ module ActiveRecordExtended
 
       # @param [WithCTE] cte
       def cte=(cte)
-        raise TypeError, "Must be a WithCTE class type" unless cte.is_a?(WithCTE)
+        raise TypeError.new("Must be a WithCTE class type") unless cte.is_a?(WithCTE)
+
         @values[:cte] = cte
       end
 
@@ -94,6 +95,7 @@ module ActiveRecordExtended
 
       def recursive_value=(value)
         raise ImmutableRelation if @loaded
+
         @values[:recursive] = value
       end
 
@@ -105,6 +107,7 @@ module ActiveRecordExtended
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
         return WithChain.new(spawn) if opts == :chain
+
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
@@ -128,6 +131,7 @@ module ActiveRecordExtended
         end
 
         return if cte_statements.empty?
+
         recursive_value? ? arel.with(:recursive, cte_statements) : arel.with(cte_statements)
       end
     end

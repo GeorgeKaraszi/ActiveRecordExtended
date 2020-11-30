@@ -3,9 +3,9 @@
 require "spec_helper"
 
 RSpec.describe "Either Methods SQL Queries" do
-  let(:contains_array_regex) { /\"users\"\.\"tag_ids\" @> '\{1,2\}'/ }
-  let(:profile_l_outer_join) { /LEFT OUTER JOIN \"profile_ls\" ON \"profile_ls\".\"user_id\" = \"users\".\"id\"/ }
-  let(:profile_r_outer_join) { /LEFT OUTER JOIN \"profile_rs\" ON \"profile_rs\".\"user_id\" = \"users\".\"id\"/ }
+  let(:contains_array_regex) { /"users"\."tag_ids" @> '\{1,2\}'/ }
+  let(:profile_l_outer_join) { /LEFT OUTER JOIN "profile_ls" ON "profile_ls"."user_id" = "users"."id"/ }
+  let(:profile_r_outer_join) { /LEFT OUTER JOIN "profile_rs" ON "profile_rs"."user_id" = "users"."id"/ }
   let(:where_join_case) do
     "WHERE ((CASE WHEN profile_ls.user_id IS NULL"\
     " THEN profile_rs.user_id"\

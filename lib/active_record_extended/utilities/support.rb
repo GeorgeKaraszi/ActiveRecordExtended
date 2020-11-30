@@ -20,7 +20,7 @@ module ActiveRecordExtended
 
       def flatten_safely(values, &block)
         unless values.is_a?(Array)
-          values = yield values if block_given?
+          values = yield values if block
           return [values]
         end
 
@@ -152,6 +152,7 @@ module ActiveRecordExtended
 
       def group_when_needed(arel_or_rel_query)
         return arel_or_rel_query unless needs_to_be_grouped?(arel_or_rel_query)
+
         generate_grouping(arel_or_rel_query)
       end
 

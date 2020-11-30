@@ -54,10 +54,10 @@ module ActiveRecordExtended
           elsif column.try(:array)
             Arel::Nodes::ContainsArray.new(arel.left, arel.right)
           else
-            raise ArgumentError, "Invalid argument for .where.contains(), got #{arel.class}"
+            raise ArgumentError.new("Invalid argument for .where.contains(), got #{arel.class}")
           end
         else
-          raise ArgumentError, "Invalid argument for .where.contains(), got #{arel.class}"
+          raise ArgumentError.new("Invalid argument for .where.contains(), got #{arel.class}")
         end
       end
     end
@@ -88,7 +88,7 @@ module ActiveRecordExtended
         when Arel::Nodes::Equality
           Arel::Nodes::Equality.new(arel.right, Arel::Nodes::NamedFunction.new(function_name, [arel.left]))
         else
-          raise ArgumentError, "Invalid argument for .where.#{function_name.downcase}(), got #{arel.class}"
+          raise ArgumentError.new("Invalid argument for .where.#{function_name.downcase}(), got #{arel.class}")
         end
       end
     end
@@ -99,7 +99,7 @@ module ActiveRecordExtended
         when Arel::Nodes::In, Arel::Nodes::Equality
           arel_node_class.new(arel.left, arel.right)
         else
-          raise ArgumentError, "Invalid argument for .where.#{method}(), got #{arel.class}"
+          raise ArgumentError.new("Invalid argument for .where.#{method}(), got #{arel.class}")
         end
       end
     end

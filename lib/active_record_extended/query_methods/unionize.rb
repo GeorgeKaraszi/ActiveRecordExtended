@@ -81,7 +81,7 @@ module ActiveRecordExtended
           union_values:          [],
           union_operations:      [],
           union_ordering_values: [],
-          unionized_name:        nil,
+          unionized_name:        nil
         }
       end
 
@@ -89,10 +89,11 @@ module ActiveRecordExtended
         union_values:          Array,
         union_operations:      Array,
         union_ordering_values: Array,
-        unionized_name:        lambda { |klass| klass.arel_table.name },
+        unionized_name:        lambda { |klass| klass.arel_table.name }
       }.each_pair do |method_name, default|
         define_method(method_name) do
           return unionize_storage[method_name] if send("#{method_name}?")
+
           (default.is_a?(Proc) ? default.call(@klass) : default.new)
         end
 
@@ -107,11 +108,13 @@ module ActiveRecordExtended
 
       def union(opts = :chain, *args)
         return UnionChain.new(spawn) if opts == :chain
+
         opts.nil? ? self : spawn.union!(opts, *args, chain_method: __callee__)
       end
 
       (UNIONIZE_METHODS + UNION_RELATION_METHODS).each do |union_method|
         next if union_method == :union
+
         alias_method union_method, :union
       end
 
@@ -126,11 +129,13 @@ module ActiveRecordExtended
       # Will construct *Just* the union SQL statement that was been built thus far
       def to_union_sql
         return unless union_values?
+
         apply_union_ordering(build_union_nodes!(false)).to_sql
       end
 
       def to_nice_union_sql(color = true)
         return to_union_sql unless defined?(::Niceql)
+
         ::Niceql::Prettifier.prettify_sql(to_union_sql, color)
       end
 
@@ -172,7 +177,7 @@ module ActiveRecordExtended
 
       def build_union_nodes!(raise_error = true)
         unionize_error_or_warn!(raise_error)
-        union_values.each_with_index.inject(nil) do |union_node, (relation_node, index)|
+        union_values.each_with_index.reduce(nil) do |union_node, (relation_node, index)|
           next resolve_relation_node(relation_node) if union_node.nil?
 
           operation = union_operations.fetch(index - 1, :union)
@@ -215,6 +220,7 @@ module ActiveRecordExtended
       #
       def apply_union_ordering(union_nodes)
         return union_nodes unless union_ordering_values?
+
         UnionChain.new(self).inline_order_by(union_nodes, union_ordering_values)
       end
 
@@ -222,7 +228,7 @@ module ActiveRecordExtended
 
       def unionize_error_or_warn!(raise_error = true)
         if raise_error && union_values.size <= 1
-          raise ArgumentError, "You are required to provide 2 or more unions to join!"
+          raise ArgumentError.new("You are required to provide 2 or more unions to join!")
         elsif !raise_error && union_values.size <= 1
           warn("Warning: You are required to provide 2 or more unions to join.")
         end

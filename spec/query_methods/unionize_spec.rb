@@ -17,13 +17,13 @@ RSpec.describe "Active Record Union Methods" do
 
     it "should raise an error if the select statements do not align" do
       expect { misaligned_cmd.to_a }.to(
-        raise_error(ActiveRecord::StatementInvalid, /each [[:alpha:]]+ query must have the same number of columns/),
+        raise_error(ActiveRecord::StatementInvalid, /each [[:alpha:]]+ query must have the same number of columns/)
       )
     end
 
     it "should raise an argument error if there are less then two union statements" do
       expect { lacking_union_cmd.to_a }.to(
-        raise_error(ArgumentError, "You are required to provide 2 or more unions to join!"),
+        raise_error(ArgumentError, "You are required to provide 2 or more unions to join!")
       )
     end
   end
@@ -88,7 +88,7 @@ RSpec.describe "Active Record Union Methods" do
       query =
         User.union.intersect(
           User.select(:id, "profile_ls.likes").joins(:profile_l).where(profile_ls: { likes: 100 }),
-          User.select(:id, "profile_ls.likes").joins(:profile_l).where("profile_ls.likes < 150"),
+          User.select(:id, "profile_ls.likes").joins(:profile_l).where("profile_ls.likes < 150")
         )
 
       expect(query.pluck(:id)).to have_attributes(size: 1).and(eq([user_one_pl.id]))
@@ -129,7 +129,7 @@ RSpec.describe "Active Record Union Methods" do
       query =
         User.union.all(
           User.where(id: user_one.id),
-          User.where(id: user_three.id),
+          User.where(id: user_three.id)
         ).order_union(id: :desc)
 
       expect(query).to eq([user_three, user_one])
@@ -144,7 +144,7 @@ RSpec.describe "Active Record Union Methods" do
       query =
         User.union.intersect(
           User.where("id < ?", user_three.id),
-          User.where("id >= ?", user_one.id),
+          User.where("id >= ?", user_one.id)
         ).order_union(id: :desc)
 
       expect(query).to eq([user_two, user_one])

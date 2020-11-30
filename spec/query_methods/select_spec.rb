@@ -15,7 +15,7 @@ RSpec.describe "Active Record Select Methods" do
         it "can accept a subquery" do
           subquery = Tag.select("count(*)").joins("JOIN users u ON tags.user_id = u.id").where("u.ip = users.ip")
           query    =
-            User.foster_select(tag_count: [subquery, cast_with: :array_agg, distinct: true])
+            User.foster_select(tag_count: [subquery, { cast_with: :array_agg, distinct: true }])
                 .joins(:hm_tags)
                 .group(:ip)
                 .take
@@ -25,8 +25,8 @@ RSpec.describe "Active Record Select Methods" do
 
         it "can be ordered" do
           query = User.foster_select(
-            asc_ordered_numbers:  [:number, cast_with: :array_agg, order_by: { number: :asc }],
-            desc_ordered_numbers: [:number, cast_with: :array_agg, order_by: { number: :desc }],
+            asc_ordered_numbers:  [:number, { cast_with: :array_agg, order_by: { number: :asc } }],
+            desc_ordered_numbers: [:number, { cast_with: :array_agg, order_by: { number: :desc } }]
           ).take
 
           expect(query.asc_ordered_numbers).to eq(number_set.to_a.sort)
@@ -50,10 +50,10 @@ RSpec.describe "Active Record Select Methods" do
 
         it "will return a boolean expression" do
           query = User.foster_select(
-            truthly_expr:     ["users.number > 0",   cast_with: :bool_and],
-            falsey_expr:      ["users.number > 200", cast_with: :bool_and],
-            other_true_expr:  ["users.number > 4",   cast_with: :bool_or],
-            other_false_expr: ["users.number > 6",   cast_with: :bool_or],
+            truthly_expr:     ["users.number > 0",   { cast_with: :bool_and }],
+            falsey_expr:      ["users.number > 200", { cast_with: :bool_and }],
+            other_true_expr:  ["users.number > 4",   { cast_with: :bool_or }],
+            other_false_expr: ["users.number > 6",   { cast_with: :bool_or }]
           ).take
 
           expect(query.truthly_expr).to be_truthy
@@ -67,19 +67,19 @@ RSpec.describe "Active Record Select Methods" do
         before { 2.times.flat_map { |i| Array.new(2) { |j| User.create!(number: (i + 1) * j + 3) } } }
 
         it "max" do
-          query = User.foster_select(max_num: [:number, cast_with: :max]).take
+          query = User.foster_select(max_num: [:number, { cast_with: :max }]).take
           expect(query.max_num).to eq(5)
         end
 
         it "min" do
-          query = User.foster_select(max_num: [:number, cast_with: :min]).take
+          query = User.foster_select(max_num: [:number, { cast_with: :min }]).take
           expect(query.max_num).to eq(3)
         end
 
         it "sum" do
           query = User.foster_select(
-            num_sum:      [:number, cast_with: :sum],
-            distinct_sum: [:number, cast_with: :sum, distinct: true],
+            num_sum:      [:number, { cast_with: :sum }],
+            distinct_sum: [:number, { cast_with: :sum, distinct: true }]
           ).take
 
           expect(query.num_sum).to eq(15)
@@ -88,8 +88,8 @@ RSpec.describe "Active Record Select Methods" do
 
         it "avg" do
           query = User.foster_select(
-            num_avg:      [:number, cast_with: :avg],
-            distinct_avg: [:number, cast_with: :avg, distinct: true],
+            num_avg:      [:number, { cast_with: :avg }],
+            distinct_avg: [:number, { cast_with: :avg, distinct: true }]
           ).take
 
           expect(query.num_avg).to eq(3.75)

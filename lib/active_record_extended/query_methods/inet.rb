@@ -74,8 +74,12 @@ module ActiveRecordExtended
       #  #=> "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"ip\" && '127.0.0.255/32'"
       #
       def inet_contains_or_is_contained_within(opts, *rest)
-        substitute_comparisons(opts, rest, Arel::Nodes::Inet::ContainsOrContainedWithin,
-                               "inet_contains_or_is_contained_within")
+        substitute_comparisons(
+          opts,
+          rest,
+          Arel::Nodes::Inet::ContainsOrContainedWithin,
+          "inet_contains_or_is_contained_within"
+        )
       end
     end
   end

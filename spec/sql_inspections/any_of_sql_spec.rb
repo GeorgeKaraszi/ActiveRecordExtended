@@ -5,8 +5,8 @@ require "spec_helper"
 RSpec.describe "Any / None of SQL Queries" do
   let(:equal_query) { '"users"."personal_id" = 1' }
   let(:or_query)    { 'OR "users"."personal_id" = 2' }
-  let(:equal_or)    { equal_query + " " + or_query }
-  let(:join_query)  { /INNER JOIN \"tags\" ON \"tags\".\"user_id\" = \"users\".\"id/ }
+  let(:equal_or)    { "#{equal_query} #{or_query}" }
+  let(:join_query)  { /INNER JOIN "tags" ON "tags"."user_id" = "users"."id/ }
 
   describe "where.any_of/1" do
     it "should group different column arguments into nested or conditions" do

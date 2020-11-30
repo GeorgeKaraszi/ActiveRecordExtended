@@ -83,7 +83,7 @@ RSpec.describe "Union SQL Queries" do
 
       it "should retain the actual class calling table name as the union alias" do
         expect(described_method).to match_regex(/FROM \(+.+\) UNION \(.+\)+ users$/)
-        expect(described_method).to match_regex(/^SELECT \"users\"\.\"id\" FROM.+users$/)
+        expect(described_method).to match_regex(/^SELECT "users"\."id" FROM.+users$/)
       end
     end
   end

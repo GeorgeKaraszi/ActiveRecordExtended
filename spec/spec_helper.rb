@@ -13,7 +13,7 @@ end
 ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require File.expand_path(f) }
-Dir["#{File.dirname(__FILE__)}/**/*examples.rb"].each { |f| require f }
+Dir["#{File.dirname(__FILE__)}/**/*examples.rb"].sort.each { |f| require f }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

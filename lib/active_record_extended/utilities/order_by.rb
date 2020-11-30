@@ -65,6 +65,7 @@ module ActiveRecordExtended
         ordering_args.compact!
         ordering_args.map! do |arg|
           next to_arel_sql(arg) unless arg.is_a?(Hash) # ActiveRecord will reflect if an argument is a symbol
+
           arg.each_with_object({}) do |(field, dir), ordering_obj|
             # ActiveRecord will not reflect if the Hash keys are a `Arel::Nodes::SqlLiteral` klass
             ordering_obj[to_arel_sql(field)] = dir.to_s.downcase

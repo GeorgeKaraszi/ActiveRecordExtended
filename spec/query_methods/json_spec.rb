@@ -68,7 +68,7 @@ RSpec.describe "Active Record JSON methods" do
       query = User.json_build_object(:personal, sub_query)
       expect(query.size).to eq(1)
       expect(query.take.results).to match(
-        "personal" => match("ids" => match_array([{ "id" => user_one.id }, { "id" => user_two.id }])),
+        "personal" => match("ids" => match_array([{ "id" => user_one.id }, { "id" => user_two.id }]))
       )
     end
 
@@ -98,7 +98,7 @@ RSpec.describe "Active Record JSON methods" do
         :personal,
         sub_query.where.not(id: user_one),
         value: "COALESCE(array_agg(\"personal\"), '{}')",
-        as:    :cool_dudes,
+        as:    :cool_dudes
       )
 
       expect(query.take.cool_dudes["personal"]).to be_a(Array).and(be_empty)
@@ -110,7 +110,7 @@ RSpec.describe "Active Record JSON methods" do
           :personal,
           sub_query.where.not(id: user_one),
           value: "COALESCE(array_agg(personal), '{}')",
-          as:    :cool_dudes,
+          as:    :cool_dudes
         )
       end.to output.to_stderr
     end

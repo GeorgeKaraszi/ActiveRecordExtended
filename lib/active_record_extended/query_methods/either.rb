@@ -30,7 +30,7 @@ module ActiveRecordExtended
       end
 
       def sort_order_sql(dir)
-        %w[asc desc].include?(dir.to_s) ? dir.to_s : "asc"
+        ["asc", "desc"].include?(dir.to_s) ? dir.to_s : "asc"
       end
 
       def xor_field_options(options)

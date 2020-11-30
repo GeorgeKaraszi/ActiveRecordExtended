@@ -61,13 +61,14 @@ module ActiveRecordExtended
       # In Rails 5.2 the arel table maintains attribute binds
       def bind_attributes(query)
         return [] unless query.respond_to?(:bound_attributes)
+
         query.bound_attributes.map(&:value)
       end
 
       # Rails 5.1 fix
       def unprepared_query(query)
-        query.gsub(/((?<!\\)'.*?(?<!\\)'|(?<!\\)".*?(?<!\\)")|(\=\ \$\d+)/) do |match|
-          Regexp.last_match(2)&.gsub(/\=\ \$\d+/, "= ?") || match
+        query.gsub(/((?<!\\)'.*?(?<!\\)'|(?<!\\)".*?(?<!\\)")|(=\ \$\d+)/) do |match|
+          Regexp.last_match(2)&.gsub(/=\ \$\d+/, "= ?") || match
         end
       end
 
