@@ -2,6 +2,7 @@
 
 Deprecations:
  - Rails 5.0.x Has been fully deprecated
+ - Ruby 2.3.x Has been fully dropped.
  - JSON methods option: `cast_as_array` has been officially deprecated. Please use `cast_with: :array` instead.
 
 Breaking Changes:
