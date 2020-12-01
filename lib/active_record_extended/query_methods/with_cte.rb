@@ -125,7 +125,7 @@ module ActiveRecordExtended
         return unless with_values?
 
         cte_statements = cte.map do |name, expression|
-          grouped_expression = generate_grouping(expression)
+          grouped_expression = cte.generate_grouping(expression)
           cte_name           = cte.to_arel_sql(cte.double_quote(name.to_s))
           Arel::Nodes::As.new(cte_name, grouped_expression)
         end
