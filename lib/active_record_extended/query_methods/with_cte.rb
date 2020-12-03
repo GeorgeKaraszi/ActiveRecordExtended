@@ -11,6 +11,7 @@ module ActiveRecordExtended
 
         def_delegators :@with_values, :empty?, :blank?, :present?
 
+        # @param [ActiveRecord::Relation] scope
         def initialize(scope)
           @scope = scope
           reset!
@@ -61,11 +62,13 @@ module ActiveRecordExtended
       end
 
       class WithChain
+        # @param [ActiveRecord::Relation] scope
         def initialize(scope)
           @scope       = scope
           @scope.cte ||= WithCTE.new(scope)
         end
 
+        # @param [Hash, WithCTE] args
         def recursive(args)
           @scope.tap do |scope|
             scope.recursive_value = true
@@ -86,22 +89,26 @@ module ActiveRecordExtended
         @values[:cte] = cte
       end
 
+      # @return [Boolean]
       def with_values?
         !(cte.nil? || cte.empty?)
       end
 
+      # @param [Hash, WithCTE] values
       def with_values=(values)
         cte.with_values = values
       end
 
+      # @param [Boolean] value
       def recursive_value=(value)
         raise ImmutableRelation if @loaded
 
         @values[:recursive] = value
       end
 
+      # @return [Boolean]
       def recursive_value
-        @values[:recursive]
+        !(!@values[:recursive])
       end
       alias recursive_value? recursive_value
 
