@@ -47,8 +47,8 @@ module ActiveRecordExtended
               expression.cte.reset!
             end
 
-            @with_keys        |= [sym_name]
-            @with_values[name] = expression
+            @with_keys            |= [sym_name]
+            @with_values[sym_name] = expression
           end
 
           value.reset! if value.is_a?(WithCTE)
