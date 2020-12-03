@@ -32,7 +32,7 @@ GEM
     dotenv (2.7.5)
     i18n (1.8.5)
       concurrent-ruby (~> 1.0)
-    json (2.2.0)
+    json (2.3.1)
     method_source (0.9.2)
     minitest (5.14.2)
     niceql (0.1.25)

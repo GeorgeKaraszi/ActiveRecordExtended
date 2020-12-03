@@ -52,11 +52,11 @@ module ActiveRecordExtended
         #  #=> SELECT (ARRAY_AGG(DISTINCT members.price)) AS past_purchases, ...
         def process_hash!(hash_of_options, alias_name)
           enforced_options = {
-            cast_with: hash_of_options.delete(:cast_with),
-            order_by:  hash_of_options.delete(:order_by),
-            distinct:  !(!hash_of_options.delete(:distinct))
+            cast_with: hash_of_options[:cast_with],
+            order_by:  hash_of_options[:order_by],
+            distinct:  !(!hash_of_options[:distinct])
           }
-          query_statement = hash_to_dot_notation(hash_of_options.delete(:__select_statement) || hash_of_options.first)
+          query_statement = hash_to_dot_notation(hash_of_options[:__select_statement] || hash_of_options.first)
           select!(query_statement, alias_name, **enforced_options)
         end
 
@@ -84,9 +84,9 @@ module ActiveRecordExtended
         #   to_casted_query("memberships.cost", :total_revenue, :sum)
         #    #=> SELECT (SUM(memberships.cost)) AS total_revenue
         def to_casted_query(query, alias_name, **options)
-          cast_with  = options.delete(:cast_with).to_s.downcase
-          order_expr = order_by_expression(options.delete(:order_by))
-          distinct   = cast_with.chomp!("_distinct") || options.delete(:distinct) # account for [:agg_name:]_distinct
+          cast_with  = options[:cast_with].to_s.downcase
+          order_expr = order_by_expression(options[:order_by])
+          distinct   = cast_with.chomp!("_distinct") || options[:distinct] # account for [:agg_name:]_distinct
 
           case cast_with
           when "array", "true"
