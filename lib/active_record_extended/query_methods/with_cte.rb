@@ -7,9 +7,9 @@ module ActiveRecordExtended
         include ::ActiveRecordExtended::Utilities::Support
         include Enumerable
         extend  Forwardable
-        attr_reader :with_values, :with_keys
 
         def_delegators :@with_values, :empty?, :blank?, :present?
+        attr_reader :with_values, :with_keys
 
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
@@ -107,10 +107,9 @@ module ActiveRecordExtended
       end
 
       # @return [Boolean]
-      def recursive_value
+      def recursive_value?
         !(!@values[:recursive])
       end
-      alias recursive_value? recursive_value
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
@@ -138,9 +137,11 @@ module ActiveRecordExtended
           Arel::Nodes::As.new(cte_name, grouped_expression)
         end
 
-        return if cte_statements.empty?
-
-        recursive_value? ? arel.with(:recursive, cte_statements) : arel.with(cte_statements)
+        if recursive_value?
+          arel.with(:recursive, cte_statements)
+        else
+          arel.with(cte_statements)
+        end
       end
     end
   end
