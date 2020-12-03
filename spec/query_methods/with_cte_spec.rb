@@ -3,8 +3,8 @@
 require "spec_helper"
 
 RSpec.describe "Active Record With CTE Query Methods" do
-  let!(:user_one)  { User.create! }
-  let!(:user_two)  { User.create! }
+  let!(:user_one)    { User.create! }
+  let!(:user_two)    { User.create! }
   let!(:profile_one) { ProfileL.create!(user_id: user_one.id, likes: 200) }
   let!(:profile_two) { ProfileL.create!(user_id: user_two.id, likes: 500) }
 
@@ -34,6 +34,16 @@ RSpec.describe "Active Record With CTE Query Methods" do
         query     = User.joins(profile_l: :version).merge(sub_query)
 
         expect(query).to match_array([user_one])
+      end
+
+      it "should contain a unique list of ordered CTE keys when merging in multiple children" do
+        x     = User.with(profile: ProfileL.where("likes < 300"))
+        y     = User.with(profile: ProfileL.where("likes > 400"))
+        z     = y.merge(x).joins("JOIN profile ON profile.id = users.id") # Y should reject X's CTE (FIFO)
+        query = User.with(my_profile: z).joins("JOIN my_profile ON my_profile.id = users.id")
+
+        expect(query.cte.with_keys).to eq([:profile, :my_profile])
+        expect(query).to match_array([user_two])
       end
     end
   end

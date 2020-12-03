@@ -37,7 +37,8 @@ module ActiveRecordExtended
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|
-            next if with_values.key?(name)
+            sym_name = name.to_sym
+            next if with_values.key?(sym_name)
 
             # Ensure we follow FIFO pattern.
             # If the parent has similar CTE alias keys, we want to favor the parent's expressions over its children's.
@@ -46,7 +47,7 @@ module ActiveRecordExtended
               expression.cte.reset!
             end
 
-            @with_keys << name
+            @with_keys        |= [sym_name]
             @with_values[name] = expression
           end
 
