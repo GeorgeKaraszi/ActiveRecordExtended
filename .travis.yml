@@ -17,6 +17,7 @@ gemfile:
   - gemfiles/activerecord-51.gemfile
   - gemfiles/activerecord-52.gemfile
   - gemfiles/activerecord-60.gemfile
+  - gemfiles/activerecord-61.gemfile
 
 matrix:
   allow_failures:
@@ -24,6 +25,8 @@ matrix:
   exclude:
     - rvm: 2.4
       gemfile: gemfiles/activerecord-60.gemfile
+    - rvm: 2.4
+      gemfile: gemfiles/activerecord-61.gemfile
 
 
 env:

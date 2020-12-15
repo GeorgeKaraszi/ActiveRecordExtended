@@ -74,7 +74,7 @@ RSpec.describe "Union SQL Queries" do
 
       it "should alias the union from clause to 'happy_users'" do
         expect(described_method).to match_regex(/FROM \(+.+\) UNION \(.+\)+ happy_users$/)
-        expect(described_method).to match_regex(/^SELECT happy_users\.id FROM.+happy_users$/)
+        expect(described_method).to match_regex(/^SELECT (happy_users\.id|"happy_users"\."id") FROM.+happy_users$/)
       end
     end
 
