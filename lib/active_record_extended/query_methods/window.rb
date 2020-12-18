@@ -81,8 +81,9 @@ module ActiveRecordExtended
 
       def build_windows(arel)
         window_values.each do |window_value|
-          window = arel.window(window_value[:window_name]).partition(window_value[:partition_by])
-          window.order(window_value[:order_by]) if window_value[:order_by]
+          window = arel.window(window_value[:window_name])
+          window = window.partition(window_value[:partition_by]) if window_value[:partition_by].present?
+          window.order(window_value[:order_by])                  if window_value[:order_by]
         end
       end
     end

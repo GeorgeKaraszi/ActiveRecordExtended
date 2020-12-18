@@ -5,8 +5,8 @@
 - [#47](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/47) Added Rails 6.1 support (gigorok)
 
 ### Breaking Changes
-- Rails 5.0.x Has been fully deprecated
-- Ruby 2.3.x Has been fully dropped.
+- Rails 5.0.x Has been fully deprecated.
+- Ruby 2.3.x Has been fully deprecated.
 - JSON methods option: `cast_as_array` has been officially deprecated. Please use `cast_with: :array` instead.
 - Redesigned CTE's structure. CTE tables are now held in their relations WithCTE class.
 - Redesigned CTE structure method `.with` & `.with!` only accepts `Hash/Keyword` and `WithCTE` instance arguments.
@@ -16,9 +16,10 @@
        
 #### Bug fixes:
  - Fixed `.with` CTE recursive flag not transferring when merging subqueries.
- - Fixed (Rails 6.0+) `.with` Subqueries that contain CTE's of their own, are now piped to the parent like other methods.
- - Fixed duplicate where constraints when using `where.any_of` / `where.none_of`
+ - Fixed (Rails 6.x) `.with` Subqueries that contain CTE's of their own, are now piped to the parent like other methods.
+ - Fixed (Rails 6.x) No partition by arguments for window functions are provided.
  - Fixed Rails 6.1 `Arel::Node` missing error.
+ - Fixed duplicate where constraints when using `where.any_of` / `where.none_of`
  - Fixed Ruby 2.7 warning: `Using the last argument as keyword parameters is deprecated`
 
 # 1.4.0 - November 6th 2019

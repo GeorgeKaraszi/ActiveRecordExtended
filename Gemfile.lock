@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     active_record_extended (1.4.0)
-      activerecord (>= 5.1, < 6.1)
+      activerecord (>= 5.1, < 6.2)
       ar_outer_joins (~> 0.2)
       pg (< 3.0)
 
@@ -85,7 +85,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
     thread_safe (0.3.6)
-    tzinfo (1.2.8)
+    tzinfo (1.2.9)
       thread_safe (~> 0.1)
     unicode-display_width (1.7.0)
     zeitwerk (2.4.2)

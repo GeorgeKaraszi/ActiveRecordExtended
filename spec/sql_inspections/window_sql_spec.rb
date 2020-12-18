@@ -82,5 +82,17 @@ RSpec.describe "Active Record WINDOW Query inspection" do
         end
       end
     end
+
+    context "when not providing a partition by value" do
+      it "should construct a window function" do
+        query =
+          Tag
+          .define_window(:no_args).partition_by(order_by: { tag_number: :desc })
+          .select_window(:row_number, over: :no_args, as: :my_row)
+          .to_sql
+
+        expect(query).to eq("SELECT (ROW_NUMBER() OVER no_args) AS \"my_row\" FROM \"tags\" WINDOW no_args AS (ORDER BY tag_number DESC)")
+      end
+    end
   end
 end
