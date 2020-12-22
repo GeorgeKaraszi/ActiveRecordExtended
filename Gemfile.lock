@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_record_extended (1.4.0)
+    active_record_extended (2.0.0)
       activerecord (>= 5.1, < 6.2)
       ar_outer_joins (~> 0.2)
       pg (< 3.0)
@@ -40,7 +40,6 @@ GEM
     parser (2.7.2.0)
       ast (~> 2.4.1)
     pg (1.2.3)
-    pg (1.2.3-x64-mingw32)
     pry (0.11.3)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)

@@ -1,4 +1,4 @@
-# Unreleased
+# 2.0.0 - December 22nd 2020
 
 ## Changes
 
