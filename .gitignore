@@ -17,3 +17,5 @@
 
 .pryrc
 coverage
+
+.runner*.rb

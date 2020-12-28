@@ -9,7 +9,7 @@ module ActiveRecordExtended
 
       # rubocop:disable Naming/MethodName
 
-      def visit_Arel_Nodes_Overlap(object, collector)
+      def visit_Arel_Nodes_Overlaps(object, collector)
         infix_value object, collector, " && "
       end
 

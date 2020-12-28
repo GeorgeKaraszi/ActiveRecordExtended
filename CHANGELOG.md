@@ -1,3 +1,8 @@
+# Unreleased
+
+#### Bug fixes:
+- [#52](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/52) Fixed (Rails 6.1) `warning: already initialized constant Arel::Nodes::Contains`
+
 # 2.0.0 - December 22nd 2020
 
 ## Changes

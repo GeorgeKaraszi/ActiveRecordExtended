@@ -14,9 +14,10 @@ module Arel
       Arel::Nodes::Equality.new(Nodes.build_quoted(other, self), all_tags_function)
     end
 
-    def overlap(other)
-      Nodes::Overlap.new(self, Nodes.build_quoted(other, self))
+    def overlaps(other)
+      Nodes::Overlaps.new(self, Nodes.build_quoted(other, self))
     end
+    alias overlap overlaps
 
     def contains(other)
       Nodes::Contains.new self, Nodes.build_quoted(other, self)

@@ -18,8 +18,8 @@ require "active_record_extended/query_methods/inet"
 require "active_record_extended/query_methods/json"
 require "active_record_extended/query_methods/select"
 
-if ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1
+if Gem::Requirement.new("~> 5.1.0").satisfied_by?(ActiveRecord.gem_version)
   require "active_record_extended/patch/5_1/where_clause"
-elsif ActiveRecord::VERSION::MAJOR >= 5
+else
   require "active_record_extended/patch/5_2/where_clause"
 end

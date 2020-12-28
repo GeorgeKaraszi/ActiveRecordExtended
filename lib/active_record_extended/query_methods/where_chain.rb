@@ -5,9 +5,10 @@ module ActiveRecordExtended
     # Finds Records that have an array column that contain any a set of values
     # User.where.overlap(tags: [1,2])
     #   # SELECT * FROM users WHERE tags && {1,2}
-    def overlap(opts, *rest)
-      substitute_comparisons(opts, rest, Arel::Nodes::Overlap, "overlap")
+    def overlaps(opts, *rest)
+      substitute_comparisons(opts, rest, Arel::Nodes::Overlaps, "overlap")
     end
+    alias overlap overlaps
 
     # Finds Records that contain an element in an array column
     # User.where.any(tags: 3)
