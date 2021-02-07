@@ -31,6 +31,22 @@ RSpec.describe "Either Methods SQL Queries" do
       query = User.either_join(:profile_l, :profile_r).to_sql
       expect(query).to include(where_join_case)
     end
+
+    context "Through association .either_joins/2" do
+      let!(:four) { User.create! }
+      let!(:group) { Group.create!(users: [four]) }
+      let(:where_join_through_case) do
+        "WHERE ((CASE WHEN profile_ls.user_id IS NULL"\
+        " THEN groups_users.user_id"\
+        " ELSE profile_ls.user_id END) "\
+        "= users.id)"
+      end
+
+      it "Should contain a case statement that will conditionally alternative between tables" do
+        query = User.either_join(:profile_l, :groups).to_sql
+        expect(query).to include(where_join_through_case)
+      end
+    end
   end
 
   describe ".either_order/2" do

@@ -5,6 +5,8 @@ class ApplicationRecord < ActiveRecord::Base
 end
 
 class User < ApplicationRecord
+  has_many :groups_users, class_name: "GroupsUser"
+  has_many :groups, through: :groups_users, dependent: :destroy
   has_many :hm_tags, class_name: "Tag"
   has_one :profile_l, class_name: "ProfileL"
   has_one :profile_r, class_name: "ProfileR"
@@ -65,4 +67,14 @@ class VersionControl < ApplicationRecord
   # attributes
   # t.jsonb :source, default: {}, null: false
   #
+end
+
+class Group < ApplicationRecord
+  has_many :groups_users, class_name: "GroupsUser"
+  has_many :users, through: :groups_users, dependent: :destroy
+end
+
+class GroupsUser < ApplicationRecord
+  belongs_to :user
+  belongs_to :group
 end
