@@ -97,6 +97,14 @@ namespace :db do
         t.references :versionable, polymorphic: true, index: true, null: false
         t.jsonb :source, default: {}, null: false
       end
+
+      create_table :groups, force: true do |t|
+      end
+
+      create_table :groups_users, force: true do |t|
+        t.belongs_to :user, index: true, foreign_key: true
+        t.belongs_to :group, index: true, foreign_key: true
+      end
     end
 
     puts "Database migrated"

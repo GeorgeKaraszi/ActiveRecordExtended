@@ -23,6 +23,17 @@ RSpec.describe "Active Record Either Methods" do
         expect(query).to_not include(three)
       end
     end
+
+    context "Through association .either_joins/2" do
+      let!(:four) { User.create! }
+      let!(:group) { Group.create!(users: [four]) }
+
+      it "Should only only return records that belong to profile L or has group" do
+        query = User.either_joins(:profile_l, :groups)
+        expect(query).to include(one, four)
+        expect(query).to_not include(three, two)
+      end
+    end
   end
 
   describe ".either_order/2" do

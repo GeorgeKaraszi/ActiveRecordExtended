@@ -52,6 +52,7 @@ module ActiveRecordExtended
       def xor_field_options_for_associations(associations)
         associations.each_with_object({}) do |association_name, options|
           reflection = reflect_on_association(association_name)
+          reflection = reflection.through_reflection if reflection.through_reflection?
           options[reflection.table_name] = reflection.foreign_key
         end
       end
