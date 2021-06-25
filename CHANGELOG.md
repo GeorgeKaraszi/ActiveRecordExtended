@@ -1,6 +1,8 @@
-# Unreleased
+# 2.0.3 - June 25th 2021
 
 #### Bug fixes:
+- [#60](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/60) Fix potential accidental association loading during query building
+- [#56](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/56) Fix Either joins with has_many through association
 - [#52](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/52) Fixed (Rails 6.1) `warning: already initialized constant Arel::Nodes::Contains`
 
 # 2.0.0 - December 22nd 2020
