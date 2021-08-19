@@ -649,12 +649,12 @@ SELECT "people".*
 
 ```ruby
 users               = Person.where(id: 1..5)
-expect_these_users  = Person.where(id: 2..4)
+except_these_users  = Person.where(id: 2..4)
 
-Person.union_except(users, expect_these_users) #=> [#<Person id: 1, ..>, #<Person id: 5,..>]
+Person.union_except(users, except_these_users) #=> [#<Person id: 1, ..>, #<Person id: 5,..>]
 
 # You can also chain union's
-Person.union.except(users, expect_these_users).union(Person.where(id: 20))
+Person.union.except(users, except_these_users).union(Person.where(id: 20))
 ```
 
 Query Output
