@@ -2,6 +2,8 @@
 
 module ActiveRecordExtended
   module WhereChain
+    AR_VERSION_AT_LEAST_6_1 = ActiveRecord.version >= Gem::Version.new('6.1')
+
     # Finds Records that have an array column that contain any a set of values
     # User.where.overlap(tags: [1,2])
     #   # SELECT * FROM users WHERE tags && {1,2}
@@ -106,7 +108,7 @@ module ActiveRecordExtended
     end
 
     def build_where_clause_for(scope, opts, rest)
-      if ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 1
+      if AR_VERSION_AT_LEAST_6_1
         scope.send(:build_where_clause, opts, rest)
       else
         scope.send(:where_clause_factory).build(opts, rest)
