@@ -91,7 +91,7 @@ RSpec.describe "Active Record Union Methods" do
           User.select(:id, "profile_ls.likes").joins(:profile_l).where("profile_ls.likes < 150")
         )
 
-      expect(query.pluck(:id)).to have_attributes(size: 1).and(eq([user_one_pl.id]))
+      expect(query.pluck(:id)).to have_attributes(size: 1).and(eq([user_one_pl.user.id]))
       expect(query.first.likes).to eq(user_one_pl.likes)
     end
   end
