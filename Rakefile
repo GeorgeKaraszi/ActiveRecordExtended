@@ -42,11 +42,24 @@ namespace :db do
   end
 
   task drop: :load_db_settings do
-    `dropdb #{ENV["DATABASE_NAME"]}`
+    db_config = if ActiveRecord.version > Gem::Version.new('6.1')
+      ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
+    else
+      ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+    end
+
+    
+    ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).drop
   end
 
   task create: :load_db_settings do
-    `createdb #{ENV["DATABASE_NAME"]}`
+    db_config = if ActiveRecord.version > Gem::Version.new('6.1')
+      ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
+    else
+      ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+    end
+    
+    ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).create
   end
 
   task migrate: :load_db_settings do

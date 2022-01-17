@@ -1,0 +1,73 @@
+name: Test
+on: [push]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        rails: [51, 52, 60, 61, 70]
+        ruby: [2.4, 2.5, 2.6, 2.7, '3.0', 3.1]
+        exclude:
+          - ruby: 2.4
+            rails: 60  
+          - ruby: 2.4
+            rails: 61
+          - ruby: 2.4
+            rails: 70  
+          - ruby: 2.5
+            rails: 70  
+          - ruby: 2.6
+            rails: 70 
+          - ruby: 3.0
+            rails: 51  
+          - ruby: 3.0
+            rails: 52
+          - ruby: 3.1
+            rails: 51 
+          - ruby: 3.1
+            rails: 52        
+
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.rails }}-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.rails }}-
+
+      - name: Bundle install
+        run: |
+          bundle config path vendor/bundle
+          bundle config set --local gemfile gemfiles/activerecord-${{ matrix.rails }}.gemfile
+          bundle install --jobs 4 --retry 3
+
+      - name: Setup Database
+        env:
+          DATABASE_NAME: active_record_extended_test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/active_record_extended_test
+        run: |
+          bundle exec rake db:setup
+
+      - name: Run tests
+        env:
+          DATABASE_NAME: active_record_extended_test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/active_record_extended_test
+        run: bundle exec rake
