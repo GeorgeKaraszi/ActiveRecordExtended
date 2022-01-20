@@ -1,3 +1,9 @@
+# 2.1.0 - January 20th 2022
+
+## Changes
+
+- [#47](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/65) Added Rails 7.0 support (mbell697)
+
 # 2.0.3 - June 25th 2021
 
 #### Bug fixes:
