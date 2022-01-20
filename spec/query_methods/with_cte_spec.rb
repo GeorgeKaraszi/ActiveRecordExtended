@@ -12,14 +12,14 @@ RSpec.describe "Active Record With CTE Query Methods" do
     context "when using as a standalone query" do
       it "should only return a person with less than 300 likes" do
         query = User.with(profile: ProfileL.where("likes < 300"))
-                    .joins("JOIN profile ON profile.id = users.id")
+                    .joins("JOIN profile ON profile.user_id = users.id")
 
         expect(query).to match_array([user_one])
       end
 
       it "should return anyone with likes greater than or equal to 200" do
         query = User.with(profile: ProfileL.where("likes >= 200"))
-                    .joins("JOIN profile ON profile.id = users.id")
+                    .joins("JOIN profile ON profile.user_id = users.id")
 
         expect(query).to match_array([user_one, user_two])
       end
@@ -39,7 +39,7 @@ RSpec.describe "Active Record With CTE Query Methods" do
       it "should contain a unique list of ordered CTE keys when merging in multiple children" do
         x     = User.with(profile: ProfileL.where("likes < 300"))
         y     = User.with(profile: ProfileL.where("likes > 400"))
-        z     = y.merge(x).joins("JOIN profile ON profile.id = users.id") # Y should reject X's CTE (FIFO)
+        z     = y.merge(x).joins("JOIN profile ON profile.user_id = users.id") # Y should reject X's CTE (FIFO)
         query = User.with(my_profile: z).joins("JOIN my_profile ON my_profile.id = users.id")
 
         expect(query.cte.with_keys).to eq([:profile, :my_profile])
