@@ -1,3 +1,9 @@
+# 2.1.1 - February 14th 2022
+
+## Changes
+
+- [#68](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/68) Defer extending Either onto ActiveRecord until ActiveRecord is loaded (cgunther)
+
 # 2.1.0 - January 20th 2022
 
 ## Changes
