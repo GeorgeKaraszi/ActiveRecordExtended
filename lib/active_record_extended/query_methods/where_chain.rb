@@ -26,6 +26,23 @@ module ActiveRecordExtended
       equality_to_function("ALL", opts, rest)
     end
 
+    def exists(opts, *rest)
+      build_where_chain(opts, rest) do |arel|
+        case arel
+        when Arel::Nodes::In, Arel::Nodes::Equality
+          column = left_column(arel) || column_from_association(arel)
+
+          if [:hstore, :jsonb].include?(column.type)
+            Arel::Nodes::ExistsKeyHStore.new(arel.left, arel.right)
+          else
+            raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
+          end
+        else
+          raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
+        end
+      end
+    end
+
     # Finds Records that contains a nested set elements
     #
     # Array Column Type:

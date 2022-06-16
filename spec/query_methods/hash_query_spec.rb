@@ -32,6 +32,12 @@ RSpec.describe "Active Record Hash Related Query Methods" do
         expect(query).to_not include(two, three)
       end
 
+      it "returns records that contains keys on a given json" do
+        query = User.where.exists(jsonb_data: :payment)
+        expect(query).to include(one, two)
+        expect(query).to_not include(three)
+      end
+
       it "returns records that contain jsonb elements in joined tables" do
         tag_one = Tag.create!(user_id: one.id)
         tag_two = Tag.create!(user_id: two.id)

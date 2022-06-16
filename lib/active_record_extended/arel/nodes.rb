@@ -11,6 +11,7 @@ module Arel
 
     [
       "ContainsHStore",
+      "ExistsKeyHStore",
       "ContainsArray",
       "ContainedInArray"
     ].each { |binary_node_name| const_set(binary_node_name, Class.new(::Arel::Nodes::Binary)) }
