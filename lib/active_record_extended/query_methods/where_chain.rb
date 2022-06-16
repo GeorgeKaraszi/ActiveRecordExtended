@@ -26,14 +26,31 @@ module ActiveRecordExtended
       equality_to_function("ALL", opts, rest)
     end
 
-    def exists(opts, *rest)
+    def exists_all(opts, *rest)
       build_where_chain(opts, rest) do |arel|
         case arel
-        when Arel::Nodes::In, Arel::Nodes::Equality
+        when Arel::Nodes::In, Arel::Nodes::Equality, Arel::Nodes::HomogeneousIn
           column = left_column(arel) || column_from_association(arel)
 
           if [:hstore, :jsonb].include?(column.type)
-            Arel::Nodes::ExistsKeyHStore.new(arel.left, arel.right)
+            Arel::Nodes::ExistsAllKeysHStore.new(arel.left, arel.right)
+          else
+            raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
+          end
+        else
+          raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
+        end
+      end
+    end
+
+    def exists_any(opts, *rest)
+      build_where_chain(opts, rest) do |arel|
+        case arel
+        when Arel::Nodes::In, Arel::Nodes::Equality, Arel::Nodes::HomogeneousIn
+          column = left_column(arel) || column_from_association(arel)
+
+          if [:hstore, :jsonb].include?(column.type)
+            Arel::Nodes::ExistsAnyKeysHStore.new(arel.left, arel.right)
           else
             raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
           end

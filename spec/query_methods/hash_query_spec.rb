@@ -6,6 +6,7 @@ RSpec.describe "Active Record Hash Related Query Methods" do
   let!(:one)   { User.create!(data: { nickname: "george" }, jsonb_data: { payment: "zip" }) }
   let!(:two)   { User.create!(data: { nickname: "dan"    }, jsonb_data: { payment: "zipper" }) }
   let!(:three) { User.create!(data: { nickname: "georgey" }) }
+  let!(:four)  { User.create!(data: { nickname: "thomas" }, jsonb_data: { frequency: "monthly" }) }
 
   describe "#contains" do
     context "HStore Column Type" do
@@ -32,9 +33,15 @@ RSpec.describe "Active Record Hash Related Query Methods" do
         expect(query).to_not include(two, three)
       end
 
-      it "returns records that contains keys on a given json" do
-        query = User.where.exists(jsonb_data: :payment)
+      it "returns records that contains all keys on a given json" do
+        query = User.where.exists_all(jsonb_data: [:payment])
         expect(query).to include(one, two)
+        expect(query).to_not include(three)
+      end
+
+      it "returns records that contains any keys on a given json" do
+        query = User.where.exists_any(jsonb_data: [:payment, :frequency])
+        expect(query).to include(one, two, four)
         expect(query).to_not include(three)
       end
 
