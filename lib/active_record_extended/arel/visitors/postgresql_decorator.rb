@@ -35,12 +35,10 @@ module ActiveRecordExtended
         visit object.left, collector
 
         collector << " ?| "
-        collector << "array["
 
-        items = Array(object.right).map { |item| "'#{item.value}'" }
-
-        collector << items.join(", ")
-        collector << "]"
+        collector << "'{"
+        collector << Array(object.right).map(&:value).join(", ")
+        collector << "}'"
 
         collector
       end
@@ -49,12 +47,10 @@ module ActiveRecordExtended
         visit object.left, collector
 
         collector << " ?& "
-        collector << "array["
 
-        items = Array(object.right).map { |item| "'#{item.value}'" }
-
-        collector << items.join(",")
-        collector << "]"
+        collector << "'{"
+        collector << Array(object.right).map(&:value).join(", ")
+        collector << "}'"
 
         collector
       end
