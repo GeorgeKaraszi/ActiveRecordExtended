@@ -27,37 +27,11 @@ module ActiveRecordExtended
     end
 
     def exists_all(opts, *rest)
-      build_where_chain(opts, rest) do |arel|
-        case arel
-        when Arel::Nodes::In, Arel::Nodes::Equality, Arel::Nodes::HomogeneousIn
-          column = left_column(arel) || column_from_association(arel)
-
-          if [:hstore, :jsonb].include?(column.type)
-            Arel::Nodes::ExistsAllKeysHStore.new(arel.left, arel.right)
-          else
-            raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
-          end
-        else
-          raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
-        end
-      end
+      equality_to_key_check(Arel::Nodes::ExistsAllKeysHStore, opts, rest)
     end
 
     def exists_any(opts, *rest)
-      build_where_chain(opts, rest) do |arel|
-        case arel
-        when Arel::Nodes::In, Arel::Nodes::Equality, Arel::Nodes::HomogeneousIn
-          column = left_column(arel) || column_from_association(arel)
-
-          if [:hstore, :jsonb].include?(column.type)
-            Arel::Nodes::ExistsAnyKeysHStore.new(arel.left, arel.right)
-          else
-            raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
-          end
-        else
-          raise ArgumentError.new("Invalid argument for .where.exists(), got #{arel.class}")
-        end
-      end
+      equality_to_key_check(Arel::Nodes::ExistsAnyKeysHStore, opts, rest)
     end
 
     # Finds Records that contains a nested set elements
@@ -117,6 +91,23 @@ module ActiveRecordExtended
 
     def left_column(arel)
       @scope.klass.columns_hash[arel.left.name] || @scope.klass.columns_hash[arel.left.relation.name]
+    end
+
+    def equality_to_key_check(kind, opts, rest)
+      build_where_chain(opts, rest) do |arel|
+        case arel
+        when Arel::Nodes::In, Arel::Nodes::Equality, Arel::Nodes::HomogeneousIn
+          column = left_column(arel) || column_from_association(arel)
+
+          if [:hstore, :jsonb].include?(column.type)
+            kind.new(arel.left, arel.right)
+          else
+            raise ArgumentError.new("Invalid argument for .where.#{kind}(), got #{arel.class}")
+          end
+        else
+          raise ArgumentError.new("Invalid argument for .where.#{kind}(), got #{arel.class}")
+        end
+      end
     end
 
     def equality_to_function(function_name, opts, rest)
