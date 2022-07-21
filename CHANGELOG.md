@@ -1,3 +1,9 @@
+# 2.x.x - Unreleased
+
+#### Bug fixes:
+
+- [#73](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/73) Fix union and window query merging
+
 # 2.1.1 - February 14th 2022
 
 ## Changes

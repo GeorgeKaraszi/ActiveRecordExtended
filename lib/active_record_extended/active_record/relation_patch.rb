@@ -13,13 +13,26 @@ module ActiveRecordExtended
     end
 
     module Merger
-      def normal_values
-        super + [:union, :define_window]
-      end
-
       def merge
         merge_ctes!
+        merge_union!
+        merge_windows!
         super
+      end
+
+      def merge_union!
+        return if other.unionize_storage.empty?
+
+        relation.union_values          |= other.union_values
+        relation.union_operations      |= other.union_operations
+        relation.union_ordering_values |= other.union_ordering_values
+        relation.unionized_name         = other.unionized_name
+      end
+
+      def merge_windows!
+        return unless other.window_values?
+
+        relation.window_values |= other.window_values
       end
 
       def merge_ctes!
