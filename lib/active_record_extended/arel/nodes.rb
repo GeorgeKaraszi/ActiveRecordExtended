@@ -5,7 +5,7 @@ require "arel/nodes/function"
 
 module Arel
   module Nodes
-    if Gem::Requirement.new("< 6.1").satisfied_by?(ActiveRecord.gem_version)
+    unless ActiveRecordExtended::AR_VERSION_GTE_6_1
       ["Contains", "Overlaps"].each { |binary_node_name| const_set(binary_node_name, Class.new(::Arel::Nodes::Binary)) }
     end
 

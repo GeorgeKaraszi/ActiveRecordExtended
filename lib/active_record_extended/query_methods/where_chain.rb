@@ -2,8 +2,6 @@
 
 module ActiveRecordExtended
   module WhereChain
-    AR_VERSION_AT_LEAST_6_1 = ActiveRecord.version >= Gem::Version.new("6.1")
-
     # Finds Records that have an array column that contain any a set of values
     # User.where.overlap(tags: [1,2])
     #   # SELECT * FROM users WHERE tags && {1,2}
@@ -47,6 +45,10 @@ module ActiveRecordExtended
     #   # SELECT tags.* FROM tags INNER JOIN user on user.id = tags.user_id WHERE user.data @> { nickname: 'chainer' }
     #
     def contains(opts, *rest)
+      if ActiveRecordExtended::AR_VERSION_GTE_6_1
+        return substitute_comparisons(opts, rest, Arel::Nodes::Contains, "contains")
+      end
+
       build_where_chain(opts, rest) do |arel|
         case arel
         when Arel::Nodes::In, Arel::Nodes::Equality
@@ -108,7 +110,7 @@ module ActiveRecordExtended
     end
 
     def build_where_clause_for(scope, opts, rest)
-      if AR_VERSION_AT_LEAST_6_1
+      if ActiveRecordExtended::AR_VERSION_GTE_6_1
         scope.send(:build_where_clause, opts, rest)
       else
         scope.send(:where_clause_factory).build(opts, rest)
