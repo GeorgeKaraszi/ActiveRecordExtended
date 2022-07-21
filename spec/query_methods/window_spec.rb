@@ -47,5 +47,23 @@ RSpec.describe "Active Record Window Function Query Methods" do
         tag_group2.reverse_each.with_index { |tag, idx| expect(results[tag.id].first.r_id).to eq(idx + 1) }
       end
     end
+
+    context "When a window query is merged into another query" do
+      let(:base_query) do
+        Tag
+          .define_window(:w).partition_by(:user_id, order_by: { tag_number: :desc })
+          .select_window(:row_number, over: :w, as: :r_id)
+          .select(:id)
+      end
+
+      it "should maintain the window values" do
+        other_query   = Tag.merge(base_query)
+        base_results  = base_query.group_by(&:id)
+        other_results = other_query.group_by(&:id)
+
+        expect(base_query.to_sql).to eq(other_query.to_sql)
+        expect(base_results).to match(other_results)
+      end
+    end
   end
 end

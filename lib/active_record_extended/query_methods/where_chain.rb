@@ -2,7 +2,7 @@
 
 module ActiveRecordExtended
   module WhereChain
-    AR_VERSION_AT_LEAST_6_1 = ActiveRecord.version >= Gem::Version.new('6.1')
+    AR_VERSION_AT_LEAST_6_1 = ActiveRecord.version >= Gem::Version.new("6.1")
 
     # Finds Records that have an array column that contain any a set of values
     # User.where.overlap(tags: [1,2])
