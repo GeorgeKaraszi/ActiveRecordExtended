@@ -113,14 +113,14 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
-        return WithChain.new(spawn) if :chain == opts
+        return WithChain.new(spawn) if opts == :chain
 
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
       # @param [Hash, WithCTE] opts
       def with!(opts = :chain, *_rest)
-        return WithChain.new(self) if :chain == opts
+        return WithChain.new(self) if opts == :chain
 
         tap do |scope|
           scope.cte ||= WithCTE.new(self)
