@@ -57,6 +57,14 @@ RSpec.describe "Active Record Union Methods" do
         expect(base_query.to_sql).to eq(other_query.to_sql)
         expect(base_query.to_a).to match_array(other_query.to_a)
       end
+
+      it "should maintain similar union statements" do
+        scope_query = User.where(id: user_one.id)
+        base_query  = User.union(scope_query, scope_query)
+        other_query = User.merge(base_query)
+        expect(other_query.to_sql).to eq(base_query.to_sql)
+        expect(other_query.to_a).to match_array(base_query.to_a)
+      end
     end
   end
 
