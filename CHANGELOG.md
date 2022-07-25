@@ -1,7 +1,8 @@
 # 2.x.x - Unreleased
 
-#### Deprecation:
+#### Breaking Changes:
 
+- Dropped Rails 5.1 support.
 - Dropped Ruby 2.4 support.
 
 #### Bug fixes:
