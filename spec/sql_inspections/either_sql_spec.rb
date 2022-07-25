@@ -7,17 +7,17 @@ RSpec.describe "Either Methods SQL Queries" do
   let(:profile_l_outer_join) { /LEFT OUTER JOIN "profile_ls" ON "profile_ls"."user_id" = "users"."id"/ }
   let(:profile_r_outer_join) { /LEFT OUTER JOIN "profile_rs" ON "profile_rs"."user_id" = "users"."id"/ }
   let(:where_join_case) do
-    "WHERE ((CASE WHEN profile_ls.user_id IS NULL"\
-    " THEN profile_rs.user_id"\
-    " ELSE profile_ls.user_id END) "\
-    "= users.id)"
+    "WHERE ((CASE WHEN profile_ls.user_id IS NULL " \
+      "THEN profile_rs.user_id " \
+      "ELSE profile_ls.user_id END) " \
+      "= users.id)"
   end
 
   let(:order_case) do
-    "ORDER BY "\
-    "(CASE WHEN profile_ls.likes IS NULL"\
-    " THEN profile_rs.dislikes"\
-    " ELSE profile_ls.likes END)"
+    "ORDER BY " \
+      "(CASE WHEN profile_ls.likes IS NULL " \
+      "THEN profile_rs.dislikes " \
+      "ELSE profile_ls.likes END) "
   end
 
   describe ".either_join/2" do
@@ -36,10 +36,10 @@ RSpec.describe "Either Methods SQL Queries" do
       let!(:four) { User.create! }
       let!(:group) { Group.create!(users: [four]) }
       let(:where_join_through_case) do
-        "WHERE ((CASE WHEN profile_ls.user_id IS NULL"\
-        " THEN groups_users.user_id"\
-        " ELSE profile_ls.user_id END) "\
-        "= users.id)"
+        "WHERE ((CASE WHEN profile_ls.user_id IS NULL " \
+          "THEN groups_users.user_id " \
+          "ELSE profile_ls.user_id END) " \
+          "= users.id)"
       end
 
       it "Should contain a case statement that will conditionally alternative between tables" do

@@ -64,7 +64,7 @@ RSpec.describe "Active Record Select Methods" do
       end
 
       context "with math functions: sum|max|min|avg" do
-        before { 2.times.flat_map { |i| Array.new(2) { |j| User.create!(number: (i + 1) * j + 3) } } }
+        before { 2.times.flat_map { |i| Array.new(2) { |j| User.create!(number: ((i + 1) * j) + 3) } } }
 
         it "max" do
           query = User.foster_select(max_num: [:number, { cast_with: :max }]).take

@@ -29,7 +29,7 @@ module ActiveRecordExtended
 
       def hash_map_queries(queries)
         if queries.size == 1 && queries.first.is_a?(Hash)
-          queries.first.each_pair.map { |attr, predicate| Hash[attr, predicate] }
+          queries.first.each_pair.map { |attr, predicate| { attr => predicate } }
         else
           queries
         end

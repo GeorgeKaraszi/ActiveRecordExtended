@@ -26,7 +26,7 @@ module ActiveRecordExtended
       private
 
       def xor_field_sql(options)
-        XOR_FIELD_SQL % Hash[xor_field_options(options)]
+        XOR_FIELD_SQL % xor_field_options(options).to_h
       end
 
       def sort_order_sql(dir)
@@ -35,7 +35,7 @@ module ActiveRecordExtended
 
       def xor_field_options(options)
         str_args = options.flatten.take(XOR_FIELD_KEYS.size).map(&:to_s)
-        Hash[XOR_FIELD_KEYS.zip(str_args)]
+        XOR_FIELD_KEYS.zip(str_args).to_h
       end
 
       def map_columns_to_tables(associations_and_columns)

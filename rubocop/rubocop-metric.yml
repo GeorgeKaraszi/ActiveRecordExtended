@@ -5,7 +5,6 @@
 Metrics/ModuleLength:
   Exclude:
     - spec/**/*
-    - app/query_factories/**/*
 
 # Spec's, tasks, config's, and the Gemfile cannot by design be reduced.
 # Thus excluding them makes logical sense

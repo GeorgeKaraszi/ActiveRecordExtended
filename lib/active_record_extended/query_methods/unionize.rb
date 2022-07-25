@@ -178,7 +178,7 @@ module ActiveRecordExtended
       def build_union_nodes!(raise_error = true)
         unionize_error_or_warn!(raise_error)
         union_values.each_with_index.reduce(nil) do |union_node, (relation_node, index)|
-          next resolve_relation_node(relation_node) if union_node.nil?
+          next resolve_relation_node(relation_node) if union_node.nil? # rubocop:disable Lint/UnmodifiedReduceAccumulator
 
           operation = union_operations.fetch(index - 1, :union)
           left      = union_node

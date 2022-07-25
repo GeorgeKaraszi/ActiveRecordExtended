@@ -1,7 +1,9 @@
 require:
   - rubocop-performance
+  - rubocop-rake
 
 AllCops:
+  NewCops: enable
   TargetRubyVersion: 2.4
   DisplayStyleGuide: true
   DisplayCopNames: true
