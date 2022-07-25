@@ -5,7 +5,7 @@ require:
 
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.5
   DisplayStyleGuide: true
   DisplayCopNames: true
   Exclude:
