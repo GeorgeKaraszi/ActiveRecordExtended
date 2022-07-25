@@ -9,12 +9,12 @@ RSpec.describe "Any / None of SQL Queries" do
   let(:join_query)  { /INNER JOIN "tags" ON "tags"."user_id" = "users"."id/ }
 
   describe "where.any_of/1" do
-    it "should group different column arguments into nested or conditions" do
+    it "groups different column arguments into nested or conditions" do
       query = User.where.any_of({ personal_id: 1 }, { id: 2 }, { personal_id: 2 }).to_sql
       expect(query).to match_regex(/WHERE \(\(.+ = 1 OR .+ = 2\) OR .+ = 2\)/)
     end
 
-    it "Should assign where clause predicates for standard queries" do
+    it "assigns where clause predicates for standard queries" do
       query = User.where.any_of({ personal_id: 1 }, { personal_id: 2 }).to_sql
       expect(query).to include(equal_or)
 
@@ -33,7 +33,7 @@ RSpec.describe "Any / None of SQL Queries" do
   end
 
   describe "where.none_of/1" do
-    it "Should surround the query in a WHERE NOT clause" do
+    it "surrounds the query in a WHERE NOT clause" do
       query = User.where.none_of({ personal_id: 1 }, { id: 2 }, { personal_id: 2 }).to_sql
       expect(query).to match_regex(/WHERE.+NOT \(\(.+ = 1 OR .+ = 2\) OR .+ = 2\)/)
     end

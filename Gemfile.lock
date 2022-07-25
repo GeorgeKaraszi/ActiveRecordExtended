@@ -80,6 +80,8 @@ GEM
       rubocop-ast (>= 0.4.0)
     rubocop-rake (0.6.0)
       rubocop (~> 1.0)
+    rubocop-rspec (2.12.1)
+      rubocop (~> 1.31)
     ruby-progressbar (1.11.0)
     simplecov (0.17.0)
       docile (~> 1.1)
@@ -108,6 +110,7 @@ DEPENDENCIES
   rubocop
   rubocop-performance
   rubocop-rake
+  rubocop-rspec
   simplecov (~> 0.16)
 
 BUNDLED WITH

@@ -10,14 +10,14 @@ RSpec.describe "Active Record With CTE Query Methods" do
 
   describe ".with/1" do
     context "when using as a standalone query" do
-      it "should only return a person with less than 300 likes" do
+      it "onlies return a person with less than 300 likes" do
         query = User.with(profile: ProfileL.where("likes < 300"))
                     .joins("JOIN profile ON profile.user_id = users.id")
 
         expect(query).to match_array([user_one])
       end
 
-      it "should return anyone with likes greater than or equal to 200" do
+      it "returns anyone with likes greater than or equal to 200" do
         query = User.with(profile: ProfileL.where("likes >= 200"))
                     .joins("JOIN profile ON profile.user_id = users.id")
 
@@ -26,8 +26,10 @@ RSpec.describe "Active Record With CTE Query Methods" do
     end
 
     context "when merging in query" do
-      let!(:version_one) { VersionControl.create!(versionable: profile_one, source: { help: "me" }) }
-      let!(:version_two) { VersionControl.create!(versionable: profile_two, source: { help: "no one" }) }
+      before do
+        VersionControl.create!(versionable: profile_one, source: { help: "me" })
+        VersionControl.create!(versionable: profile_two, source: { help: "no one" })
+      end
 
       it "will maintain the CTE table when merging into existing AR queries" do
         sub_query = ProfileL.with(version_controls: VersionControl.where.contains(source: { help: "me" }))
@@ -36,7 +38,7 @@ RSpec.describe "Active Record With CTE Query Methods" do
         expect(query).to match_array([user_one])
       end
 
-      it "should contain a unique list of ordered CTE keys when merging in multiple children" do
+      it "contains a unique list of ordered CTE keys when merging in multiple children" do
         x     = User.with(profile: ProfileL.where("likes < 300"))
         y     = User.with(profile: ProfileL.where("likes > 400"))
         z     = y.merge(x).joins("JOIN profile ON profile.user_id = users.id") # Y should reject X's CTE (FIFO)

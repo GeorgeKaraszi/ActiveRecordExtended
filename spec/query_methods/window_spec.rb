@@ -21,12 +21,12 @@ RSpec.describe "Active Record Window Function Query Methods" do
         Tag.define_window(:w).partition_by(:user_id, order_by: :tag_number).select(:id)
       end
 
-      it "should return tag_one with r_id 1 and tag_three with r_id 2" do
+      it "returns tag_one with r_id 1 and tag_three with r_id 2" do
         results = base_query.select_window(:row_number, over: :w, as: :r_id).group_by(&:id)
         tag_group1.each.with_index { |tag, idx| expect(results[tag.id].first.r_id).to eq(idx + 1) }
       end
 
-      it "should return tag_two with r_id 1 and tag_four with r_id 2" do
+      it "returns tag_two with r_id 1 and tag_four with r_id 2" do
         results = base_query.select_window(:row_number, over: :w, as: :r_id).group_by(&:id)
         tag_group2.each.with_index { |tag, idx| expect(results[tag.id].first.r_id).to eq(idx + 1) }
       end
@@ -37,18 +37,18 @@ RSpec.describe "Active Record Window Function Query Methods" do
         Tag.define_window(:w).partition_by(:user_id, order_by: { tag_number: :desc }).select(:id)
       end
 
-      it "should return tag_one with r_id 2 and tag_three with r_id 1" do
+      it "returns tag_one with r_id 2 and tag_three with r_id 1" do
         results = base_query.select_window(:row_number, over: :w, as: :r_id).group_by(&:id)
         tag_group1.reverse_each.with_index { |tag, idx| expect(results[tag.id].first.r_id).to eq(idx + 1) }
       end
 
-      it "should return tag_two with r_id 2 and tag_four with r_id 1" do
+      it "returns tag_two with r_id 2 and tag_four with r_id 1" do
         results = base_query.select_window(:row_number, over: :w, as: :r_id).group_by(&:id)
         tag_group2.reverse_each.with_index { |tag, idx| expect(results[tag.id].first.r_id).to eq(idx + 1) }
       end
     end
 
-    context "When a window query is merged into another query" do
+    context "when a window query is merged into another query" do
       let(:base_query) do
         Tag
           .define_window(:w).partition_by(:user_id, order_by: { tag_number: :desc })
@@ -56,7 +56,7 @@ RSpec.describe "Active Record Window Function Query Methods" do
           .select(:id)
       end
 
-      it "should maintain the window values" do
+      it "maintains the window values" do
         other_query   = Tag.merge(base_query)
         base_results  = base_query.group_by(&:id)
         other_results = other_query.group_by(&:id)
