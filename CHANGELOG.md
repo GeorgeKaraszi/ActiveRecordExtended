@@ -1,8 +1,12 @@
 # 2.x.x - Unreleased
 
+#### Deprecation:
+
+- Dropped Ruby 2.4 support.
+
 #### Bug fixes:
 
-- [#73](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/73) Fix union and window query merging
+- [#73](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/73) [#77](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/77) Fix union and window query merging
 
 # 2.1.1 - February 14th 2022
 
