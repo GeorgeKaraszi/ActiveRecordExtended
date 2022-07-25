@@ -17,9 +17,4 @@ require "active_record_extended/query_methods/either"
 require "active_record_extended/query_methods/inet"
 require "active_record_extended/query_methods/json"
 require "active_record_extended/query_methods/select"
-
-if Gem::Requirement.new("~> 5.1.0").satisfied_by?(ActiveRecord.gem_version)
-  require "active_record_extended/patch/5_1/where_clause"
-else
-  require "active_record_extended/patch/5_2/where_clause"
-end
+require "active_record_extended/patch/5_2/where_clause"
