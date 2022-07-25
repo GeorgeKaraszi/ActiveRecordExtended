@@ -16,9 +16,9 @@ Gem::Specification.new do |spec|
   spec.license               = "MIT"
 
   spec.files                 = Dir["README.md", "lib/**/*"]
-  spec.test_files            = `git ls-files -- spec/*`.split("\n")
   spec.require_paths         = ["lib"]
   spec.required_ruby_version = ">= 2.4"
+  spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.add_dependency "activerecord", ">= 5.1", "< 7.1.0"
   spec.add_dependency "ar_outer_joins", "~> 0.2"

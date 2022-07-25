@@ -7,6 +7,7 @@ RSpec::Core::RakeTask.new(:spec)
 
 task default: :spec
 
+desc "Initialize the ENV file for connecting to the test database"
 task :setup do
   if File.exist?(".env")
     puts "This will overwrite your existing .env file"
@@ -33,6 +34,7 @@ end
 # rubocop:disable Metrics/BlockLength
 
 namespace :db do
+  desc "Loads the test database ENV file"
   task :load_db_settings do
     require "active_record"
     unless ENV["DATABASE_URL"]
@@ -41,6 +43,7 @@ namespace :db do
     end
   end
 
+  desc "Drop test database"
   task drop: :load_db_settings do
     db_config = if ActiveRecord.version > Gem::Version.new("6.1")
       ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
@@ -51,6 +54,7 @@ namespace :db do
     ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).drop
   end
 
+  desc "Create test database"
   task create: :load_db_settings do
     db_config = if ActiveRecord.version > Gem::Version.new("6.1")
       ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
@@ -61,6 +65,7 @@ namespace :db do
     ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).create
   end
 
+  desc "Migrate schema to the test database"
   task migrate: :load_db_settings do
     ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
 
@@ -110,8 +115,7 @@ namespace :db do
         t.jsonb :source, default: {}, null: false
       end
 
-      create_table :groups, force: true do |t|
-      end
+      create_table :groups, force: true
 
       create_table :groups_users, force: true do |t|
         t.belongs_to :user, index: true, foreign_key: true
@@ -122,6 +126,7 @@ namespace :db do
     puts "Database migrated"
   end
 
+  desc "Creates and migrates the schema to the test database"
   task setup: :load_db_settings do
     unless ENV["DATABASE_URL"]
       Rake::Task["setup"].invoke

@@ -1,7 +1,10 @@
 require:
   - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
 
 AllCops:
+  NewCops: enable
   TargetRubyVersion: 2.4
   DisplayStyleGuide: true
   DisplayCopNames: true
@@ -16,3 +19,4 @@ inherit_from:
   - ./rubocop/rubocop-metric.yml
   - ./rubocop/rubocop-naming.yml
   - ./rubocop/rubocop-performance.yml
+  - ./rubocop/rubocop-rspec.yml

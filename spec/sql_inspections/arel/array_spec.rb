@@ -6,12 +6,12 @@ RSpec.describe "Array Column Predicates" do
   let(:arel_table) { User.arel_table }
 
   describe "Array Overlap" do
-    it "converts Arel overlap statement" do
+    it "converts Arel overlap statement for strings" do
       query = arel_table.where(arel_table[:tags].overlap(["tag", "tag 2"])).to_sql
       expect(query).to match_regex(/&& '\{"?tag"?,"tag 2"\}'/)
     end
 
-    it "converts Arel overlap statement" do
+    it "converts Arel overlap statement for integers" do
       query = arel_table.where(arel_table[:tag_ids].overlap([1, 2])).to_sql
       expect(query).to match_regex(/&& '\{1,2\}'/)
     end

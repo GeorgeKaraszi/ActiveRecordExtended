@@ -5,7 +5,7 @@ require "spec_helper"
 RSpec.describe "Active Record WITH CTE tables" do
   let(:with_personal_query) { /WITH.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/ }
 
-  it "should contain WITH statement that creates the CTE table" do
+  it "contains WITH statement that creates the CTE table" do
     query = User.with(personal_id_one: User.where(personal_id: 1))
                 .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
                 .to_sql
@@ -51,12 +51,12 @@ RSpec.describe "Active Record WITH CTE tables" do
           .to_sql
     end
 
-    it "Should only contain a single WITH statement" do
+    it "onlies contain a single WITH statement" do
       expect(with_arguments.scan(/WITH/).count).to eq(1)
       expect(with_arguments.scan(/AS/).count).to eq(2)
     end
 
-    it "Should only contain a single WITH statement when chaining" do
+    it "onlies contain a single WITH statement when chaining" do
       expect(chained_with.scan(/WITH/).count).to eq(1)
       expect(chained_with.scan(/AS/).count).to eq(2)
     end

@@ -138,3 +138,6 @@ Style/RedundantArgument:
 
 Style/SwapValues:
   Enabled: false
+
+Style/FetchEnvVar:
+  Enabled: false

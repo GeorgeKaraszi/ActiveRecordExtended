@@ -5,11 +5,14 @@ RSpec.describe "Active Record JSON methods" do
   let!(:user_two) { User.create! }
 
   describe ".select_row_to_json" do
-    let!(:tag_one)    { Tag.create!(user: user_one, tag_number: 2) }
-    let!(:tag_two)    { Tag.create!(user: user_two, tag_number: 5) }
-    let(:sub_query)   { Tag.select(:tag_number).where("tags.user_id = users.id") }
+    let(:sub_query) { Tag.select(:tag_number).where("tags.user_id = users.id") }
 
-    it "should nest a json object in the query results" do
+    before do
+      Tag.create!(user: user_one, tag_number: 2)
+      Tag.create!(user: user_two, tag_number: 5)
+    end
+
+    it "nests a json object in the query results" do
       query = User.select(:id).select_row_to_json(sub_query, as: :results).where(id: user_one.id)
       expect(query.size).to eq(1)
       expect(query.take.results).to be_a(Hash).and(match("tag_number" => 2))
@@ -144,13 +147,13 @@ RSpec.describe "Active Record JSON methods" do
 
     describe ".json_build_literal" do
       it_behaves_like "literal builds" do
-        let!(:method) { :json_build_literal }
+        let(:method) { :json_build_literal }
       end
     end
 
     describe ".jsonb_build_literal" do
       it_behaves_like "literal builds" do
-        let!(:method) { :jsonb_build_literal }
+        let(:method) { :jsonb_build_literal }
       end
     end
   end

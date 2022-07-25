@@ -7,10 +7,10 @@ RSpec.describe "Active Record Select Methods" do
 
   describe ".foster_select" do
     context "with an aggregate function" do
-      context "agg_array" do
+      context "with agg_array" do
         let(:number_set) { numbers.sample(6).to_enum }
-        let!(:users) { Array.new(6) { User.create!(number: number_set.next, ip: "127.0.0.1") } }
-        let!(:tags) { users.flat_map { |u| Array.new(2) { Tag.create!(user: u, tag_number: numbers.sample) } } }
+        let(:users)      { Array.new(6) { User.create!(number: number_set.next, ip: "127.0.0.1") } }
+        let!(:tags)      { users.flat_map { |u| Array.new(2) { Tag.create!(user: u, tag_number: numbers.sample) } } }
 
         it "can accept a subquery" do
           subquery = Tag.select("count(*)").joins("JOIN users u ON tags.user_id = u.id").where("u.ip = users.ip")
@@ -42,8 +42,8 @@ RSpec.describe "Active Record Select Methods" do
         end
       end
 
-      context "bool_[and|or]" do
-        let!(:users) do
+      context "with bool_[and|or]" do
+        let!(:users) do # rubocop:disable RSpec/LetSetup
           enum_numbers = numbers.to_enum
           Array.new(6) { User.create!(number: enum_numbers.next, ip: "127.0.0.1") }
         end
@@ -64,7 +64,7 @@ RSpec.describe "Active Record Select Methods" do
       end
 
       context "with math functions: sum|max|min|avg" do
-        before { 2.times.flat_map { |i| Array.new(2) { |j| User.create!(number: (i + 1) * j + 3) } } }
+        before { 2.times.flat_map { |i| Array.new(2) { |j| User.create!(number: ((i + 1) * j) + 3) } } }
 
         it "max" do
           query = User.foster_select(max_num: [:number, { cast_with: :max }]).take
