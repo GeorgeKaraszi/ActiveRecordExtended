@@ -23,10 +23,9 @@ module ActiveRecordExtended
       def merge_union!
         return if other.unionize_storage.empty?
 
-        relation.union_values          |= other.union_values
-        relation.union_operations      |= other.union_operations
-        relation.union_ordering_values |= other.union_ordering_values
-        relation.unionized_name         = other.unionized_name
+        relation.union_values          += other.union_values
+        relation.union_operations      += other.union_operations
+        relation.union_ordering_values += other.union_ordering_values
       end
 
       def merge_windows!
