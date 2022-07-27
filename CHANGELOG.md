@@ -4,10 +4,13 @@
 
 - Dropped Rails 5.1 support.
 - Dropped Ruby 2.4 support.
+- Arel for ActiveRecord 6.1+ `contains` will no longer accept INET (ip address column types), use `inet_contains` instead.
+  - ActiveRecord `contains` should remain unaffected as it never accepted INET column types. 
 
 #### Bug fixes:
 
 - [#73](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/73) [#77](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/77) Fix union and window query merging
+- [#74](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/74) Fix visitor conflict in Arel 6.1+ and support their native implementation of `contains` and `overlap` functionality
 
 # 2.1.1 - February 14th 2022
 
