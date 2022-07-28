@@ -1,9 +1,10 @@
-# 2.x.x - Unreleased
+# 2.2.0 - July 28th 2022
 
 #### Breaking Changes:
 
 - Dropped Rails 5.1 support.
 - Dropped Ruby 2.4 support.
+- Dropped Postgres 9.6 support.
 - Arel for ActiveRecord 6.1+ `contains` will no longer accept INET (ip address column types), use `inet_contains` instead.
   - ActiveRecord `contains` should remain unaffected as it never accepted INET column types. 
 

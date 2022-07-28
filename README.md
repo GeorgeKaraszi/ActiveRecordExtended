@@ -52,12 +52,12 @@ Active Record Extended is essentially providing users with the other half of Pos
 ## Compatibility
 
 This package is designed align and work with any officially supported Ruby and Rails versions.
- - Minimum Ruby Version: 2.4.x **(EOL warning!)**
- - Minimum Rails Version: 5.1.x **(EOL warning!)**
- - Minimum Postgres Version: 9.6.x **(EOL warning!)**
+ - Minimum Ruby Version: 2.5.x **(EOL warning!)**
+ - Minimum Rails Version: 5.2.x **(EOL warning!)**
+ - Minimum Postgres Version: 10.x **(EOL warning!)**
  - Latest Ruby supported: 3.0.x
  - Latest Rails supported: 7.0.x
- - Postgres: 9.6-current(13) (probably works with most older versions to a certain point)
+ - Postgres: 10-current(14) (probably works with most older versions to a certain point)
 
 ## Installation
 
