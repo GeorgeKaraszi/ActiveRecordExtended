@@ -24,6 +24,14 @@ module ActiveRecordExtended
       equality_to_function("ALL", opts, rest)
     end
 
+    def exists_all(opts, *rest)
+      equality_to_key_check(Arel::Nodes::ExistsAllKeysHStore, __method__, opts, rest)
+    end
+
+    def exists_any(opts, *rest)
+      equality_to_key_check(Arel::Nodes::ExistsAnyKeysHStore, __method__, opts, rest)
+    end
+
     # Finds Records that contains a nested set elements
     #
     # Array Column Type:
@@ -85,6 +93,23 @@ module ActiveRecordExtended
 
     def left_column(arel)
       @scope.klass.columns_hash[arel.left.name] || @scope.klass.columns_hash[arel.left.relation.name]
+    end
+
+    def equality_to_key_check(kind, method_name, opts, rest)
+      build_where_chain(opts, rest) do |arel|
+        case arel
+        when Arel::Nodes::In, Arel::Nodes::Equality, Arel::Nodes::HomogeneousIn
+          column = left_column(arel) || column_from_association(arel)
+
+          if [:hstore, :jsonb].include?(column.type)
+            kind.new(arel.left, arel.right)
+          else
+            raise ArgumentError.new("Invalid argument for .where.#{method_name}(), got #{arel.class}")
+          end
+        else
+          raise ArgumentError.new("Invalid argument for .where.#{method_name}(), got #{arel.class}")
+        end
+      end
     end
 
     def equality_to_function(function_name, opts, rest)

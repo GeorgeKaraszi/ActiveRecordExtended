@@ -35,6 +35,30 @@ module ActiveRecordExtended
         infix_value object, collector, " @> "
       end
 
+      def visit_Arel_Nodes_ExistsAnyKeysHStore(object, collector)
+        visit object.left, collector
+
+        collector << " ?| "
+
+        collector << "'{"
+        collector << Array(object.right).map(&:value).join(", ")
+        collector << "}'"
+
+        collector
+      end
+
+      def visit_Arel_Nodes_ExistsAllKeysHStore(object, collector)
+        visit object.left, collector
+
+        collector << " ?& "
+
+        collector << "'{"
+        collector << Array(object.right).map(&:value).join(", ")
+        collector << "}'"
+
+        collector
+      end
+
       def visit_Arel_Nodes_ContainsHStore(object, collector)
         infix_value object, collector, " @> "
       end
