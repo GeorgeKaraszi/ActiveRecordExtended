@@ -97,7 +97,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_record_extended!
-  bundler (>= 1.16, < 3.0)
+  bundler (>= 2.2, < 3.0)
   byebug
   database_cleaner (~> 1.6)
   dotenv
@@ -113,4 +113,4 @@ DEPENDENCIES
   simplecov (~> 0.16)
 
 BUNDLED WITH
-   2.2.16
+   2.3.19
