@@ -412,11 +412,26 @@ If any or all of your json sub-queries include a CTE, read the [Subquery CTE Got
 #### Row To JSON
 [Postgres 'ROW_TO_JSON' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 
-The implementation of the`.row_to_json/2` method is designed to be used with sub-queries. As a means for taking complex 
+The implementation of the`.select_row_to_json/2` method is designed to be used with sub-queries. As a means for taking complex 
 query logic and transform them into a single or multiple json responses. These responses are required to be assigned 
 to an aliased column on the parent(callee) level.
 
 While quite the mouthful of an explanation. The implementation of combining unrelated or semi-related queries is quite smooth(imo).
+
+**Arguments:**
+  - `from` [String, Arel, or ActiveRecord::Relation]: A subquery that can be nested into a `ROW_TO_JSON` clause
+
+**Options:**
+  - `as` [Symbol or String] (default="results"): What the column will be aliased to
+  - `key` [Symbol or String] (default=[random letter]): Internal query alias name.
+    * This is useful if you would like to add additional mid-level predicate clauses
+  - `cast_with` [Symbol or Array\<Symbol>]:
+    * `:to_jsonb`
+    * `:array`
+    * `:array_agg`
+    * `:distinct`  (auto applies `:array_agg` & `:to_jsonb`)
+  - `order_by` [Symbol or Hash]: Applies an ordering operation (similar to ActiveRecord #order)
+    * **Note**: this option will be ignored if you need to order a DISTINCT Aggregated Array.
 
 ```ruby
     physical_cat  = Category.create!(name: "Physical")
