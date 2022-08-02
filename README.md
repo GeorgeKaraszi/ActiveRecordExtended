@@ -55,7 +55,7 @@ This package is designed align and work with any officially supported Ruby and R
  - Minimum Ruby Version: 2.5.x **(EOL warning!)**
  - Minimum Rails Version: 5.2.x **(EOL warning!)**
  - Minimum Postgres Version: 10.x **(EOL warning!)**
- - Latest Ruby supported: 3.0.x
+ - Latest Ruby supported: 3.1.x
  - Latest Rails supported: 7.0.x
  - Postgres: 10-current(14) (probably works with most older versions to a certain point)
 
