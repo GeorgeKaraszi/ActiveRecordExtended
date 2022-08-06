@@ -7,8 +7,8 @@ module ActiveRecordExtended
       UNIONIZE_METHODS       = [:union, :union_all, :union_except, :union_intersect].freeze
 
       class UnionChain
-        include ::ActiveRecordExtended::Utilities::Support
-        include ::ActiveRecordExtended::Utilities::OrderBy
+        include ActiveRecordExtended::Utilities::Support
+        include ActiveRecordExtended::Utilities::OrderBy
 
         def initialize(scope)
           @scope = scope

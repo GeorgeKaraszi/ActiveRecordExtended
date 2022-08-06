@@ -60,6 +60,4 @@ module ActiveRecordExtended
   end
 end
 
-ActiveSupport.on_load :active_record do
-  extend(ActiveRecordExtended::QueryMethods::Either)
-end
+ActiveRecord::Relation.prepend(ActiveRecordExtended::QueryMethods::Either)

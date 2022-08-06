@@ -1,3 +1,11 @@
+# x.x.x - Unreleased
+
+## Major Changes:
+
+- Implementation of ActiveSupport autoloader
+  - Query methods and patches will now only be loaded once ActiveRecord has been fully loaded. 
+  - This should aid people that are having a hard time getting some query methods such as the `union` to load and work properly. 
+
 # 2.2.0 - July 28th 2022
 
 #### Breaking Changes:

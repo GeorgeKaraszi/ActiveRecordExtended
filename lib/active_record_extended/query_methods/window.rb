@@ -4,8 +4,8 @@ module ActiveRecordExtended
   module QueryMethods
     module Window
       class DefineWindowChain
-        include ::ActiveRecordExtended::Utilities::Support
-        include ::ActiveRecordExtended::Utilities::OrderBy
+        include ActiveRecordExtended::Utilities::Support
+        include ActiveRecordExtended::Utilities::OrderBy
 
         def initialize(scope, window_name)
           @scope        = scope
@@ -24,7 +24,7 @@ module ActiveRecordExtended
       end
 
       class WindowSelectBuilder
-        include ::ActiveRecordExtended::Utilities::Support
+        include ActiveRecordExtended::Utilities::Support
 
         def initialize(window_function, args, window_name)
           @window_function = window_function

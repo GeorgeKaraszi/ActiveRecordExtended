@@ -13,9 +13,9 @@ group :development, :test do
   gem "dotenv"
 
   gem "byebug"
-  gem "niceql"
-  gem "pry", "~> 0.11.3"
-  gem "pry-byebug", "~> 3.5", ">= 3.5.1"
+  gem "pry"
+  gem "pry-byebug"
+  gem "rails_sql_prettifier" # niceql
 end
 
 gemspec
