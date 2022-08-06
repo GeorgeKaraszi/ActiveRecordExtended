@@ -5,7 +5,7 @@ require "spec_helper"
 RSpec.describe "Active Record WINDOW Query inspection" do
   describe "#define_window" do
     context "when there is a single defined window" do
-      it "onlies contain a single defined window statement at the bottom" do
+      it "contains a single defined window statement at the bottom" do
         query = Tag.define_window(:w_test).partition_by(:user_id).to_sql
         expect(query).to eq('SELECT "tags".* FROM "tags" WINDOW w_test AS (PARTITION BY user_id)')
       end
@@ -22,7 +22,7 @@ RSpec.describe "Active Record WINDOW Query inspection" do
     end
 
     context "when there are multiple defined windows" do
-      it "onlies contain a single defined window statement at the bottom" do
+      it "contain a single defined window statement at the bottom" do
         query =
           Tag
           .define_window(:test).partition_by(:user_id)

@@ -4,7 +4,7 @@ module ActiveRecordExtended
   module QueryMethods
     module WithCTE
       class WithCTE
-        include ::ActiveRecordExtended::Utilities::Support
+        include ActiveRecordExtended::Utilities::Support
         include Enumerable
         extend  Forwardable
 

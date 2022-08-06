@@ -5,7 +5,7 @@ require "arel/nodes/sql_literal"
 # CTE alias fix for Rails 6.1
 module Arel
   module Nodes
-    module SqlLiteralDecorator
+    module SqlLiteralPatch
       def name
         self
       end
@@ -13,4 +13,4 @@ module Arel
   end
 end
 
-Arel::Nodes::SqlLiteral.prepend(Arel::Nodes::SqlLiteralDecorator)
+Arel::Nodes::SqlLiteral.prepend(Arel::Nodes::SqlLiteralPatch)

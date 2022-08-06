@@ -49,7 +49,7 @@ module ActiveRecordExtended
               obj.each_pair do |o_key, o_value|
                 new_hash["#{tbl_or_col}.#{o_key}"] = o_value
               end
-            elsif ::ActiveRecord::QueryMethods::VALID_DIRECTIONS.include?(obj)
+            elsif ActiveRecord::QueryMethods::VALID_DIRECTIONS.include?(obj)
               new_hash[tbl_or_col] = obj
             elsif obj.nil?
               new_hash[tbl_or_col.to_s] = :asc
