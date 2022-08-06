@@ -4,9 +4,16 @@ module ActiveRecordExtended
   module Patch
     module RelationPatch
       module QueryDelegation
-        delegate(:with, :define_window, :select_window, :foster_select, to: :all)
-        delegate(*ActiveRecordExtended::QueryMethods::Unionize::UNIONIZE_METHODS, to: :all)
-        delegate(*ActiveRecordExtended::QueryMethods::Json::JSON_QUERY_METHODS, to: :all)
+        AR_EX_QUERY_METHODS = (
+          [
+            :with, :define_window, :select_window, :foster_select,
+            :either_join, :either_joins, :either_order, :either_orders
+          ] +
+          ActiveRecordExtended::QueryMethods::Unionize::UNIONIZE_METHODS +
+          ActiveRecordExtended::QueryMethods::Json::JSON_QUERY_METHODS
+        ).freeze
+
+        delegate(*AR_EX_QUERY_METHODS, to: :all)
       end
 
       module Merger

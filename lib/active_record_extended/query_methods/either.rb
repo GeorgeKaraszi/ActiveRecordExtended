@@ -60,4 +60,4 @@ module ActiveRecordExtended
   end
 end
 
-ActiveRecord::Base.extend(ActiveRecordExtended::QueryMethods::Either)
+ActiveRecord::Relation.prepend(ActiveRecordExtended::QueryMethods::Either)
