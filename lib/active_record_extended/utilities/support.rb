@@ -113,7 +113,7 @@ module ActiveRecordExtended
         case value.to_s
           # Ignore keys that contain double quotes or a Arel.star (*)[all columns]
           # or if a table has already been explicitly declared (ex: users.id)
-        when "*", /((^".+"$)|(^[[:alpha:]]+\.[[:alnum:]]+))/
+        when "*", /((^".+"$)|(^[[:alpha:]]+\.[[:alnum:]]+)|\(.+\))/
           value
         else
           PG::Connection.quote_ident(value.to_s)
