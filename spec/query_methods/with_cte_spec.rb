@@ -24,6 +24,25 @@ RSpec.describe "Active Record With CTE Query Methods" do
         expect(query).to match_array([user_one, user_two])
       end
     end
+    
+    context "when creating using values" do
+      let!(:user_tommy) { User.create!(name: "tommy") }
+      let!(:user_jimmy) { User.create!(name: "jimmy") }
+
+      before do
+        User.create!(name: "diff")
+      end
+
+      it "returns only users with matching names from cte" do
+        cte = { "user_names(name)" => "values('jimmy'),('tommy'),('gummy')" }
+
+        query = User.with(cte)
+                    .joins("JOIN user_names ON users.name = user_names.name")
+                    .order(:name)
+
+        expect(query).to match_array([user_jimmy, user_tommy])
+      end
+    end
 
     context "when merging in query" do
       before do
