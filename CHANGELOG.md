@@ -1,4 +1,4 @@
-# x.x.x - Unreleased
+# 3.0.0 - August 14th 2022
 
 ## Major Changes:
 
