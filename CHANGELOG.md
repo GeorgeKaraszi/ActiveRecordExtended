@@ -6,6 +6,10 @@
   - Query methods and patches will now only be loaded once ActiveRecord has been fully loaded. 
   - This should aid people that are having a hard time getting some query methods such as the `union` to load and work properly. 
 
+## Bugfix
+
+- [#83](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/83) Prevent quoting of CTE names with parentheses in them (yasirazgar)
+
 # 2.2.0 - July 28th 2022
 
 #### Breaking Changes:
