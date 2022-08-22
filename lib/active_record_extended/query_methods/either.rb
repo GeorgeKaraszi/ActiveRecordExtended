@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "ar_outer_joins"
-
 module ActiveRecordExtended
   module QueryMethods
     module Either
@@ -12,14 +10,14 @@ module ActiveRecordExtended
         associations        = [initial_association, fallback_association]
         association_options = xor_field_options_for_associations(associations)
         condition__query    = xor_field_sql(association_options) + "= #{table_name}.#{primary_key}"
-        outer_joins(associations).where(Arel.sql(condition__query))
+        left_outer_joins(associations).where(Arel.sql(condition__query))
       end
       alias either_joins either_join
 
       def either_order(direction, **associations_and_columns)
         reflected_columns = map_columns_to_tables(associations_and_columns)
         conditional_query = xor_field_sql(reflected_columns) + sort_order_sql(direction)
-        outer_joins(associations_and_columns.keys).order(Arel.sql(conditional_query))
+        left_outer_joins(associations_and_columns.keys).order(Arel.sql(conditional_query))
       end
       alias either_orders either_order
 
