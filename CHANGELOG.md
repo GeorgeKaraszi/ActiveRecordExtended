@@ -1,3 +1,9 @@
+# 3.x.x - Unreleased
+
+### Changes
+
+- [#70](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/70) Removed ar_outer_joins dependency due to native outer joins support in Rails 5.1 (Benjamin Fleischer)
+
 # 3.0.0 - August 14th 2022
 
 ## Major Changes:
