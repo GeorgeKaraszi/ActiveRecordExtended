@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.add_dependency "activerecord", ">= 5.2", "< 7.1.0"
-  spec.add_dependency "ar_outer_joins", "~> 0.2"
   spec.add_dependency "pg", "< 3.0"
 
   spec.add_development_dependency "bundler", ">= 2.2", "< 3.0"
