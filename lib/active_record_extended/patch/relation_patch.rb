@@ -41,11 +41,17 @@ module ActiveRecordExtended
         def merge_ctes!
           return unless other.with_values?
 
-          if other.recursive_value? && !relation.recursive_value?
-            relation.with!.recursive(other.cte)
-          else
-            relation.with!(other.cte)
-          end
+          merge_relation(relation, other)
+        end
+
+        private
+
+        def merge_relation(relation, other)
+          return relation.with!.recursive(other.cte) if other.recursive_value? && !relation.recursive_value?
+          return relation.with!.materialized(other.cte) if other.cte.materialized_key?(*other.cte.with_keys)
+          return relation.with!.not_materialized(other.cte) if other.cte.not_materialized_key?(*other.cte.with_keys)
+
+          relation.with!(other.cte)
         end
       end
 
