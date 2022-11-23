@@ -51,12 +51,12 @@ RSpec.describe "Active Record WITH CTE tables" do
           .to_sql
     end
 
-    it "onlies contain a single WITH statement" do
+    it "only contains a single WITH statement" do
       expect(with_arguments.scan(/WITH/).count).to eq(1)
       expect(with_arguments.scan(/AS/).count).to eq(2)
     end
 
-    it "onlies contain a single WITH statement when chaining" do
+    it "only contains a single WITH statement when chaining" do
       expect(chained_with.scan(/WITH/).count).to eq(1)
       expect(chained_with.scan(/AS/).count).to eq(2)
     end
@@ -133,6 +133,18 @@ RSpec.describe "Active Record WITH CTE tables" do
           .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
       end.to raise_error(ArgumentError, "CTE already set as materialized")
     end
+
+    it "will pipe Children CTE's into the Parent relation" do
+      personal_id_one_query = User.where(personal_id: 1)
+      personal_id_two_query = User.where(personal_id: 2)
+
+      sub_query       = personal_id_two_query.with.materialized(personal_id_one: personal_id_one_query)
+      query           = User.all.with(personal_id_two: sub_query)
+
+      expected_order = /WITH.+personal_id_one.+AS MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_two.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 2\)/
+
+      expect(query.to_sql).to match_regex(expected_order)
+    end
   end
 
   context "when chaining the not_materialized method" do
@@ -174,6 +186,18 @@ RSpec.describe "Active Record WITH CTE tables" do
           .materialized(personal_id_one: User.where(personal_id: 1))
           .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
       end.to raise_error(ArgumentError, "CTE already set as not_materialized")
+    end
+
+    it "will pipe Children CTE's into the Parent relation" do
+      personal_id_one_query = User.where(personal_id: 1)
+      personal_id_two_query = User.where(personal_id: 2)
+
+      sub_query       = personal_id_two_query.with.not_materialized(personal_id_one: personal_id_one_query)
+      query           = User.all.with(personal_id_two: sub_query)
+
+      expected_order = /WITH.+personal_id_one.+AS NOT MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_two.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 2\)/
+
+      expect(query.to_sql).to match_regex(expected_order)
     end
   end
 end
