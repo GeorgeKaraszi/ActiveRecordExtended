@@ -72,8 +72,8 @@ module ActiveRecordExtended
         def reset!
           @with_keys   = []
           @with_values = {}
-          @materialized_keys = []
-          @not_materialized_keys = []
+          @materialized_keys = Set.new
+          @not_materialized_keys = Set.new
         end
       end
 
@@ -192,9 +192,13 @@ module ActiveRecordExtended
       private
 
       def add_materialized_modifier(expression, cte, name)
-        expression = Arel::Nodes::SqlLiteral.new("MATERIALIZED #{expression.to_sql}") if cte.materialized_key?(name)
-        expression = Arel::Nodes::SqlLiteral.new("NOT MATERIALIZED #{expression.to_sql}") if cte.not_materialized_key?(name)
-        expression
+        if cte.materialized_key?(name)
+          Arel::Nodes::SqlLiteral.new("MATERIALIZED #{expression.to_sql}")
+        elsif cte.not_materialized_key?(name)
+          Arel::Nodes::SqlLiteral.new("NOT MATERIALIZED #{expression.to_sql}")
+        else
+          expression
+        end
       end
     end
   end
