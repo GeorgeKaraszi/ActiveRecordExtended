@@ -51,12 +51,12 @@ RSpec.describe "Active Record WITH CTE tables" do
           .to_sql
     end
 
-    it "onlies contain a single WITH statement" do
+    it "only contains a single WITH statement" do
       expect(with_arguments.scan(/WITH/).count).to eq(1)
       expect(with_arguments.scan(/AS/).count).to eq(2)
     end
 
-    it "onlies contain a single WITH statement when chaining" do
+    it "only contains a single WITH statement when chaining" do
       expect(chained_with.scan(/WITH/).count).to eq(1)
       expect(chained_with.scan(/AS/).count).to eq(2)
     end
@@ -90,6 +90,122 @@ RSpec.describe "Active Record WITH CTE tables" do
                       .to_sql
 
       expect(query).to match_regex(with_recursive_personal_query)
+    end
+  end
+
+  context "when chaining the materialized method" do
+    let(:with_materialized_personal_query) do
+      /WITH.+personal_id_one.+AS MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
+    end
+
+    let(:with_materialized) do
+      User.with
+          .materialized(personal_id_one: User.where(personal_id: 1))
+          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+          .to_sql
+    end
+
+    it "generates an expression with materialized" do
+      query = User.with
+                  .materialized(personal_id_one: User.where(personal_id: 1))
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
+
+      expect(query).to match_regex(with_materialized_personal_query)
+    end
+
+    it "will maintain the CTE table when merging" do
+      sub_query = User.with
+                      .materialized(materialized_personal_id_one: User.where(personal_id: 1))
+                      .with(personal_id_one: User.where(personal_id: 1))
+      query = User.merge(sub_query)
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
+
+      expected_order = /WITH.+materialized_personal_id_one.+AS MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
+
+      expect(query).to match_regex(expected_order)
+    end
+
+    it "will raise an error if CTE is already not_materialized for that key" do
+      materialized_query = User.with.materialized(personal_id_one: User.where(personal_id: 1))
+
+      expect do
+        materialized_query
+          .with
+          .not_materialized(personal_id_one: User.where(personal_id: 1))
+          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+      end.to raise_error(ArgumentError, "CTE already set as materialized")
+    end
+
+    it "will pipe Children CTE's into the Parent relation" do
+      personal_id_one_query = User.where(personal_id: 1)
+      personal_id_two_query = User.where(personal_id: 2)
+
+      sub_query       = personal_id_two_query.with.materialized(personal_id_one: personal_id_one_query)
+      query           = User.all.with(personal_id_two: sub_query)
+
+      expected_order = /WITH.+personal_id_one.+AS MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_two.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 2\)/
+
+      expect(query.to_sql).to match_regex(expected_order)
+    end
+  end
+
+  context "when chaining the not_materialized method" do
+    let(:with_not_materialized_personal_query) do
+      /WITH.+personal_id_one.+AS NOT MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
+    end
+
+    let(:with_not_materialized) do
+      User.with
+          .not_materialized(personal_id_one: User.where(personal_id: 1))
+          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+          .to_sql
+    end
+
+    it "generates an expression with not_materialized" do
+      query = User.with
+                  .not_materialized(personal_id_one: User.where(personal_id: 1))
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
+
+      expect(query).to match_regex(with_not_materialized_personal_query)
+    end
+
+    it "will maintain the CTE table when merging" do
+      sub_query = User.with
+                      .not_materialized(not_materialized_personal_id_one: User.where(personal_id: 1))
+                      .with(personal_id_one: User.where(personal_id: 1))
+      query = User.merge(sub_query)
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
+
+      expected_order = /WITH.+not_materialized_personal_id_one.+AS NOT MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
+
+      expect(query).to match_regex(expected_order)
+    end
+
+    it "will raise an error if CTE is already materialized for that key" do
+      materialized_query = User.with.not_materialized(personal_id_one: User.where(personal_id: 1))
+
+      expect do
+        materialized_query
+          .with
+          .materialized(personal_id_one: User.where(personal_id: 1))
+          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+      end.to raise_error(ArgumentError, "CTE already set as not_materialized")
+    end
+
+    it "will pipe Children CTE's into the Parent relation" do
+      personal_id_one_query = User.where(personal_id: 1)
+      personal_id_two_query = User.where(personal_id: 2)
+
+      sub_query       = personal_id_two_query.with.not_materialized(personal_id_one: personal_id_one_query)
+      query           = User.all.with(personal_id_two: sub_query)
+
+      expected_order = /WITH.+personal_id_one.+AS NOT MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_two.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 2\)/
+
+      expect(query.to_sql).to match_regex(expected_order)
     end
   end
 end

@@ -9,7 +9,7 @@ module ActiveRecordExtended
         extend  Forwardable
 
         def_delegators :@with_values, :empty?, :blank?, :present?
-        attr_reader :with_values, :with_keys
+        attr_reader :with_values, :with_keys, :materialized_keys, :not_materialized_keys
 
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
@@ -33,6 +33,16 @@ module ActiveRecordExtended
           pipe_cte_with!(value)
         end
 
+        # @return [Boolean]
+        def materialized_key?(key)
+          materialized_keys.include?(key.to_sym)
+        end
+
+        # @return [Boolean]
+        def not_materialized_key?(key)
+          not_materialized_keys.include?(key.to_sym)
+        end
+
         # @param [Hash, WithCTE] value
         def pipe_cte_with!(value)
           return if value.nil? || value.empty?
@@ -44,6 +54,10 @@ module ActiveRecordExtended
             # Ensure we follow FIFO pattern.
             # If the parent has similar CTE alias keys, we want to favor the parent's expressions over its children's.
             if expression.is_a?(ActiveRecord::Relation) && expression.with_values?
+              # Add child's materialized keys to the parent
+              @materialized_keys += expression.cte.materialized_keys
+              @not_materialized_keys += expression.cte.not_materialized_keys
+
               pipe_cte_with!(expression.cte)
               expression.cte.reset!
             end
@@ -58,6 +72,8 @@ module ActiveRecordExtended
         def reset!
           @with_keys   = []
           @with_values = {}
+          @materialized_keys = Set.new
+          @not_materialized_keys = Set.new
         end
       end
 
@@ -72,6 +88,32 @@ module ActiveRecordExtended
         def recursive(args)
           @scope.tap do |scope|
             scope.recursive_value = true
+            scope.cte.pipe_cte_with!(args)
+          end
+        end
+
+        # @param [Hash, WithCTE] args
+        def materialized(args)
+          @scope.tap do |scope|
+            args.each_pair do |name, _expression|
+              sym_name = name.to_sym
+              raise ArgumentError.new("CTE already set as not_materialized") if scope.cte.not_materialized_key?(sym_name)
+
+              scope.cte.materialized_keys << sym_name
+            end
+            scope.cte.pipe_cte_with!(args)
+          end
+        end
+
+        # @param [Hash, WithCTE] args
+        def not_materialized(args)
+          @scope.tap do |scope|
+            args.each_pair do |name, _expression|
+              sym_name = name.to_sym
+              raise ArgumentError.new("CTE already set as materialized") if scope.cte.materialized_key?(sym_name)
+
+              scope.cte.not_materialized_keys << sym_name
+            end
             scope.cte.pipe_cte_with!(args)
           end
         end
@@ -134,6 +176,9 @@ module ActiveRecordExtended
         cte_statements = cte.map do |name, expression|
           grouped_expression = cte.generate_grouping(expression)
           cte_name           = cte.to_arel_sql(cte.double_quote(name.to_s))
+
+          grouped_expression = add_materialized_modifier(grouped_expression, cte, name)
+
           Arel::Nodes::As.new(cte_name, grouped_expression)
         end
 
@@ -141,6 +186,18 @@ module ActiveRecordExtended
           arel.with(:recursive, cte_statements)
         else
           arel.with(cte_statements)
+        end
+      end
+
+      private
+
+      def add_materialized_modifier(expression, cte, name)
+        if cte.materialized_key?(name)
+          Arel::Nodes::SqlLiteral.new("MATERIALIZED #{expression.to_sql}")
+        elsif cte.not_materialized_key?(name)
+          Arel::Nodes::SqlLiteral.new("NOT MATERIALIZED #{expression.to_sql}")
+        else
+          expression
         end
       end
     end

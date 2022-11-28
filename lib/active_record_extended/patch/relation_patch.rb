@@ -41,11 +41,26 @@ module ActiveRecordExtended
         def merge_ctes!
           return unless other.with_values?
 
-          if other.recursive_value? && !relation.recursive_value?
-            relation.with!.recursive(other.cte)
-          else
-            relation.with!(other.cte)
+          return relation.with!.recursive(other.cte) if other.recursive_value? && !relation.recursive_value?
+
+          merge_by_values(relation, other)
+        end
+
+        private
+
+        # Merge other's with_values one at a time to ensure materialized keys are set properly
+        def merge_by_values(relation, other)
+          other.cte.with_values.each do |name, expression|
+            relation = if other.cte.materialized_key?(name)
+              relation.with!.materialized(name => expression)
+            elsif other.cte.not_materialized_key?(name)
+              relation.with!.not_materialized(name => expression)
+            else
+              relation.with!(name => expression)
+            end
           end
+
+          relation
         end
       end
 

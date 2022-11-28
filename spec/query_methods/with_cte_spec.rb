@@ -10,7 +10,7 @@ RSpec.describe "Active Record With CTE Query Methods" do
 
   describe ".with/1" do
     context "when using as a standalone query" do
-      it "onlies return a person with less than 300 likes" do
+      it "only returns a person with less than 300 likes" do
         query = User.with(profile: ProfileL.where("likes < 300"))
                     .joins("JOIN profile ON profile.user_id = users.id")
 
@@ -24,7 +24,7 @@ RSpec.describe "Active Record With CTE Query Methods" do
         expect(query).to match_array([user_one, user_two])
       end
     end
-    
+
     context "when creating using values" do
       let!(:user_tommy) { User.create!(name: "tommy") }
       let!(:user_jimmy) { User.create!(name: "jimmy") }

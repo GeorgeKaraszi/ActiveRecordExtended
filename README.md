@@ -44,7 +44,7 @@
 
 Active Record Extended is the continuation of maintaining and improving the work done by **Dan McClain**, the original author of [postgres_ext](https://github.com/DavyJonesLocker/postgres_ext).
 
-Overtime the lack of updating to support the latest versions of ActiveRecord 5.x has caused quite a bit of users forking off the project to create their own patches jobs to maintain compatibility. 
+Overtime the lack of updating to support the latest versions of ActiveRecord 5.x has caused quite a bit of users forking off the project to create their own patches jobs to maintain compatibility.
 The only problem is that this has created a wild west of environments of sorts. The problem has grown to the point no one is attempting to directly contribute to the original source. And forked repositories are finding themselves as equally as dead with little to no activity.
 
 Active Record Extended is essentially providing users with the other half of Postgreses querying abilities. Due to Rails/ActiveRecord/Arel being designed to be DB agnostic, there are a lot of left out features; Either by choice or the simple lack of supporting API's for other databases. However some features are not exactly PG explicit. Some are just helper methods to express an idea much more easily.
@@ -78,14 +78,14 @@ And then execute:
 #### Any
 [Postgres 'ANY' expression](https://www.postgresql.org/docs/10/static/functions-comparisons.html#id-1.5.8.28.16)
 
-In Postgres the `ANY` expression is used for gather record's that have an Array column type that contain a single matchable value within its array. 
+In Postgres the `ANY` expression is used for gather record's that have an Array column type that contain a single matchable value within its array.
 
 ```ruby
 alice = User.create!(tags: [1])
 bob   = User.create!(tags: [1, 2])
 randy = User.create!(tags: [3])
 
-User.where.any(tags: 1) #=> [alice, bob] 
+User.where.any(tags: 1) #=> [alice, bob]
 
 ```
 
@@ -95,14 +95,14 @@ This only accepts a single value. So querying for example multiple tag numbers `
 #### All
 [Postgres 'ALL' expression](https://www.postgresql.org/docs/10/static/functions-comparisons.html#id-1.5.8.28.17)
 
-In Postgres the `ALL` expression is used for gather record's that have an Array column type that contains only a **single** and matchable element. 
+In Postgres the `ALL` expression is used for gather record's that have an Array column type that contains only a **single** and matchable element.
 
 ```ruby
 alice = User.create!(tags: [1])
 bob   = User.create!(tags: [1, 2])
 randy = User.create!(tags: [3])
 
-User.where.all(tags: 1) #=> [alice] 
+User.where.all(tags: 1) #=> [alice]
 
 ```
 
@@ -114,7 +114,7 @@ This only accepts a single value to a given attribute. So querying for example m
 [Postgres '@>' (JSONB/HSTORE type) Contains expression](https://www.postgresql.org/docs/10/static/functions-json.html#FUNCTIONS-JSONB-OP-TABLE)
 
 
-The `contains/1` method is used for finding any elements in an `Array`, `JSONB`, or `HSTORE` column type. 
+The `contains/1` method is used for finding any elements in an `Array`, `JSONB`, or `HSTORE` column type.
 That contains all of the provided values.
 
 Array Type:
@@ -155,7 +155,7 @@ User.where.overlap(tags: [1, 3, 8]) #=> [alice, bob, randy]
 ##### Inet Contains
 [Postgres >> (contains) Network Expression](https://www.postgresql.org/docs/current/static/functions-net.html)
 
-The `inet_contains` method works by taking a column(inet type) that has a submask prepended to it. 
+The `inet_contains` method works by taking a column(inet type) that has a submask prepended to it.
 And tries to find related records that fall within a given IP's range.
 
 ```ruby
@@ -188,7 +188,7 @@ For the `inet_contained_within` method, we try to find IP's that fall within a s
 
 ```ruby
 alice = User.create!(ip: "127.0.0.1")
-bob   = User.create!(ip: "127.0.0.44") 
+bob   = User.create!(ip: "127.0.0.44")
 randy = User.create!(ip: "127.0.55.20")
 
 User.where.inet_contained_within(ip: "127.0.0.1/24") #=> [alice, bob]
@@ -229,11 +229,11 @@ User.where.inet_contains_or_is_contained_within(ip: "127.0.0.80/8") #=> [alice, 
 ### Conditional Methods
 #### Any_of / None_of
  `any_of/1` simplifies the process of finding records that require multiple `or` conditions.
- 
+
  `none_of/1` is the inverse of `any_of/1`. It'll find records where none of the contains are matched.
- 
+
  Both accepts An array of: ActiveRecord Objects, Query Strings, and basic attribute names.
- 
+
  Querying With Attributes:
  ```ruby
 alice = User.create!(uid: 1)
@@ -278,7 +278,7 @@ The `#either_join/2` method is a base ActiveRecord querying method that will joi
 class User < ActiveRecord::Base
   has_one :profile_l, class: "ProfileL"
   has_one :profile_r, class: "ProfileR"
-  
+
   scope :completed_profile, -> { either_joins(:profile_l, :profile_r) }
 end
 
@@ -332,9 +332,9 @@ User.with(highly_liked: ProfileL.where("likes > 300"))
 Query output:
 
 ```sql
-WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes >= 300)) 
-SELECT "users".* 
-FROM "users" 
+WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes >= 300))
+SELECT "users".*
+FROM "users"
 JOIN highly_liked ON highly_liked.user_id = users.id
 ```
 
@@ -356,31 +356,79 @@ User.with(highly_liked: ProfileL.where("likes > 300"))
 Query output:
 
 ```sql
-WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes > 300)), 
-     "less_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes <= 200)) 
-SELECT "users".* 
-FROM "users" 
-JOIN highly_liked ON highly_liked.user_id = users.id 
+WITH "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes > 300)),
+     "less_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes <= 200))
+SELECT "users".*
+FROM "users"
+JOIN highly_liked ON highly_liked.user_id = users.id
 JOIN less_liked ON less_liked.user_id = users.id
 ```
 
+There are three methods you can chain to the `with/1` to add modifiers to the query.
+#### `recursive`
+
+```ruby
+User.with.recursive(highly_liked: ProfileL.where("likes > 300"))
+    .joins("JOIN highly_liked ON highly_liked.user_id = users.id")
+```
+
+Query output:
+
+```sql
+WITH RECURSIVE "highly_liked" AS (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes >= 300))
+SELECT "users".*
+FROM "users"
+JOIN highly_liked ON highly_liked.user_id = users.id
+```
+#### `materialized` (**Note**: MATERIALIZED modifier is only available in [PG versions 12+](https://www.postgresql.org/docs/release/12.0/).)
+
+
+```ruby
+User.with.materialized(highly_liked: ProfileL.where("likes > 300"))
+    .joins("JOIN highly_liked ON highly_liked.user_id = users.id")
+```
+
+Query output:
+
+```sql
+WITH "highly_liked" AS MATERIALIZED (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes >= 300))
+SELECT "users".*
+FROM "users"
+JOIN highly_liked ON highly_liked.user_id = users.id
+```
+#### `not_materialized` (**Note**: NOT MATERIALIZED modifier is only available in [PG versions 12+](https://www.postgresql.org/docs/release/12.0/).)
+
+```ruby
+User.with.not_materialized(highly_liked: ProfileL.where("likes > 300"))
+    .joins("JOIN highly_liked ON highly_liked.user_id = users.id")
+```
+
+Query output:
+
+```sql
+WITH "highly_liked" AS NOT MATERIALIZED (SELECT "profile_ls".* FROM "profile_ls" WHERE (likes >= 300))
+SELECT "users".*
+FROM "users"
+JOIN highly_liked ON highly_liked.user_id = users.id
+```
+
 #### Subquery CTE Gotchas
- In order keep queries PG valid, subquery explicit methods (like Unions and JSON methods) 
- will be subject to "Piping" the CTE clauses up to the parents query level. 
- 
+ In order keep queries PG valid, subquery explicit methods (like Unions and JSON methods)
+ will be subject to "Piping" the CTE clauses up to the parents query level.
+
  This also means there's potential for having duplicate CTE names.
  In order to combat duplicate CTE references with the same name, **piping will favor the parents CTE over the nested sub-queries**.
- 
- This also means that this is a "First come First Served" implementation. 
- So if you have a parent with no CTE's but two sub-queries with the same CTE name but with different querying statements. 
+
+ This also means that this is a "First come First Served" implementation.
+ So if you have a parent with no CTE's but two sub-queries with the same CTE name but with different querying statements.
  It will process and favor the one that comes first.
- 
+
  Example:
  ```ruby
     sub_query      = Person.with(dupped_cte: Person.where(id: 1)).select("dup_cte.id").from(:dup_cte)
     other_subquery = Person.with(unique_cte: Person.where(id: 5)).select("unique_cte.id").from(:unique_cte)
-    
-    # Will favor this CTE below, over the `sub_query`'s CTE 
+
+    # Will favor this CTE below, over the `sub_query`'s CTE
     Person.with(dupped_cte: Person.where.not(id: 1..4)).union(sub_query, other_subquery)
 ```
 
@@ -404,7 +452,7 @@ WITH "unique_cte" AS (
     FROM unique_cte
   ) )) people
 ```
- 
+
 
 ### JSON Query Methods
 If any or all of your json sub-queries include a CTE, read the [Subquery CTE Gotchas](#subquery-cte-gotchas) warnings.
@@ -412,8 +460,8 @@ If any or all of your json sub-queries include a CTE, read the [Subquery CTE Got
 #### Row To JSON
 [Postgres 'ROW_TO_JSON' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 
-The implementation of the`.select_row_to_json/2` method is designed to be used with sub-queries. As a means for taking complex 
-query logic and transform them into a single or multiple json responses. These responses are required to be assigned 
+The implementation of the`.select_row_to_json/2` method is designed to be used with sub-queries. As a means for taking complex
+query logic and transform them into a single or multiple json responses. These responses are required to be assigned
 to an aliased column on the parent(callee) level.
 
 While quite the mouthful of an explanation. The implementation of combining unrelated or semi-related queries is quite smooth(imo).
@@ -437,44 +485,44 @@ While quite the mouthful of an explanation. The implementation of combining unre
     physical_cat  = Category.create!(name: "Physical")
     products      = 3.times.map { Product.create! }
     products.each { |product|  100.times { Variant.create!(product: product, category: physical_cat) } }
-    
+
     # Since we plan to nest this query, you have access top level information. (I.E categories table)
     item_query = Variant.select(:name, :id, :category_id, :product_id).where("categories.id = variants.category_id")
-    
+
     # You can provide addition scopes that will be applied to the nested query (but will not effect the actual inner query)
-    # This is ideal if you are dealing with but not limited to, CTE's being applied multiple times and require additional constraints 
-    product_query  = 
+    # This is ideal if you are dealing with but not limited to, CTE's being applied multiple times and require additional constraints
+    product_query  =
     Product.select(:id)
             .joins(:items)
             .select_row_to_json(item_query, key: :outer_items, as: :items, cast_with: :array) do |item_scope|
               item_scope.where("outer_items.product_id = products.id")
-                # Results to: 
-                #  SELECT ..., ARRAY(SELECT ROW_TO_JSON("outer_items")   
+                # Results to:
+                #  SELECT ..., ARRAY(SELECT ROW_TO_JSON("outer_items")
                 #   FROM ([:item_query:]) outer_items
                 #   WHERE outer_items.product_id = products.id
                 # ) AS items
             end
-                   
-    # Not defining a key will automatically generate a random key between a-z 
+
+    # Not defining a key will automatically generate a random key between a-z
     category_query = Category.select(:name, :id).select_row_to_json(product_query, as: :products, cast_with: :array)
     Category.json_build_object(:physical_category, category_query.where(id: physical_cat.id)).results
     #=> {
     #        "physical_category" => {
     #            "name" => "Physical",
-    #            "id" => 1, 
+    #            "id" => 1,
     #            "products" => [
     #              {
     #                "id" => 2,
-    #                "items" => [{"name" => "Bojangels", "id" => 3, "category_id" => 1, "product_id" => 2}, ...] 
+    #                "items" => [{"name" => "Bojangels", "id" => 3, "category_id" => 1, "product_id" => 2}, ...]
     #              },
-    #              ... 
-    #            ] 
-    #        } 
-    #  } 
+    #              ...
+    #            ]
+    #        }
+    #  }
     #
 ```
 
-Query Output 
+Query Output
 ```sql
 SELECT (JSON_BUILD_OBJECT('physical_category', "physical_category")) AS "results"
 FROM (
@@ -503,7 +551,7 @@ FROM (
 #### JSON/B Build Object
 [Postgres 'json(b)_build_object' function](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE)
 
-The implementation of the`.json_build_object/2` and `.jsonb_build_object/2` methods are designed to be used with sub-queries. 
+The implementation of the`.json_build_object/2` and `.jsonb_build_object/2` methods are designed to be used with sub-queries.
 As a means for taking complex  query logic and transform them into a single or multiple json responses.
 
 **Arguments:**
@@ -521,21 +569,21 @@ See the included example on [Row To JSON](#row-to-json) to see it in action.
 
 The implementation of the`.json_build_literal/1` and `.jsonb_build_literal/1` is designed for creating static json objects
  that don't require subquery interfacing.
- 
+
 **Arguments:**
  - Requires an Array or Hash set of values
 
 **Options:**
  - `as`: [Symbol or String] (defaults to `"results"`): What the column will be aliased to
-      
+
 ```ruby
     User.json_build_literal(number: 1, last_name: "json", pi: 3.14).take.results
      #=> { "number" => 1, "last_name" => "json", "pi" => 3.14 }
-    
+
     # Or as array elements
     User.json_build_literal(:number, 1, :last_name, "json", :pi, 3.14).take.results
-      #=> { "number" => 1, "last_name" => "json", "pi" => 3.14 } 
-     
+      #=> { "number" => 1, "last_name" => "json", "pi" => 3.14 }
+
 ```
 
 Query Output
@@ -554,10 +602,10 @@ If any or all of your union queries include a CTE, read the [Subquery CTE Gotcha
 
 
 #### Known issue
-There's an issue with providing a single union clause and chaining it with a different union clause. 
+There's an issue with providing a single union clause and chaining it with a different union clause.
 This is due to requirements of grouping SQL statements. The issue is being working on, but with no ETA.
 
-This issue only applies to the first initial set of unions and is recommended that you union two relations right off the bat. 
+This issue only applies to the first initial set of unions and is recommended that you union two relations right off the bat.
 Afterwords you can union/chain single relations.
 
 Example
@@ -632,13 +680,13 @@ user_1 = Person.where(id: 1)
 user_2 = Person.where(id: 2)
 users  = Person.where(id: 1..3)
 
-Person.union_all(user_1, user_2, users) 
+Person.union_all(user_1, user_2, users)
   #=> [#<Person id: 1, ..>, #<Person id: 2,..>, #<Person id: 1, ..>, #<Person id: 2,..>, #<Person id: 3,..>]
 
 # You can also chain union's
 Person.union_all(user_1).union_all(user_2).union_all(users)
 # Or
-Person.union.all(user1, user_2).union.all(users) 
+Person.union.all(user1, user_2).union.all(users)
 ```
 
 Query Output
@@ -704,7 +752,7 @@ Person.union_intersect(likes_100, likes_less_than_150) #=> [randy]
 # You can also chain union's
 Person.union_intersect(likes_100).union_intersect(likes_less_than_150) #=> [randy]
 # Or
-Person.union.intersect(likes_100, likes_less_than_150) #=> [randy] 
+Person.union.intersect(likes_100, likes_less_than_150) #=> [randy]
 
 ```
 
@@ -809,8 +857,8 @@ SELECT "people".*
 #### Window Functions
 [Postgres Window Functions](https://www.postgresql.org/docs/current/tutorial-window.html)
 
-Let's address the elephant in the room. Arel has had, for a long time now, window function capabilities; 
-However they've never seen the lime light in ActiveRecord's query logic. 
+Let's address the elephant in the room. Arel has had, for a long time now, window function capabilities;
+However they've never seen the lime light in ActiveRecord's query logic.
 The following brings the dormant Arel methods up to the ActiveRecord Querying level.
 
 #### Define Window
@@ -818,9 +866,9 @@ The following brings the dormant Arel methods up to the ActiveRecord Querying le
 To set up a window function, we first must establish the window and we do this by using the `.define_window/1` method.
 This method also requires you to call chain `.partition_by/2`
 
-`.define_window/1` - Establishes the name of the window you'll reference later on in [.select_window](#select-window) 
+`.define_window/1` - Establishes the name of the window you'll reference later on in [.select_window](#select-window)
    - Aliased name of window
-    
+
 `.partition_by/2`  - Establishes the windows operations a [pre-defined window function](https://www.postgresql.org/docs/current/functions-window.html) will leverage.
    - column name being partitioned against
    - (**optional**) `order_by`: Processes how the window should be ordered
@@ -866,17 +914,17 @@ User
  #  { id: 2, name: "Randy", row_id: 1, first_value_name: "Randy" }
  #  { id: 3, name: "Bob",   row_id: 1, first_value_name: "Bob" }
  # ]
- # 
+ #
 
 ```
 
 Query Output
 ```sql
-SELECT "users"."id", 
-        "users"."name", 
-        (ROW_NUMBER() OVER number_window)      AS "row_id", 
+SELECT "users"."id",
+        "users"."name",
+        (ROW_NUMBER() OVER number_window)      AS "row_id",
         (FIRST_VALUE(name) OVER number_window) AS "first_value_name"
-FROM "users" 
+FROM "users"
 WINDOW number_window AS (PARTITION BY number ORDER BY id DESC)
 ```
 
