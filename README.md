@@ -380,7 +380,8 @@ SELECT "users".*
 FROM "users"
 JOIN highly_liked ON highly_liked.user_id = users.id
 ```
-#### `materialized`
+#### `materialized` (**Note**: MATERIALIZED modifier is only available in [PG versions 12+](https://www.postgresql.org/docs/release/12.0/).)
+
 
 ```ruby
 User.with.materialized(highly_liked: ProfileL.where("likes > 300"))
@@ -395,7 +396,7 @@ SELECT "users".*
 FROM "users"
 JOIN highly_liked ON highly_liked.user_id = users.id
 ```
-#### `not_materialized`
+#### `not_materialized` (**Note**: NOT MATERIALIZED modifier is only available in [PG versions 12+](https://www.postgresql.org/docs/release/12.0/).)
 
 ```ruby
 User.with.not_materialized(highly_liked: ProfileL.where("likes > 300"))
