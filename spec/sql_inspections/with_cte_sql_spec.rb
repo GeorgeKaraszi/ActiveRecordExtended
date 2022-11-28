@@ -115,12 +115,16 @@ RSpec.describe "Active Record WITH CTE tables" do
     end
 
     it "will maintain the CTE table when merging" do
-      sub_query = User.with.materialized(personal_id_one: User.where(personal_id: 1))
-      query     = User.merge(sub_query)
-                      .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-                      .to_sql
+      sub_query = User.with
+                      .materialized(materialized_personal_id_one: User.where(personal_id: 1))
+                      .with(personal_id_one: User.where(personal_id: 1))
+      query = User.merge(sub_query)
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
 
-      expect(query).to match_regex(with_materialized_personal_query)
+      expected_order = /WITH.+materialized_personal_id_one.+AS MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
+
+      expect(query).to match_regex(expected_order)
     end
 
     it "will raise an error if CTE is already not_materialized for that key" do
@@ -169,12 +173,16 @@ RSpec.describe "Active Record WITH CTE tables" do
     end
 
     it "will maintain the CTE table when merging" do
-      sub_query = User.with.not_materialized(personal_id_one: User.where(personal_id: 1))
-      query     = User.merge(sub_query)
-                      .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-                      .to_sql
+      sub_query = User.with
+                      .not_materialized(not_materialized_personal_id_one: User.where(personal_id: 1))
+                      .with(personal_id_one: User.where(personal_id: 1))
+      query = User.merge(sub_query)
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
 
-      expect(query).to match_regex(with_not_materialized_personal_query)
+      expected_order = /WITH.+not_materialized_personal_id_one.+AS NOT MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
+
+      expect(query).to match_regex(expected_order)
     end
 
     it "will raise an error if CTE is already materialized for that key" do
