@@ -3,6 +3,9 @@
 ### Changes
 
 - [#70](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/70) Removed ar_outer_joins dependency due to native outer joins support in Rails 5.1 (Benjamin Fleischer)
+- [#87](https://github.com/GeorgeKaraszi/ActiveRecordExtended/issues/87) Added the ability to specify `MATERIALIZED` or `NOT MATERIALIZED` for a CTE  (Garrett Blehm)
+    - `.with` chain methods: `#materialized/1` and `#not_materialized/1`
+    - Note: Requires PG12+
 
 # 3.0.0 - August 14th 2022
 
