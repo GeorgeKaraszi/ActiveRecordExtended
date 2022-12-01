@@ -1,4 +1,4 @@
-# 3.x.x - Unreleased
+# 3.1.0 - December 1st 2022
 
 ### Changes
 
