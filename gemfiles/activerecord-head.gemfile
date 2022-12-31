@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gemspec path: ".."
+
+git "https://github.com/rails/rails.git" do
+  gem "activerecord"
+end
+
+gem "pg", "< 2.0"
