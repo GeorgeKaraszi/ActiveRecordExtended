@@ -16,8 +16,6 @@ jobs:
         exclude:
           - ruby: 2.6
             rails: 70
-          - ruby: 2.6
-            rails: head
           - ruby: 3.0
             rails: 52
           - ruby: 3.1
@@ -26,6 +24,7 @@ jobs:
             rails: 52
         include:
             - rails: head
+              ruby: ['3.0', 3.1, 3.2]
               experimental: true
 
     services:
