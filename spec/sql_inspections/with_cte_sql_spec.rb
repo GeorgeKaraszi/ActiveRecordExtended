@@ -62,21 +62,22 @@ RSpec.describe "Active Record WITH CTE tables" do
     end
   end
 
-  context "when chaining the recursive method" do
+  context "when using recursive methods" do
     let(:with_recursive_personal_query) do
       /WITH.+RECURSIVE.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
     end
 
-    let(:with_recursive) do
-      User.with
-          .recursive(personal_id_one: User.where(personal_id: 1))
-          .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-          .to_sql
-    end
-
-    it "generates an expression with recursive" do
+    it "generates an expression with recursive method chain" do
       query = User.with
                   .recursive(personal_id_one: User.where(personal_id: 1))
+                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                  .to_sql
+
+      expect(query).to match_regex(with_recursive_personal_query)
+    end
+
+    it "generates an expression with recursive opts" do
+      query = User.with(:recursive, personal_id_one: User.where(personal_id: 1))
                   .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
                   .to_sql
 
@@ -176,9 +177,9 @@ RSpec.describe "Active Record WITH CTE tables" do
       sub_query = User.with
                       .not_materialized(not_materialized_personal_id_one: User.where(personal_id: 1))
                       .with(personal_id_one: User.where(personal_id: 1))
-      query = User.merge(sub_query)
-                  .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
-                  .to_sql
+      query     = User.merge(sub_query)
+                      .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
+                      .to_sql
 
       expected_order = /WITH.+not_materialized_personal_id_one.+AS NOT MATERIALIZED \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\),.+personal_id_one.+AS \(SELECT.+users.+FROM.+WHERE.+users.+personal_id.+ = 1\)/
 

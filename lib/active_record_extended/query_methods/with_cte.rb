@@ -161,12 +161,17 @@ module ActiveRecordExtended
       end
 
       # @param [Hash, WithCTE] opts
-      def with!(opts = :chain, *_rest)
-        return WithChain.new(self) if opts == :chain
-
-        tap do |scope|
-          scope.cte ||= WithCTE.new(self)
-          scope.cte.pipe_cte_with!(opts)
+      def with!(opts = :chain, *rest)
+        case opts
+        when :chain
+          WithChain.new(self)
+        when :recursive
+          WithChain.new(self).recursive(*rest)
+        else
+          tap do |scope|
+            scope.cte ||= WithCTE.new(self)
+            scope.cte.pipe_cte_with!(opts)
+          end
         end
       end
 
@@ -176,7 +181,6 @@ module ActiveRecordExtended
         cte_statements = cte.map do |name, expression|
           grouped_expression = cte.generate_grouping(expression)
           cte_name           = cte.to_arel_sql(cte.double_quote(name.to_s))
-
           grouped_expression = add_materialized_modifier(grouped_expression, cte, name)
 
           Arel::Nodes::As.new(cte_name, grouped_expression)
@@ -193,9 +197,9 @@ module ActiveRecordExtended
 
       def add_materialized_modifier(expression, cte, name)
         if cte.materialized_key?(name)
-          Arel::Nodes::SqlLiteral.new("MATERIALIZED #{expression.to_sql}")
+          Arel.sql("MATERIALIZED #{expression.to_sql}")
         elsif cte.not_materialized_key?(name)
-          Arel::Nodes::SqlLiteral.new("NOT MATERIALIZED #{expression.to_sql}")
+          Arel.sql("NOT MATERIALIZED #{expression.to_sql}")
         else
           expression
         end
