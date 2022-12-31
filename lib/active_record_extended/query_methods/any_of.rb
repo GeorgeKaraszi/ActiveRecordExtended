@@ -73,7 +73,7 @@ module ActiveRecordExtended
       end
 
       def translate_reference(reference)
-        reference.map { |ref| ref.try(:to_sql) || ref }.compact
+        reference.filter_map { |ref| ref.try(:to_sql) || ref }
       end
 
       def generate_where_clause(query)
