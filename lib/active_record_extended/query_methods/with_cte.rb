@@ -162,16 +162,12 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with!(opts = :chain, *rest)
-        case opts
-        when :chain
-          WithChain.new(self)
-        when :recursive
-          WithChain.new(self).recursive(*rest)
-        else
-          tap do |scope|
-            scope.cte ||= WithCTE.new(self)
-            scope.cte.pipe_cte_with!(opts)
-          end
+        return WithChain.new(self) if :chain == opts
+        return WithChain.new(self).recursive(*rest) if :recursive == opts
+
+        tap do |scope|
+          scope.cte ||= WithCTE.new(self)
+          scope.cte.pipe_cte_with!(opts)
         end
       end
 
