@@ -155,7 +155,7 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
-        return WithChain.new(spawn) if opts == :chain
+        return WithChain.new(spawn) if :chain == opts
 
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
