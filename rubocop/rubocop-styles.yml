@@ -141,3 +141,6 @@ Style/SwapValues:
 
 Style/FetchEnvVar:
   Enabled: false
+
+Style/YodaCondition:
+  Enabled: false

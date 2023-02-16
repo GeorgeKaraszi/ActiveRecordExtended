@@ -4,6 +4,7 @@ require "simplecov"
 SimpleCov.start
 
 require "active_record_extended"
+require "rspec-sqlimit"
 
 unless ENV["DATABASE_URL"]
   require "dotenv"
