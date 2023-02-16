@@ -116,7 +116,7 @@ DEPENDENCIES
   rails_sql_prettifier
   rake (>= 10.0)
   rspec (~> 3.0)
-  rspec-sqlimit
+  rspec-sqlimit (~> 0.0.5)
   rubocop
   rubocop-performance
   rubocop-rake
