@@ -16,6 +16,7 @@ group :development, :test do
   gem "pry"
   gem "pry-byebug"
   gem "rails_sql_prettifier" # niceql
+  gem "rspec-sqlimit"
 end
 
 gemspec

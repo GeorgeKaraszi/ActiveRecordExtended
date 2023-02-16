@@ -51,6 +51,15 @@ RSpec.describe "Active Record Union Methods" do
       expect(query.pluck(:id)).to have_attributes(size: expected_ids.size).and(match_array(expected_ids))
     end
 
+    it "does not execute additional queries" do
+      expect do
+        GroupsUser.union(
+          user_one.groups_users,
+          user_two.groups_users
+        )
+      end.not_to exceed_query_limit(0)
+    end
+
     context "when merging in query" do
       it "will maintain the union table when merging into existing AR queries" do
         base_query  = User.union(User.where(id: user_one.id), User.joins(:profile_l).where.not(id: user_one.id))
