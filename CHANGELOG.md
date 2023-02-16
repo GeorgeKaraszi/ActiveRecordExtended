@@ -1,3 +1,13 @@
+# 3.2.0 - Unreleased
+
+### Changes
+- Added Rails 7.2 CTE argument pattern support
+
+### Bugfixes
+
+- [#94](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/94) Prevent queries from prematurely executing while using `union` methods (jlebray)
+
+
 # 3.1.0 - December 1st 2022
 
 ### Changes
