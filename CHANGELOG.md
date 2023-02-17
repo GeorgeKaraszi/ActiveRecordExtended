@@ -1,4 +1,4 @@
-# 3.2.0 - Unreleased
+# 3.2.0 - February 17th 2023
 
 ### Changes
 - Added Rails 7.2 CTE argument pattern support
