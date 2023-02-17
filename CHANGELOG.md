@@ -1,7 +1,13 @@
+# 3.2.1 - February 17th 2023
+
+### Bugfixes
+
+- Allow for Rails 7.1 to be used with this gem
+
 # 3.2.0 - February 17th 2023
 
 ### Changes
-- Added Rails 7.2 CTE argument pattern support
+- Added Rails 7.1 CTE argument pattern support
 
 ### Bugfixes
 
