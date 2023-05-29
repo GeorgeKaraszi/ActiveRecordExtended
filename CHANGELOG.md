@@ -1,3 +1,10 @@
+# 3.x.x - Unreleased
+
+### Bugfixes
+
+- Implement Rails 7.1 CTE join compatibility
+
+
 # 3.2.1 - February 17th 2023
 
 ### Bugfixes
