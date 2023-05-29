@@ -136,6 +136,11 @@ module ActiveRecordExtended
         !(cte.nil? || cte.empty?)
       end
 
+      # @return [Array<Hash>]
+      def with_values
+        with_values? ? [cte.with_values] : []
+      end
+
       # @param [Hash, WithCTE] values
       def with_values=(values)
         cte.with_values = values
