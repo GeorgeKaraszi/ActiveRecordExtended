@@ -73,10 +73,19 @@ module ActiveRecordExtended
           end
         end
       end
+
+      module RelationCombineInPatch
+        def combine_with_in
+          self.where_clause = where_clause.combine_with_in
+
+          self
+        end
+      end
     end
   end
 end
 
 ActiveRecord::Relation.prepend(ActiveRecordExtended::Patch::RelationPatch::ArelBuildPatch)
+ActiveRecord::Relation.prepend(ActiveRecordExtended::Patch::RelationPatch::RelationCombineInPatch)
 ActiveRecord::Relation::Merger.prepend(ActiveRecordExtended::Patch::RelationPatch::Merger)
 ActiveRecord::Base.extend(ActiveRecordExtended::Patch::RelationPatch::QueryDelegation)

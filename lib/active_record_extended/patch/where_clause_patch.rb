@@ -6,6 +6,10 @@ module ActiveRecordExtended
       def modified_predicates(&block)
         ActiveRecord::Relation::WhereClause.new(predicates.map(&block))
       end
+
+      def combine_with_in
+        ActiveRecordExtended::WhereClause::CombineWithInRelation.new(@predicates)
+      end
     end
   end
 end

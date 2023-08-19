@@ -47,11 +47,20 @@ module ActiveRecordExtended
     end
   end
 
+  module WhereClause
+    extend ActiveSupport::Autoload
+
+    eager_autoload do
+      autoload :CombineWithInRelation
+    end
+  end
+
   def self.eager_load!
     super
     ActiveRecordExtended::Utilities.eager_load!
     ActiveRecordExtended::Patch.eager_load!
     ActiveRecordExtended::QueryMethods.eager_load!
+    ActiveRecordExtended::WhereClause.eager_load!
   end
 end
 

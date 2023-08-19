@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :hm_tags, class_name: "Tag"
   has_one :profile_l, class_name: "ProfileL"
   has_one :profile_r, class_name: "ProfileR"
+
   # attributes
   # t.string   "tags",         array: true
   # t.integer  "number",       default: 0
@@ -77,4 +78,6 @@ end
 class GroupsUser < ApplicationRecord
   belongs_to :user
   belongs_to :group
+  scope :for_users, ->(user_ids) { where(user_id: user_ids).combine_with_in }
+  scope :for_group, ->(group_ids) { where(group_id: group_ids).combine_with_in }
 end

@@ -39,6 +39,8 @@
   - [Window Functions](#window-functions)
     - [Define Window](#define-window)
     - [Select Window](#select-window)
+  - [Scope Modifiers](#scope-modifiers)
+    - [Combine With IN](#combine-with-in)
 
 ## Description and History
 
@@ -926,6 +928,37 @@ SELECT "users"."id",
         (FIRST_VALUE(name) OVER number_window) AS "first_value_name"
 FROM "users"
 WINDOW number_window AS (PARTITION BY number ORDER BY id DESC)
+```
+
+
+#### Scope Modifiers
+
+#### Combine With IN
+
+When you want to combine with statement with an IN statement instead of the usual AND statement
+
+`.combine_with_in/0`
+
+```ruby
+class User < ApplicationRecord
+end
+
+
+class Tag < ApplicationRecord
+  belongs_to :user
+  scope :for_users, ->(user_ids) { where(user_id: user_ids).combine_with_in }
+end
+
+Tag.where(id: 1).for_users([1, 2]).for_users(3)
+```
+
+Query Output
+```sql
+SELECT "tags".*
+FROM "tags"
+WHERE
+"tags"."id" = 1 AND
+"tags"."user_id" IN (1, 2, 3)
 ```
 
 ## License
