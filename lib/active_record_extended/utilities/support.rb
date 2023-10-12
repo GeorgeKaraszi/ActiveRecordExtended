@@ -2,7 +2,7 @@
 
 module ActiveRecordExtended
   module Utilities
-    module Support
+    module Support # rubocop:disable Metrics/ModuleLength
       A_TO_Z_KEYS = ("a".."z").to_a.freeze
 
       # We need to ensure we can flatten nested ActiveRecord::Relations

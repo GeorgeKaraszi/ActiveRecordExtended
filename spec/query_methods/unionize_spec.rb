@@ -37,12 +37,12 @@ RSpec.describe "Active Record Union Methods" do
 
     it "returns two users that match the where conditions" do
       query = User.union(User.where(id: user_one.id), User.where(id: user_three.id))
-      expect(query).to match_array([user_one, user_three])
+      expect(query).to contain_exactly(user_one, user_three)
     end
 
     it "allows joins on union statements" do
       query = User.union(User.where(id: user_one.id), User.joins(:profile_l).where.not(id: user_one.id))
-      expect(query).to match_array([user_one, user_two])
+      expect(query).to contain_exactly(user_one, user_two)
     end
 
     it "eliminates duplicate results" do
@@ -99,7 +99,7 @@ RSpec.describe "Active Record Union Methods" do
 
     it "eliminates records that match a given except statement" do
       query = User.union.except(User.select(:id), User.select(:id).where(id: user_one.id))
-      expect(query).to match_array([user_two, user_three])
+      expect(query).to contain_exactly(user_two, user_three)
     end
   end
 
@@ -136,7 +136,7 @@ RSpec.describe "Active Record Union Methods" do
     end
 
     it "returns two userss id's" do
-      expect(query.map(&:id)).to match_array([user_one.id, user_three.id])
+      expect(query.map(&:id)).to contain_exactly(user_one.id, user_three.id)
     end
 
     it "aliases the tables being union'd but still allow for accessing table methods" do

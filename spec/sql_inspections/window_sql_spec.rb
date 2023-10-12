@@ -49,7 +49,7 @@ RSpec.describe "Active Record WINDOW Query inspection" do
     let(:expected_end) { "WINDOW w AS (PARTITION BY user_id ORDER BY id)" }
 
     [:row_to_number, :rank, :dense_rank, :percent_rank, :cume_dist].each do |window_function|
-      context "#{window_function.to_s.upcase}()" do
+      context "#{window_function.to_s.upcase}()" do # rubocop:disable RSpec/ContextWording
         let(:expected_function) { "#{window_function.to_s.upcase}()" }
         let(:query) do
           query_base.select_window(window_function, over: :w, as: :window_response).to_sql
@@ -63,7 +63,7 @@ RSpec.describe "Active Record WINDOW Query inspection" do
     end
 
     { ntile: 1, lag: 2, lead: 3, first_value: 1, last_value: 1, nth_value: 2 }.each_pair do |window_function, arg_count|
-      context "#{window_function.to_s.upcase}/#{arg_count}" do
+      context "#{window_function.to_s.upcase}/#{arg_count}" do # rubocop:disable RSpec/ContextWording
         let(:arguments)         { ["a", 1, :sauce].first(arg_count) }
         let(:expected_function) { "#{window_function.to_s.upcase}(#{arguments.join(', ')})" }
         let(:query) do

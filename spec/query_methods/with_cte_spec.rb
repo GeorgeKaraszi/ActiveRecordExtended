@@ -14,14 +14,14 @@ RSpec.describe "Active Record With CTE Query Methods" do
         query = User.with(profile: ProfileL.where("likes < 300"))
                     .joins("JOIN profile ON profile.user_id = users.id")
 
-        expect(query).to match_array([user_one])
+        expect(query).to contain_exactly(user_one)
       end
 
       it "returns anyone with likes greater than or equal to 200" do
         query = User.with(profile: ProfileL.where("likes >= 200"))
                     .joins("JOIN profile ON profile.user_id = users.id")
 
-        expect(query).to match_array([user_one, user_two])
+        expect(query).to contain_exactly(user_one, user_two)
       end
     end
 
@@ -40,7 +40,7 @@ RSpec.describe "Active Record With CTE Query Methods" do
                     .joins("JOIN user_names ON users.name = user_names.name")
                     .order(:name)
 
-        expect(query).to match_array([user_jimmy, user_tommy])
+        expect(query).to contain_exactly(user_jimmy, user_tommy)
       end
     end
 
@@ -54,7 +54,7 @@ RSpec.describe "Active Record With CTE Query Methods" do
         sub_query = ProfileL.with(version_controls: VersionControl.where.contains(source: { help: "me" }))
         query     = User.joins(profile_l: :version).merge(sub_query)
 
-        expect(query).to match_array([user_one])
+        expect(query).to contain_exactly(user_one)
       end
 
       it "contains a unique list of ordered CTE keys when merging in multiple children" do
@@ -64,7 +64,7 @@ RSpec.describe "Active Record With CTE Query Methods" do
         query = User.with(my_profile: z).joins("JOIN my_profile ON my_profile.id = users.id")
 
         expect(query.cte.with_keys).to eq([:profile, :my_profile])
-        expect(query).to match_array([user_two])
+        expect(query).to contain_exactly(user_two)
       end
     end
   end
