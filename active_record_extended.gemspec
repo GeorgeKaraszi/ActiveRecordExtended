@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
 
   spec.files                 = Dir["README.md", "lib/**/*"]
   spec.require_paths         = ["lib"]
-  spec.required_ruby_version = ">= 2.7"
+  spec.required_ruby_version = ">= 3.0"
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.add_dependency "activerecord", ">= 5.2", "< 7.2.0"

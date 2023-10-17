@@ -52,13 +52,13 @@ RSpec.describe "Active Record WITH CTE tables" do
     end
 
     it "only contains a single WITH statement" do
-      expect(with_arguments.scan(/WITH/).count).to eq(1)
-      expect(with_arguments.scan(/AS/).count).to eq(2)
+      expect(with_arguments.scan("WITH").count).to eq(1)
+      expect(with_arguments.scan("AS").count).to eq(2)
     end
 
     it "only contains a single WITH statement when chaining" do
-      expect(chained_with.scan(/WITH/).count).to eq(1)
-      expect(chained_with.scan(/AS/).count).to eq(2)
+      expect(chained_with.scan("WITH").count).to eq(1)
+      expect(chained_with.scan("AS").count).to eq(2)
     end
   end
 
