@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     active_record_extended (3.2.1)
-      activerecord (>= 5.2, < 7.2.0)
+      activerecord (>= 5.2, < 8.0.0)
       pg (< 3.0)
 
 GEM
