@@ -67,5 +67,20 @@ RSpec.describe "Active Record With CTE Query Methods" do
         expect(query).to contain_exactly(user_two)
       end
     end
+
+    context "when the relation uses itself as a second CTE" do
+      it "works without a SystemStackError" do
+        user_relation = User.all
+
+        # Add first CTE to User Relation
+        group_relation = Group.all
+        user_relation_with_cte = user_relation.with('first_cte' => group_relation)
+
+        # User Relation with a CTE adds itself as another CTE
+        user_relation_with_self_cte = user_relation_with_cte.with('self_cte' => user_relation_with_cte)
+
+        expect(user_relation_with_self_cte).to contain_exactly(user_one,user_two)
+      end
+    end
   end
 end
