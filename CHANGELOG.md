@@ -1,8 +1,17 @@
-# 3.x.x - Unreleased
+# 3.3.0 - July 22nd 2024
+
+### Breaking Changes
+
+- Deprecated Ruby 3.0 support
+  - New minimum Ruby version is 3.1 
+- Deprecated Rails 6.0 support
+  - New minimum Rails version is 6.1
 
 ### Bugfixes
 
 - Implement Rails 7.1 CTE join compatibility
+- [#91](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/91) Help address SystemStackError for infinite loops caused by CTE construction (garrettblehm)
+- [#104](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/104) Allow for Rails 7.2 to be used with this gem (Paul-Bob)
 
 
 # 3.2.1 - February 17th 2023
