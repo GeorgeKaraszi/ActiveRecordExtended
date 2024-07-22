@@ -21,3 +21,6 @@ Naming/MemoizedInstanceVariableName:
 
 Naming/MethodParameterName:
   Enabled: false
+
+Naming/BlockForwarding:
+  Enabled: false

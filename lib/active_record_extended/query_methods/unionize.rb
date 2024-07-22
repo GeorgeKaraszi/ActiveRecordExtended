@@ -92,16 +92,16 @@ module ActiveRecordExtended
         unionized_name:        lambda { |klass| klass.arel_table.name }
       }.each_pair do |method_name, default|
         define_method(method_name) do
-          return unionize_storage[method_name] if send("#{method_name}?")
+          return unionize_storage[method_name] if send(:"#{method_name}?")
 
           (default.is_a?(Proc) ? default.call(@klass) : default.new)
         end
 
-        define_method("#{method_name}?") do
+        define_method(:"#{method_name}?") do
           unionize_storage.key?(method_name) && !unionize_storage[method_name].presence.nil?
         end
 
-        define_method("#{method_name}=") do |value|
+        define_method(:"#{method_name}=") do |value|
           unionize_storage![method_name] = value
         end
       end

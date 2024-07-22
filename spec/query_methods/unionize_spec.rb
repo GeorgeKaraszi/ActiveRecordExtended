@@ -61,7 +61,7 @@ RSpec.describe "Active Record Union Methods" do
     end
 
     context "when merging in query" do
-      it "will maintain the union table when merging into existing AR queries" do
+      it "maintains the union table when merging into existing AR queries" do
         base_query  = User.union(User.where(id: user_one.id), User.joins(:profile_l).where.not(id: user_one.id))
         other_query = User.merge(base_query)
         expect(base_query.to_sql).to eq(other_query.to_sql)

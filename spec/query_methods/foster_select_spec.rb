@@ -48,7 +48,7 @@ RSpec.describe "Active Record Select Methods" do
           Array.new(6) { User.create!(number: enum_numbers.next, ip: "127.0.0.1") }
         end
 
-        it "will return a boolean expression" do
+        it "returns a boolean expression" do
           query = User.foster_select(
             truthly_expr:     ["users.number > 0",   { cast_with: :bool_and }],
             falsey_expr:      ["users.number > 200", { cast_with: :bool_and }],
