@@ -54,6 +54,8 @@ module ActiveRecordExtended
             # Ensure we follow FIFO pattern.
             # If the parent has similar CTE alias keys, we want to favor the parent's expressions over its children's.
             if expression.is_a?(ActiveRecord::Relation) && expression.with_values?
+              expression.cte = expression.cte.dup if expression.cte
+
               # Add child's materialized keys to the parent
               @materialized_keys += expression.cte.materialized_keys
               @not_materialized_keys += expression.cte.not_materialized_keys
