@@ -144,3 +144,7 @@ Style/FetchEnvVar:
 
 Style/YodaCondition:
   Enabled: false
+
+Style/HashSyntax:
+  Enabled: false
+

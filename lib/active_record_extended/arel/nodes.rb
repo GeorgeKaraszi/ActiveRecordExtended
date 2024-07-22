@@ -5,10 +5,6 @@ require "arel/nodes/function"
 
 module Arel
   module Nodes
-    unless ActiveRecordExtended::AR_VERSION_GTE_6_1
-      ["Contains", "Overlaps"].each { |binary_node_name| const_set(binary_node_name, Class.new(::Arel::Nodes::Binary)) }
-    end
-
     [
       "ContainsHStore",
       "ContainsArray",

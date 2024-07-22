@@ -13,7 +13,7 @@ module ActiveRecordExtended
           return attribute.eq(value) if column.try(:array)
         end
 
-        super(attribute, value)
+        super
       end
     end
   end

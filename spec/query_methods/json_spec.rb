@@ -107,7 +107,7 @@ RSpec.describe "Active Record JSON methods" do
       expect(query.take.cool_dudes["personal"]).to be_a(Array).and(be_empty)
     end
 
-    it "will raise a warning if the value doesn't include a double quoted input" do
+    it "raises a warning if the value doesn't include a double quoted input" do
       expect do
         User.jsonb_build_object(
           :personal,
@@ -126,19 +126,19 @@ RSpec.describe "Active Record JSON methods" do
     shared_examples_for "literal builds" do
       let(:method) { raise "You are expected to over ride this!" }
 
-      it "will accept a hash arguments that will return itself" do
+      it "accepts a hash arguments that will return itself" do
         query = User.send(method.to_sym, original_hash)
         expect(query.take.results).to be_a(Hash).and(be_present)
         expect(query.take.results).to match(original_hash.stringify_keys)
       end
 
-      it "will accept a standard array of key values" do
+      it "accepts a standard array of key values" do
         query = User.send(method.to_sym, hash_as_array_objs)
         expect(query.take.results).to be_a(Hash).and(be_present)
         expect(query.take.results).to match(original_hash.stringify_keys)
       end
 
-      it "will accept a splatted array of key-values" do
+      it "accepts a splatted array of key-values" do
         query = User.send(method.to_sym, *hash_as_array_objs)
         expect(query.take.results).to be_a(Hash).and(be_present)
         expect(query.take.results).to match(original_hash.stringify_keys)

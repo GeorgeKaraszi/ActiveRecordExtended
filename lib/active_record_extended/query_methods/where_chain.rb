@@ -46,26 +46,7 @@ module ActiveRecordExtended
       #   # SELECT tags.* FROM tags INNER JOIN user on user.id = tags.user_id WHERE user.data @> { nickname: 'chainer' }
       #
       def contains(opts, *rest)
-        if ActiveRecordExtended::AR_VERSION_GTE_6_1
-          return substitute_comparisons(opts, rest, Arel::Nodes::Contains, "contains")
-        end
-
-        build_where_chain(opts, rest) do |arel|
-          case arel
-          when Arel::Nodes::In, Arel::Nodes::Equality
-            column = left_column(arel) || column_from_association(arel)
-
-            if [:hstore, :jsonb].include?(column.type)
-              Arel::Nodes::ContainsHStore.new(arel.left, arel.right)
-            elsif column.try(:array)
-              Arel::Nodes::ContainsArray.new(arel.left, arel.right)
-            else
-              raise ArgumentError.new("Invalid argument for .where.contains(), got #{arel.class}")
-            end
-          else
-            raise ArgumentError.new("Invalid argument for .where.contains(), got #{arel.class}")
-          end
-        end
+        substitute_comparisons(opts, rest, Arel::Nodes::Contains, "contains")
       end
 
       private
@@ -111,11 +92,7 @@ module ActiveRecordExtended
       end
 
       def build_where_clause_for(scope, opts, rest)
-        if ActiveRecordExtended::AR_VERSION_GTE_6_1
-          scope.send(:build_where_clause, opts, rest)
-        else
-          scope.send(:where_clause_factory).build(opts, rest)
-        end
+        scope.send(:build_where_clause, opts, rest)
       end
     end
   end

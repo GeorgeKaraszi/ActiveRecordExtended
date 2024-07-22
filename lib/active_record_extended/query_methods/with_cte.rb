@@ -44,7 +44,7 @@ module ActiveRecordExtended
         end
 
         # @param [Hash, WithCTE] value
-        def pipe_cte_with!(value)
+        def pipe_cte_with!(value) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|

@@ -12,7 +12,7 @@ RSpec.describe "Active Record WITH CTE tables" do
     expect(query).to match_regex(with_personal_query)
   end
 
-  it "will maintain the CTE table when merging" do
+  it "maintains the CTE table when merging" do
     query = User.all
                 .merge(User.with(personal_id_one: User.where(personal_id: 1)))
                 .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
@@ -21,7 +21,7 @@ RSpec.describe "Active Record WITH CTE tables" do
     expect(query).to match_regex(with_personal_query)
   end
 
-  it "will pipe Children CTE's into the Parent relation" do
+  it "pipes Children CTE's into the Parent relation" do
     personal_id_one_query = User.where(personal_id: 1)
     personal_id_two_query = User.where(personal_id: 2)
 
@@ -84,7 +84,7 @@ RSpec.describe "Active Record WITH CTE tables" do
       expect(query).to match_regex(with_recursive_personal_query)
     end
 
-    it "will maintain the CTE table when merging" do
+    it "maintains the CTE table when merging" do
       sub_query = User.with.recursive(personal_id_one: User.where(personal_id: 1))
       query     = User.merge(sub_query)
                       .joins("JOIN personal_id_one ON personal_id_one.id = users.id")
@@ -115,7 +115,7 @@ RSpec.describe "Active Record WITH CTE tables" do
       expect(query).to match_regex(with_materialized_personal_query)
     end
 
-    it "will maintain the CTE table when merging" do
+    it "maintains the CTE table when merging" do
       sub_query = User.with
                       .materialized(materialized_personal_id_one: User.where(personal_id: 1))
                       .with(personal_id_one: User.where(personal_id: 1))
@@ -128,7 +128,7 @@ RSpec.describe "Active Record WITH CTE tables" do
       expect(query).to match_regex(expected_order)
     end
 
-    it "will raise an error if CTE is already not_materialized for that key" do
+    it "raises an error if CTE is already not_materialized for that key" do
       materialized_query = User.with.materialized(personal_id_one: User.where(personal_id: 1))
 
       expect do
@@ -139,7 +139,7 @@ RSpec.describe "Active Record WITH CTE tables" do
       end.to raise_error(ArgumentError, "CTE already set as materialized")
     end
 
-    it "will pipe Children CTE's into the Parent relation" do
+    it "pipes Children CTE's into the Parent relation" do
       personal_id_one_query = User.where(personal_id: 1)
       personal_id_two_query = User.where(personal_id: 2)
 
@@ -173,7 +173,7 @@ RSpec.describe "Active Record WITH CTE tables" do
       expect(query).to match_regex(with_not_materialized_personal_query)
     end
 
-    it "will maintain the CTE table when merging" do
+    it "maintains the CTE table when merging" do
       sub_query = User.with
                       .not_materialized(not_materialized_personal_id_one: User.where(personal_id: 1))
                       .with(personal_id_one: User.where(personal_id: 1))
@@ -186,7 +186,7 @@ RSpec.describe "Active Record WITH CTE tables" do
       expect(query).to match_regex(expected_order)
     end
 
-    it "will raise an error if CTE is already materialized for that key" do
+    it "raises an error if CTE is already materialized for that key" do
       materialized_query = User.with.not_materialized(personal_id_one: User.where(personal_id: 1))
 
       expect do
@@ -197,7 +197,7 @@ RSpec.describe "Active Record WITH CTE tables" do
       end.to raise_error(ArgumentError, "CTE already set as not_materialized")
     end
 
-    it "will pipe Children CTE's into the Parent relation" do
+    it "pipes Children CTE's into the Parent relation" do
       personal_id_one_query = User.where(personal_id: 1)
       personal_id_two_query = User.where(personal_id: 2)
 

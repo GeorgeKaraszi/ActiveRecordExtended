@@ -8,29 +8,6 @@ module ActiveRecordExtended
       private
 
       # rubocop:disable Naming/MethodName
-
-      unless ActiveRecordExtended::AR_VERSION_GTE_6_1
-        def visit_Arel_Nodes_Overlaps(object, collector)
-          infix_value object, collector, " && "
-        end
-      end
-
-      unless ActiveRecordExtended::AR_VERSION_GTE_6_1
-        def visit_Arel_Nodes_Contains(object, collector)
-          left_column = object.left.relation.name.classify.constantize.columns.detect do |col|
-            matchable_column?(col, object)
-          end
-
-          if [:hstore, :jsonb].include?(left_column&.type)
-            visit_Arel_Nodes_ContainsHStore(object, collector)
-          elsif left_column.try(:array)
-            visit_Arel_Nodes_ContainsArray(object, collector)
-          else
-            visit_Arel_Nodes_Inet_Contains(object, collector)
-          end
-        end
-      end
-
       def visit_Arel_Nodes_ContainsArray(object, collector)
         infix_value object, collector, " @> "
       end
