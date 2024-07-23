@@ -560,7 +560,7 @@ As a means for taking complex  query logic and transform them into a single or m
 
 **Options:**
    - `as`: [Symbol or String] (defaults to `"results"`): What the column will be aliased to
-   - `value`: [Symbol or String] (defaults to `key` argument): How the response should handel the json value return
+   - `value`: [Symbol or String] (defaults to `key` argument): How the response should handle the json value return
 
 See the included example on [Row To JSON](#row-to-json) to see it in action.
 
@@ -606,7 +606,7 @@ There's an issue with providing a single union clause and chaining it with a dif
 This is due to requirements of grouping SQL statements. The issue is being working on, but with no ETA.
 
 This issue only applies to the first initial set of unions and is recommended that you union two relations right off the bat.
-Afterwords you can union/chain single relations.
+Afterwards you can union/chain single relations.
 
 Example
 
