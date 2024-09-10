@@ -263,7 +263,7 @@ module ActiveRecordExtended
       #   - as: [Symbol or String] (default="results"): What the column will be aliased to
       #
       #
-      #   - value: [Symbol or String] (defaults=[key]): How the response should handel the json value return
+      #   - value: [Symbol or String] (defaults=[key]): How the response should handle the json value return
       #
       # Example:
       #

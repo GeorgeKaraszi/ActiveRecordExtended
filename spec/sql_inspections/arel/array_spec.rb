@@ -55,7 +55,7 @@ RSpec.describe "Array Column Predicates" do
       expect(query).to match_regex(/'tag' = ALL\("users"\."tags"\)/)
     end
 
-    it "create all predicates that contain a interger value" do
+    it "create all predicates that contain a integer value" do
       query = arel_table.where(arel_table[:tags].all(2)).to_sql
       expect(query).to match_regex(/2 = ALL\("users"\."tags"\)/)
     end
