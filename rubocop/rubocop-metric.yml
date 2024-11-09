@@ -5,6 +5,7 @@
 Metrics/ModuleLength:
   Exclude:
     - spec/**/*
+    - lib/active_record_extended/query_methods/unionize.rb
 
 # Spec's, tasks, config's, and the Gemfile cannot by design be reduced.
 # Thus excluding them makes logical sense

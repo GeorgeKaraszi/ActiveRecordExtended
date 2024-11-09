@@ -3,8 +3,9 @@
 module ActiveRecordExtended
   module QueryMethods
     module Unionize
-      UNION_RELATION_METHODS = [:order_union, :reorder_union, :union_as].freeze
-      UNIONIZE_METHODS       = [:union, :union_all, :union_except, :union_intersect].freeze
+      UNION_RELATION_METHODS  = [:order_union, :reorder_union, :union_as].freeze
+      UNIONIZE_METHODS        = [:union, :union_all, :union_except, :union_intersect].freeze
+      DEFAULT_STORAGE_VALUE   = proc { [] }
 
       class UnionChain
         include ActiveRecordExtended::Utilities::Support
@@ -86,15 +87,17 @@ module ActiveRecordExtended
       end
 
       {
-        union_values:          Array,
-        union_operations:      Array,
-        union_ordering_values: Array,
-        unionized_name:        lambda { |klass| klass.arel_table.name }
+        union_values:          DEFAULT_STORAGE_VALUE,
+        union_operations:      DEFAULT_STORAGE_VALUE,
+        union_ordering_values: DEFAULT_STORAGE_VALUE,
+        unionized_name:        proc { @table.name }
       }.each_pair do |method_name, default|
         define_method(method_name) do
-          return unionize_storage[method_name] if send(:"#{method_name}?")
-
-          (default.is_a?(Proc) ? default.call(@klass) : default.new)
+          if send(:"#{method_name}?")
+            unionize_storage[method_name]
+          else
+            instance_eval(&default)
+          end
         end
 
         define_method(:"#{method_name}?") do

@@ -52,6 +52,7 @@ RSpec.describe "Active Record Union Methods" do
     end
 
     it "does not execute additional queries" do
+      pending "Currently waiting on a gem update to rspec-sqlimit to allow for ActiveRecord 8.0+"
       expect do
         GroupsUser.union(
           user_one.groups_users,
