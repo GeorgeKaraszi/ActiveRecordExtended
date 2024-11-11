@@ -144,7 +144,7 @@ module ActiveRecordExtended
 
       protected
 
-      def build_unions(arel = @klass.arel_table)
+      def build_unions(arel = @table)
         return unless union_values?
 
         union_nodes      = apply_union_ordering(build_union_nodes!)
