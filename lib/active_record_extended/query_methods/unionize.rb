@@ -90,7 +90,7 @@ module ActiveRecordExtended
         union_values:          DEFAULT_STORAGE_VALUE,
         union_operations:      DEFAULT_STORAGE_VALUE,
         union_ordering_values: DEFAULT_STORAGE_VALUE,
-        unionized_name:        proc { @table.name }
+        unionized_name:        proc { arel_table.name }
       }.each_pair do |method_name, default|
         define_method(method_name) do
           if send(:"#{method_name}?")
@@ -144,7 +144,7 @@ module ActiveRecordExtended
 
       protected
 
-      def build_unions(arel = @table)
+      def build_unions(arel)
         return unless union_values?
 
         union_nodes      = apply_union_ordering(build_union_nodes!)
