@@ -14,7 +14,7 @@ gem "mutex_m"
 gem "database_cleaner", "~> 2.0"
 gem "rake", ">= 10.0"
 gem "rspec", "~> 3.0"
-gem "rspec-sqlimit", "~> 0.0.5"
+# gem "rspec-sqlimit", "~> 0.0.5"
 gem "simplecov", "~> 0.16"
 
 group :development, :test do

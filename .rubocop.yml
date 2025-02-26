@@ -11,6 +11,7 @@ AllCops:
   Exclude:
   - vendor/**/*
   - tmp/**/*
+  - bin/**/*
 
 inherit_from:
   - ./rubocop/rubocop-layout.yml

@@ -5,5 +5,5 @@ source "https://rubygems.org"
 gemspec path: ".."
 eval_gemfile "../Gemfile"
 
-gem "activerecord", "~> 6.1.0"
+gem "activerecord", "~> 8.0.0"
 gem "pg", "< 2.0"

@@ -10,7 +10,7 @@ require "active_record/relation/query_methods"
 module ActiveRecordExtended
   extend ActiveSupport::Autoload
 
-  AR_VERSION_GTE_6_1 = Gem::Requirement.new(">= 6.1").satisfied_by?(ActiveRecord.gem_version)
+  AR_VERSION_GTE_8_0 = Gem::Requirement.new(">= 8.0").satisfied_by?(ActiveRecord.gem_version)
 
   module Utilities
     extend ActiveSupport::Autoload
