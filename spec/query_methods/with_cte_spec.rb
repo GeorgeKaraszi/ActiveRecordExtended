@@ -88,26 +88,27 @@ RSpec.describe "Active Record With CTE Query Methods" do
   describe "WithCTE feature flag and deprecation" do
     let(:relation) { User.all }
     let(:cte_hash) { { profile: ProfileL.where("likes < 300") } }
-    let(:orig_enabled) { ActiveRecordExtended.config.with_cte_enabled }
-    let(:orig_warn) { ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled }
+    let(:orig_disabled) { ActiveRecordExtended::Config.with_cte_disabled }
+    let(:orig_warn) { ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled }
 
     after do
-      ActiveRecordExtended.config.with_cte_enabled = orig_enabled
-      ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = orig_warn
+      ActiveRecordExtended::Config.with_cte_disabled = orig_disabled
+      ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = orig_warn
     end
 
     context "when on Rails < 7.2" do
       before do
-        stub_const("AR_VERSION_GTE_7_2", false)
+        stub_const("ActiveRecordExtended::AR_VERSION_GTE_7_2", false)
       end
 
-      it "raises when WithCTE is disabled" do
-        ActiveRecordExtended.config.with_cte_enabled = false
-        expect { relation.with(cte_hash) }.to raise_error(/WithCTE support is disabled/)
+      it "allows WithCTE even when disabled (Rails < 7.2 ignores config)" do
+        ActiveRecordExtended::Config.with_cte_disabled = true
+        # For Rails < 7.2, CTE should always work regardless of config
+        expect { relation.with(cte_hash) }.not_to raise_error
       end
 
       it "allows WithCTE by default for Rails < 7.2 (no warning)" do
-        ActiveRecordExtended.config.with_cte_enabled = true
+        ActiveRecordExtended::Config.with_cte_disabled = false
         expect { relation.with(cte_hash) }.not_to raise_error
       end
     end
@@ -116,19 +117,19 @@ RSpec.describe "Active Record With CTE Query Methods" do
       let(:with_cte) { ActiveRecordExtended::QueryMethods::WithCTE::WithCTE.new(relation) }
 
       before do
-        stub_const("AR_VERSION_GTE_7_2", true)
-        ActiveRecordExtended.config.with_cte_enabled = true
+        stub_const("ActiveRecordExtended::AR_VERSION_GTE_7_2", true)
+        ActiveRecordExtended::Config.with_cte_disabled = true
         allow(ActiveRecordExtended::CTE_DEPRECATOR).to receive(:warn)
       end
 
       it "emits a deprecation warning when WithCTE is used and warnings are enabled" do
-        ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = true
+        ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = true
         with_cte
         expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/WithCTE support is deprecated/).at_least(:once)
       end
 
       it "does not emit a deprecation warning if warnings are disabled" do
-        ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = false
+        ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false
         with_cte
         expect(ActiveRecordExtended::CTE_DEPRECATOR).not_to have_received(:warn)
       end

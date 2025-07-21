@@ -8,16 +8,14 @@ module ActiveRecordExtended
         include Enumerable
         extend  Forwardable
 
-        def self.cte_enabled?
-          AR_VERSION_GTE_7_2 && ActiveRecordExtended.config.with_cte_enabled?
-        end
-
         def self.cte_disabled?
-          AR_VERSION_GTE_7_2 && ActiveRecordExtended.config.with_cte_disabled?
+          # For Rails < 7.2, always allow CTE support (no deprecation)
+          # For Rails 7.2+, respect the config setting
+          AR_VERSION_GTE_7_2 && ActiveRecordExtended::Config.with_cte_disabled
         end
 
         def self.cte_deprecation_warnings_enabled?
-          AR_VERSION_GTE_7_2 && ActiveRecordExtended.config.cte_deprecation_warnings_enabled?
+          AR_VERSION_GTE_7_2 && ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled
         end
 
         def_delegators :@with_values, :empty?, :blank?, :present?
@@ -29,14 +27,10 @@ module ActiveRecordExtended
             CTE_DEPRECATOR.warn(
               <<~DEPRECATION_WARNING
                 [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
-                Set ActiveRecordExtended.config.with_cte_enabled = false to disable ActiveRecordExtended CTE support.
-                Set ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = false to disable warnings.
+                Set ActiveRecordExtended::Config.with_cte_disabled = true to disable ActiveRecordExtended CTE support.
+                Set ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false to disable warnings.
               DEPRECATION_WARNING
             )
-          end
-
-          if WithCTE.cte_disabled?
-            raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
           end
 
           @scope = scope
@@ -55,10 +49,6 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] value
         def with_values=(value)
-          if WithCTE.cte_disabled?
-            raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
-          end
-
           reset!
           pipe_cte_with!(value)
         end
@@ -76,7 +66,7 @@ module ActiveRecordExtended
         # @param [Hash, WithCTE] value
         def pipe_cte_with!(value) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
           if WithCTE.cte_disabled?
-            raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+            raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
           end
 
           return if value.nil? || value.empty?
@@ -117,7 +107,7 @@ module ActiveRecordExtended
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
           if WithCTE.cte_disabled?
-            raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+            raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
           end
 
           @scope       = scope
@@ -134,6 +124,10 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def materialized(args)
+          if WithCTE.cte_disabled?
+            raise NotImplementedError.new("Rails 7.2+ does not natively support MATERIALIZED CTEs via .with. Use raw SQL or custom logic if needed.")
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -147,6 +141,12 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def not_materialized(args)
+          if WithCTE.cte_disabled?
+            raise NotImplementedError.new(
+              "Rails 7.2+ does not natively support NOT MATERIALIZED CTEs via .with. Use raw SQL or custom logic if needed."
+            )
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -161,8 +161,12 @@ module ActiveRecordExtended
 
       # @return [WithCTE]
       def cte
+        # Delegate to native Rails 7.2+ if CTE support is disabled
         if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+          return super if defined?(super)
+          return @scope.cte if @scope.respond_to?(:cte)
+
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
         @values[:cte]
@@ -170,10 +174,6 @@ module ActiveRecordExtended
 
       # @param [WithCTE] cte
       def cte=(cte)
-        if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
-        end
-
         raise TypeError.new("Must be a WithCTE class type") unless cte.is_a?(WithCTE)
 
         @values[:cte] = cte
@@ -182,7 +182,9 @@ module ActiveRecordExtended
       # @return [Boolean]
       def with_values?
         if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+          return super if defined?(super)
+
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
         !(cte.nil? || cte.empty?)
@@ -191,7 +193,9 @@ module ActiveRecordExtended
       # @return [Array<Hash>]
       def with_values
         if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+          return super if defined?(super)
+
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
         with_values? ? [cte.with_values] : []
@@ -200,7 +204,7 @@ module ActiveRecordExtended
       # @param [Hash, WithCTE] values
       def with_values=(values)
         if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
         cte.with_values = values
@@ -215,13 +219,23 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def recursive_value?
+        if WithCTE.cte_disabled?
+          return super if defined?(super)
+
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
+        end
+
         !(!@values[:recursive])
       end
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
         if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+          return super if defined?(super)
+
+          return @scope.with(opts, *rest) if @scope.respond_to?(:with)
+
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
         return WithChain.new(spawn) if opts == :chain
@@ -232,7 +246,11 @@ module ActiveRecordExtended
       # @param [Hash, WithCTE] opts
       def with!(opts = :chain, *rest)
         if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+          return super if defined?(super)
+
+          return @scope.with!(opts, *rest) if @scope.respond_to?(:with!)
+
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
         case opts
@@ -250,7 +268,11 @@ module ActiveRecordExtended
 
       def build_with(arel)
         if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended.config.with_cte_enabled = true to re-enable."
+          return super if defined?(super)
+
+          return @scope.build_with(arel) if @scope.respond_to?(:build_with)
+
+          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
         return unless with_values?

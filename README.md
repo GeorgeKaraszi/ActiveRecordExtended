@@ -939,10 +939,10 @@ Add the following to an initializer (e.g., `config/initializers/active_record_ex
 ```ruby
 # config/initializers/active_record_extended.rb
 # Disable deprecated WithCTE support in Rails 7.2+
-ActiveRecordExtended.config.with_cte_enabled = false
+ActiveRecordExtended::Config.with_cte_disabled = true
 
 # Optionally, disable deprecation warnings (if you want to silence them)
-ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = false
+ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false
 ```
 
 When enabled on Rails 7.2+, you will see a deprecation warning. When disabled, any attempt to use WithCTE will raise an error.
