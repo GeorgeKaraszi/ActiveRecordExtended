@@ -10,7 +10,41 @@ require "active_record/relation/query_methods"
 module ActiveRecordExtended
   extend ActiveSupport::Autoload
 
+  class << self
+    attr_accessor :config
+  end
+
+  class Config
+    attr_accessor :with_cte_enabled
+    attr_accessor :with_cte_deprecation_warnings_enabled
+
+    def initialize
+      @with_cte_enabled = true
+      @with_cte_deprecation_warnings_enabled = true
+    end
+
+    def with_cte_enabled?
+      @with_cte_enabled
+    end
+
+    def with_cte_disabled?
+      !with_cte_enabled?
+    end
+
+    def cte_deprecation_warnings_enabled?
+      @with_cte_deprecation_warnings_enabled
+    end
+
+    def cte_deprecation_warnings_disabled?
+      !cte_deprecation_warnings_enabled?
+    end
+  end
+
+  self.config = Config.new
+
   AR_VERSION_GTE_8_0 = Gem::Requirement.new(">= 8.0").satisfied_by?(ActiveRecord.gem_version)
+  AR_VERSION_GTE_7_2 = Gem::Requirement.new(">= 7.2").satisfied_by?(ActiveRecord.gem_version)
+  CTE_DEPRECATOR = ActiveSupport::Deprecation.new(ActiveRecordExtended::VERSION, "ActiveRecordExtended")
 
   module Utilities
     extend ActiveSupport::Autoload

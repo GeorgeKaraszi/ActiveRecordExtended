@@ -928,6 +928,29 @@ FROM "users"
 WINDOW number_window AS (PARTITION BY number ORDER BY id DESC)
 ```
 
+## Deprecation Notice: WithCTE Support in Rails 7.2+
+
+Rails 7.2+ introduces native CTE support. The `WithCTE` feature in ActiveRecordExtended is now deprecated for Rails 7.2 and above. By default, it remains enabled for backward compatibility, but you are encouraged to disable it in new or upgraded Rails 7.2+ applications.
+
+### How to Disable WithCTE
+
+Add the following to an initializer (e.g., `config/initializers/active_record_extended.rb`):
+
+```ruby
+# config/initializers/active_record_extended.rb
+# Disable deprecated WithCTE support in Rails 7.2+
+ActiveRecordExtended.config.with_cte_enabled = false
+
+# Optionally, disable deprecation warnings (if you want to silence them)
+ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = false
+```
+
+When enabled on Rails 7.2+, you will see a deprecation warning. When disabled, any attempt to use WithCTE will raise an error.
+
+### Migration/Upgrade Note
+- For Rails < 7.2, WithCTE remains enabled by default.
+- For Rails >= 7.2, WithCTE is deprecated and should be disabled unless you have a specific need for legacy behavior.
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

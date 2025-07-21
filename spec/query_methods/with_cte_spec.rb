@@ -83,4 +83,55 @@ RSpec.describe "Active Record With CTE Query Methods" do
       end
     end
   end
+
+  # New feature flag and deprecation tests
+  describe "WithCTE feature flag and deprecation" do
+    let(:relation) { User.all }
+    let(:cte_hash) { { profile: ProfileL.where("likes < 300") } }
+    let(:orig_enabled) { ActiveRecordExtended.config.with_cte_enabled }
+    let(:orig_warn) { ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled }
+
+    after do
+      ActiveRecordExtended.config.with_cte_enabled = orig_enabled
+      ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = orig_warn
+    end
+
+    context "when on Rails < 7.2" do
+      before do
+        stub_const("AR_VERSION_GTE_7_2", false)
+      end
+
+      it "raises when WithCTE is disabled" do
+        ActiveRecordExtended.config.with_cte_enabled = false
+        expect { relation.with(cte_hash) }.to raise_error(/WithCTE support is disabled/)
+      end
+
+      it "allows WithCTE by default for Rails < 7.2 (no warning)" do
+        ActiveRecordExtended.config.with_cte_enabled = true
+        expect { relation.with(cte_hash) }.not_to raise_error
+      end
+    end
+
+    context "when on Rails >= 7.2" do
+      let(:with_cte) { ActiveRecordExtended::QueryMethods::WithCTE::WithCTE.new(relation) }
+
+      before do
+        stub_const("AR_VERSION_GTE_7_2", true)
+        ActiveRecordExtended.config.with_cte_enabled = true
+        allow(ActiveRecordExtended::CTE_DEPRECATOR).to receive(:warn)
+      end
+
+      it "emits a deprecation warning when WithCTE is used and warnings are enabled" do
+        ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = true
+        with_cte
+        expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/WithCTE support is deprecated/).at_least(:once)
+      end
+
+      it "does not emit a deprecation warning if warnings are disabled" do
+        ActiveRecordExtended.config.with_cte_deprecation_warnings_enabled = false
+        with_cte
+        expect(ActiveRecordExtended::CTE_DEPRECATOR).not_to have_received(:warn)
+      end
+    end
+  end
 end
