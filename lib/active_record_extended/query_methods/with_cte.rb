@@ -8,6 +8,10 @@ module ActiveRecordExtended
         include Enumerable
         extend  Forwardable
 
+        def self.defined_rails_logger?
+          defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+        end
+
         def self.cte_disabled?
           # For Rails < 7.2, always allow CTE support (no deprecation)
           # For Rails 7.2+, respect the config setting
@@ -65,10 +69,6 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] value
         def pipe_cte_with!(value) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
-          if WithCTE.cte_disabled?
-            raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
-          end
-
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|
@@ -106,16 +106,25 @@ module ActiveRecordExtended
       class WithChain
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
-          if WithCTE.cte_disabled?
-            raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
-          end
-
           @scope       = scope
           @scope.cte ||= WithCTE.new(scope)
         end
 
         # @param [Hash, WithCTE] args
         def recursive(args)
+          if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+            Rails.logger.debug "ActiveRecordExtended: [recursive] CTE support disabled, calling @scope.with_recursive"
+            Rails.logger.debug "ActiveRecordExtended: [recursive] args: #{args.inspect}"
+
+            @scope.tap do |scope|
+              scope.with_recursive(*args)
+              scope.recursive_value = true
+              scope.cte.pipe_cte_with!(args)
+            end
+
+            return @scope
+          end
+
           @scope.tap do |scope|
             scope.recursive_value = true
             scope.cte.pipe_cte_with!(args)
@@ -124,10 +133,6 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def materialized(args)
-          if WithCTE.cte_disabled?
-            raise NotImplementedError.new("Rails 7.2+ does not natively support MATERIALIZED CTEs via .with. Use raw SQL or custom logic if needed.")
-          end
-
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -141,12 +146,6 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def not_materialized(args)
-          if WithCTE.cte_disabled?
-            raise NotImplementedError.new(
-              "Rails 7.2+ does not natively support NOT MATERIALIZED CTEs via .with. Use raw SQL or custom logic if needed."
-            )
-          end
-
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -161,14 +160,6 @@ module ActiveRecordExtended
 
       # @return [WithCTE]
       def cte
-        # Delegate to native Rails 7.2+ if CTE support is disabled
-        if WithCTE.cte_disabled?
-          return super if defined?(super)
-          return @scope.cte if @scope.respond_to?(:cte)
-
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
-        end
-
         @values[:cte]
       end
 
@@ -181,21 +172,14 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def with_values?
-        if WithCTE.cte_disabled?
-          return super if defined?(super)
-
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
-        end
-
         !(cte.nil? || cte.empty?)
       end
 
       # @return [Array<Hash>]
       def with_values
-        if WithCTE.cte_disabled?
-          return super if defined?(super)
-
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
+        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger? && defined?(super)
+          Rails.logger.debug "ActiveRecordExtended: [with_values] CTE support disabled, calling super"
+          return super
         end
 
         with_values? ? [cte.with_values] : []
@@ -203,10 +187,6 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        if WithCTE.cte_disabled?
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
-        end
-
         cte.with_values = values
       end
 
@@ -219,22 +199,32 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def recursive_value?
-        if WithCTE.cte_disabled?
-          return super if defined?(super)
-
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
-        end
-
         !(!@values[:recursive])
       end
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
-        if WithCTE.cte_disabled?
-          return super if defined?(super)
+        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          Rails.logger.debug "ActiveRecordExtended: [with] CTE support disabled, checking for super call"
+          Rails.logger.debug "ActiveRecordExtended: [with] Args: #{opts.inspect}"
+          Rails.logger.debug "ActiveRecordExtended: [with] Rest args: #{rest.inspect}"
 
-          return @scope.with(opts, *rest) if @scope.respond_to?(:with)
+          if defined?(super)
+            Rails.logger.debug "ActiveRecordExtended: [with] Calling super"
+            result = super
+            Rails.logger.debug "ActiveRecordExtended: [with] Super call completed, result class: #{result.class}"
+            Rails.logger.debug "ActiveRecordExtended: [with] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
 
+            if opts.blank?
+              Rails.logger.debug "ActiveRecordExtended: [with] Returning result"
+              return result
+            else
+              Rails.logger.debug "ActiveRecordExtended: [with] Returning WithChain.new(result)"
+              return WithChain.new(result)
+            end
+          end
+
+          Rails.logger.debug "ActiveRecordExtended: [with] No super defined, raising error"
           raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
@@ -244,12 +234,31 @@ module ActiveRecordExtended
       end
 
       # @param [Hash, WithCTE] opts
-      def with!(opts = :chain, *rest)
-        if WithCTE.cte_disabled?
-          return super if defined?(super)
+      def with!(opts = :chain, *rest) # rubocop:disable Metrics/AbcSize
+        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          Rails.logger.debug "ActiveRecordExtended: [with!] CTE support disabled, checking for super call"
+          Rails.logger.debug "ActiveRecordExtended: [with!] Args: #{opts.inspect}"
+          Rails.logger.debug "ActiveRecordExtended: [with!] Rest args: #{rest.inspect}"
 
-          return @scope.with!(opts, *rest) if @scope.respond_to?(:with!)
+          if defined?(super)
+            case opts
+            when :chain
+              Rails.logger.debug "ActiveRecordExtended: [with!] Calling super"
+              result = super
+              Rails.logger.debug "ActiveRecordExtended: [with!] Super call completed, result class: #{result.class}"
+              Rails.logger.debug "ActiveRecordExtended: [with!] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
 
+              return WithChain.new(result)
+            when :recursive
+              Rails.logger.debug "ActiveRecordExtended: [with!] Returning WithChain.new(result).recursive(*rest)"
+              return WithChain.new(self).recursive(*rest)
+            else
+              Rails.logger.debug "ActiveRecordExtended: [with!] Returning result.spawn.with!(opts, *rest)"
+              return result
+            end
+          end
+
+          Rails.logger.debug "ActiveRecordExtended: [with!] No super defined, raising error"
           raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
@@ -267,11 +276,18 @@ module ActiveRecordExtended
       end
 
       def build_with(arel)
-        if WithCTE.cte_disabled?
-          return super if defined?(super)
+        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          Rails.logger.debug "ActiveRecordExtended: [build_with] CTE support disabled, checking for super call"
+          Rails.logger.debug "ActiveRecordExtended: [build_with] Arel class: #{arel.class}"
 
-          return @scope.build_with(arel) if @scope.respond_to?(:build_with)
+          if defined?(super)
+            Rails.logger.debug "ActiveRecordExtended: [build_with] Calling super"
+            result = super
+            Rails.logger.debug "ActiveRecordExtended: [build_with] Super call completed, result: #{result.class}"
+            return result
+          end
 
+          Rails.logger.debug "ActiveRecordExtended: [build_with] No fallback available, raising error"
           raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 

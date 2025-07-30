@@ -20,7 +20,8 @@ module ActiveRecordExtended
   end
 
   AR_VERSION_GTE_8_0 = Gem::Requirement.new(">= 8.0").satisfied_by?(ActiveRecord.gem_version)
-  AR_VERSION_GTE_7_2 = Gem::Requirement.new(">= 7.2").satisfied_by?(ActiveRecord.gem_version)
+  AR_VERSION_GTE_7_2 = Gem::Requirement.new(">= 7.1.5.1").satisfied_by?(ActiveRecord.gem_version)
+  # AR_VERSION_GTE_7_2 = Gem::Requirement.new(">= 7.2").satisfied_by?(ActiveRecord.gem_version)
   CTE_DEPRECATOR = ActiveSupport::Deprecation.new(ActiveRecordExtended::VERSION, "ActiveRecordExtended")
 
   module Utilities
