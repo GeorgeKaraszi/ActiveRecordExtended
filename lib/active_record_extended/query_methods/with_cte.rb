@@ -53,6 +53,7 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] value
         def with_values=(value)
+          puts "ActiveRecordExtended::WithCTE: [with_values=] value: #{value.inspect}"
           reset!
           pipe_cte_with!(value)
         end
@@ -69,6 +70,8 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] value
         def pipe_cte_with!(value) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+          puts "ActiveRecordExtended::WithCTE: [pipe_cte_with!] caller #{caller(0..1).join('\n')}"
+          puts "ActiveRecordExtended::WithCTE: [pipe_cte_with!] value: #{value.inspect}"
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|
@@ -114,7 +117,6 @@ module ActiveRecordExtended
         def recursive(args)
           if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
             Rails.logger.debug "ActiveRecordExtended: [recursive] CTE support disabled, calling @scope.with_recursive"
-            Rails.logger.debug "ActiveRecordExtended: [recursive] args: #{args.inspect}"
 
             @scope.tap do |scope|
               scope.with_recursive(*args)
@@ -129,6 +131,10 @@ module ActiveRecordExtended
             scope.recursive_value = true
             scope.cte.pipe_cte_with!(args)
           end
+
+          puts "ActiveRecordExtended::WithChain: [recursive] Returning @scope"
+
+          @scope
         end
 
         # @param [Hash, WithCTE] args
@@ -172,14 +178,20 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def with_values?
+        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          return with_values_something.present?
+        end
+
         !(cte.nil? || cte.empty?)
       end
 
       # @return [Array<Hash>]
-      def with_values
-        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger? && defined?(super)
-          Rails.logger.debug "ActiveRecordExtended: [with_values] CTE support disabled, calling super"
-          return super
+      def with_values_something
+        puts "ActiveRecordExtended: [with_values_something] caller #{caller(0..1).join('\n')}"
+
+        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          Rails.logger.debug "ActiveRecordExtended: [with_values_somthing] CTE support disabled, calling super"
+          return with_values || []
         end
 
         with_values? ? [cte.with_values] : []
@@ -187,7 +199,13 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        cte.with_values = values
+        puts "ActiveRecordExtended: [with_values=] caller #{caller(0..1).join('\n')}"
+
+        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          super
+        else
+          cte.with_values = values
+        end
       end
 
       # @param [Boolean] value
@@ -206,30 +224,25 @@ module ActiveRecordExtended
       def with(opts = :chain, *rest)
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
           Rails.logger.debug "ActiveRecordExtended: [with] CTE support disabled, checking for super call"
-          Rails.logger.debug "ActiveRecordExtended: [with] Args: #{opts.inspect}"
-          Rails.logger.debug "ActiveRecordExtended: [with] Rest args: #{rest.inspect}"
 
           if defined?(super)
             Rails.logger.debug "ActiveRecordExtended: [with] Calling super"
-            result = super
+            result = super(opts)
             Rails.logger.debug "ActiveRecordExtended: [with] Super call completed, result class: #{result.class}"
             Rails.logger.debug "ActiveRecordExtended: [with] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
 
-            if opts.blank?
-              Rails.logger.debug "ActiveRecordExtended: [with] Returning result"
-              return result
-            else
-              Rails.logger.debug "ActiveRecordExtended: [with] Returning WithChain.new(result)"
-              return WithChain.new(result)
-            end
+            return result
           end
 
           Rails.logger.debug "ActiveRecordExtended: [with] No super defined, raising error"
           raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
         end
 
-        return WithChain.new(spawn) if opts == :chain
+        if opts == :chain
+          return WithChain.new(spawn)
+        end
 
+        puts "ActiveRecordExtended: [with] opts.blank? #{opts.blank?}"
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
@@ -237,8 +250,6 @@ module ActiveRecordExtended
       def with!(opts = :chain, *rest) # rubocop:disable Metrics/AbcSize
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
           Rails.logger.debug "ActiveRecordExtended: [with!] CTE support disabled, checking for super call"
-          Rails.logger.debug "ActiveRecordExtended: [with!] Args: #{opts.inspect}"
-          Rails.logger.debug "ActiveRecordExtended: [with!] Rest args: #{rest.inspect}"
 
           if defined?(super)
             case opts
@@ -253,7 +264,15 @@ module ActiveRecordExtended
               Rails.logger.debug "ActiveRecordExtended: [with!] Returning WithChain.new(result).recursive(*rest)"
               return WithChain.new(self).recursive(*rest)
             else
-              Rails.logger.debug "ActiveRecordExtended: [with!] Returning result.spawn.with!(opts, *rest)"
+              Rails.logger.debug "ActiveRecordExtended: [with!] Returning self with super at cte scope"
+              result = super(opts)
+              Rails.logger.debug "ActiveRecordExtended: [with!] result class: #{result.class}"
+              Rails.logger.debug "ActiveRecordExtended: [with!] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
+
+              tap do |scope|
+                scope.cte ||= WithCTE.new(result)
+              end
+
               return result
             end
           end
@@ -268,19 +287,25 @@ module ActiveRecordExtended
         when :recursive
           WithChain.new(self).recursive(*rest)
         else
-          tap do |scope|
+          result = tap do |scope|
             scope.cte ||= WithCTE.new(self)
             scope.cte.pipe_cte_with!(opts)
           end
+
+          puts "ActiveRecordExtended: [with!] result class: #{result.class}"
+          puts "ActiveRecordExtended: [with!] result SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
+
+          result
         end
       end
 
       def build_with(arel)
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          Rails.logger.debug "ActiveRecordExtended: [build_with] caller #{caller(0..1).join('\n')}"
           Rails.logger.debug "ActiveRecordExtended: [build_with] CTE support disabled, checking for super call"
-          Rails.logger.debug "ActiveRecordExtended: [build_with] Arel class: #{arel.class}"
 
           if defined?(super)
+            Rails.logger.debug "ActiveRecordExtended: [build_with] Arel class: #{arel.class}"
             Rails.logger.debug "ActiveRecordExtended: [build_with] Calling super"
             result = super
             Rails.logger.debug "ActiveRecordExtended: [build_with] Super call completed, result: #{result.class}"
@@ -294,6 +319,7 @@ module ActiveRecordExtended
         return unless with_values?
 
         cte_statements = cte.map do |name, expression|
+          puts "ActiveRecordExtended: [build_with] cte.map: name: #{name.inspect}, expression: #{expression.inspect}"
           grouped_expression = cte.generate_grouping(expression)
           cte_name           = cte.to_arel_sql(cte.double_quote(name.to_s))
           grouped_expression = add_materialized_modifier(grouped_expression, cte, name)
