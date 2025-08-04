@@ -115,13 +115,21 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def recursive(args)
+          if WithCTE.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Use the native recursive CTE `with_recursive` instead of `with.recursive`.
+              DEPRECATION_WARNING
+            )
+          end
+
           if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
             Rails.logger.debug "ActiveRecordExtended: [recursive] CTE support disabled, calling @scope.with_recursive"
 
             @scope.tap do |scope|
-              scope.with_recursive(*args)
+              scope.with_recursive(args)
               scope.recursive_value = true
-              scope.cte.pipe_cte_with!(args)
             end
 
             return @scope
@@ -191,7 +199,7 @@ module ActiveRecordExtended
 
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
           Rails.logger.debug "ActiveRecordExtended: [with_values_somthing] CTE support disabled, calling super"
-          return with_values || []
+          return with_values
         end
 
         with_values? ? [cte.with_values] : []
@@ -227,7 +235,19 @@ module ActiveRecordExtended
 
           if defined?(super)
             Rails.logger.debug "ActiveRecordExtended: [with] Calling super"
-            result = super(opts)
+            result =
+              case opts
+              when :chain
+                if rest.any?
+                  super(*rest)
+                else
+                  WithChain.new(spawn)
+                end
+              when :recursive
+                WithChain.new(self).recursive(*rest)
+              else
+                super(opts)
+              end
             Rails.logger.debug "ActiveRecordExtended: [with] Super call completed, result class: #{result.class}"
             Rails.logger.debug "ActiveRecordExtended: [with] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
 
@@ -255,7 +275,7 @@ module ActiveRecordExtended
             case opts
             when :chain
               Rails.logger.debug "ActiveRecordExtended: [with!] Calling super"
-              result = super
+              result = super(*rest)
               Rails.logger.debug "ActiveRecordExtended: [with!] Super call completed, result class: #{result.class}"
               Rails.logger.debug "ActiveRecordExtended: [with!] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
 
