@@ -8,10 +8,6 @@ module ActiveRecordExtended
         include Enumerable
         extend  Forwardable
 
-        def self.defined_rails_logger?
-          defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
-        end
-
         def self.cte_disabled?
           # For Rails < 7.2, always allow CTE support (no deprecation)
           # For Rails 7.2+, respect the config setting
@@ -121,7 +117,7 @@ module ActiveRecordExtended
             )
           end
 
-          if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+          if WithCTE.cte_disabled?
             raise "Use the native recursive CTE `with_recursive('cte_name', base_query:, recursive_query:)` instead of `with.recursive(base_query:)`"
           end
 
@@ -194,7 +190,7 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def with_values?
-        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+        if WithCTE.cte_disabled?
           return with_values_deprecated.present?
         end
 
@@ -203,7 +199,7 @@ module ActiveRecordExtended
 
       # @return [Array<Hash>]
       def with_values_deprecated
-        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+        if WithCTE.cte_disabled?
           return with_values
         end
 
@@ -212,7 +208,7 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+        if WithCTE.cte_disabled?
           super
         else
           cte.with_values = values
@@ -233,7 +229,7 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
-        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+        if WithCTE.cte_disabled?
           if defined?(super) && !opts.is_a?(Symbol)
             return super
           end
@@ -258,7 +254,7 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with!(opts = :chain, *rest)
-        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+        if WithCTE.cte_disabled?
           if defined?(super) && !opts.is_a?(Symbol)
             return super
           end
@@ -280,7 +276,7 @@ module ActiveRecordExtended
       end
 
       def build_with(arel)
-        if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
+        if WithCTE.cte_disabled?
           if defined?(super)
             return super
           end

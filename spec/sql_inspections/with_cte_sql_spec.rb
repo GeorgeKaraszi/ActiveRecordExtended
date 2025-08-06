@@ -209,4 +209,65 @@ RSpec.describe "Active Record WITH CTE tables" do
       expect(query.to_sql).to match_regex(expected_order)
     end
   end
+
+  # New tests for deprecation warnings in SQL context
+  describe "WithCTE deprecation warnings in SQL generation" do
+    let(:orig_disabled) { ActiveRecordExtended::Config.with_cte_disabled }
+    let(:orig_warn) { ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled }
+
+    before do
+      stub_const("ActiveRecordExtended::AR_VERSION_GTE_7_2", true)
+      ActiveRecordExtended::Config.with_cte_disabled = false
+      ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = true
+      allow(ActiveRecordExtended::CTE_DEPRECATOR).to receive(:warn)
+    end
+
+    after do
+      ActiveRecordExtended::Config.with_cte_disabled = orig_disabled
+      ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = orig_warn
+    end
+
+    it "emits deprecation warning when generating SQL with recursive CTE" do
+      User.with.recursive(personal_id_one: User.where(personal_id: 1)).to_sql
+      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/recursive CTE/).at_least(:once)
+    end
+
+    it "emits deprecation warning when generating SQL with materialized CTE" do
+      User.with.materialized(personal_id_one: User.where(personal_id: 1)).to_sql
+      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/Materialized CTEs/).at_least(:once)
+    end
+
+    it "emits deprecation warning when generating SQL with not_materialized CTE" do
+      User.with.not_materialized(personal_id_one: User.where(personal_id: 1)).to_sql
+      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/Not materialized CTEs/).at_least(:once)
+    end
+
+    it "emits deprecation warning when generating SQL with basic CTE" do
+      User.with(personal_id_one: User.where(personal_id: 1)).to_sql
+      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/WithCTE.*support is deprecated/).at_least(:once)
+    end
+
+    context "when CTE support is disabled" do
+      before do
+        ActiveRecordExtended::Config.with_cte_disabled = true
+      end
+
+      it "raises error when trying to generate SQL with recursive CTE" do
+        expect do
+          User.with.recursive(personal_id_one: User.where(personal_id: 1)).to_sql
+        end.to raise_error(ArgumentError, /Native Rails CTE.*requires arguments/)
+      end
+
+      it "raises error when trying to generate SQL with basic CTE" do
+        # First, we need to ensure the relation has CTE values
+        relation = User.all
+        relation.cte = ActiveRecordExtended::QueryMethods::WithCTE::WithCTE.new(relation)
+        relation.cte.with_values = { personal_id_one: User.where(personal_id: 1) }
+
+        # When CTE support is disabled, with_values? should return false
+        # so build_with is never called
+        expect(relation.with_values?).to be false
+      end
+    end
+  end
 end

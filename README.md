@@ -932,12 +932,13 @@ WINDOW number_window AS (PARTITION BY number ORDER BY id DESC)
 
 Rails 7.2+ introduces native CTE support. The `WithCTE` feature in ActiveRecordExtended is now deprecated for Rails 7.2 and above. By default, it remains enabled for backward compatibility, but you are encouraged to disable it in new or upgraded Rails 7.2+ applications.
 
-### How to Disable WithCTE
+### Configuration Options
 
 Add the following to an initializer (e.g., `config/initializers/active_record_extended.rb`):
 
 ```ruby
 # config/initializers/active_record_extended.rb
+
 # Disable deprecated WithCTE support in Rails 7.2+
 ActiveRecordExtended::Config.with_cte_disabled = true
 
@@ -945,11 +946,75 @@ ActiveRecordExtended::Config.with_cte_disabled = true
 ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false
 ```
 
-When enabled on Rails 7.2+, you will see a deprecation warning. When disabled, any attempt to use WithCTE will raise an error.
+### Behavior by Rails Version
 
-### Migration/Upgrade Note
-- For Rails < 7.2, WithCTE remains enabled by default.
-- For Rails >= 7.2, WithCTE is deprecated and should be disabled unless you have a specific need for legacy behavior.
+#### Rails < 7.2
+- WithCTE remains fully enabled by default
+- No deprecation warnings are shown
+- Configuration settings are ignored (for backward compatibility)
+
+#### Rails >= 7.2
+- WithCTE is deprecated and shows warnings by default
+- Can be disabled via configuration
+- When disabled, attempts to use WithCTE will raise errors
+
+### Migration Guide
+
+#### For New Applications (Rails 7.2+)
+Disable WithCTE support and use native Rails CTE methods:
+
+```ruby
+# config/initializers/active_record_extended.rb
+ActiveRecordExtended::Config.with_cte_disabled = true
+ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false
+```
+
+#### For Existing Applications
+1. **Phase 1**: Keep WithCTE enabled but monitor deprecation warnings
+2. **Phase 2**: Gradually migrate to native Rails CTE methods
+3. **Phase 3**: Disable WithCTE support
+
+### Native Rails CTE Methods
+
+When migrating from ActiveRecordExtended WithCTE to native Rails CTE:
+
+#### Basic CTE
+```ruby
+# ActiveRecordExtended (deprecated)
+User.with(cte_name: User.where(condition: true))
+
+# Native Rails 7.2+
+User.with(cte_name: User.where(condition: true))
+```
+
+#### Recursive CTE
+```ruby
+# ActiveRecordExtended (deprecated)
+User.with.recursive(cte_name: User.where(condition: true))
+
+# Native Rails 7.2+
+User.with_recursive('cte_name', 
+  base_query: User.where(condition: true),
+  recursive_query: User.where(condition: true)
+)
+```
+
+#### Materialized CTEs
+```ruby
+# ActiveRecordExtended (deprecated)
+User.with.materialized(cte_name: User.where(condition: true))
+
+# Native Rails 8.0+ (not available in 7.2)
+User.with(cte_name: User.where(condition: true).materialized)
+```
+
+### Error Messages
+
+When WithCTE support is disabled, you'll see helpful error messages directing you to the native Rails methods:
+
+- `Use the native recursive CTE with_recursive('cte_name', base_query:, recursive_query:) instead of with.recursive(base_query:)`
+- `Native Rails CTE with requires arguments`
+- `Materialized CTEs are not supported natively in Rails 7.2+. Rails 8.0+ supports them natively`
 
 ## License
 
