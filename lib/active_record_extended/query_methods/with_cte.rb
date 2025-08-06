@@ -30,7 +30,7 @@ module ActiveRecordExtended
           if WithCTE.cte_deprecation_warnings_enabled?
             CTE_DEPRECATOR.warn(
               <<~DEPRECATION_WARNING
-                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                [ActiveRecordExtended] WithCTE `with` and `with!`support is deprecated for Rails 7.2+ (native CTE support).
                 Set ActiveRecordExtended::Config.with_cte_disabled = true to disable ActiveRecordExtended CTE support.
                 Set ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false to disable warnings.
               DEPRECATION_WARNING
@@ -53,7 +53,6 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] value
         def with_values=(value)
-          puts "ActiveRecordExtended::WithCTE: [with_values=] value: #{value.inspect}"
           reset!
           pipe_cte_with!(value)
         end
@@ -70,8 +69,6 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] value
         def pipe_cte_with!(value) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
-          puts "ActiveRecordExtended::WithCTE: [pipe_cte_with!] caller #{caller(0..1).join('\n')}"
-          puts "ActiveRecordExtended::WithCTE: [pipe_cte_with!] value: #{value.inspect}"
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|
@@ -125,14 +122,7 @@ module ActiveRecordExtended
           end
 
           if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
-            Rails.logger.debug "ActiveRecordExtended: [recursive] CTE support disabled, calling @scope.with_recursive"
-
-            @scope.tap do |scope|
-              scope.with_recursive(args)
-              scope.recursive_value = true
-            end
-
-            return @scope
+            raise "Use the native recursive CTE `with_recursive('cte_name', base_query:, recursive_query:)` instead of `with.recursive(base_query:)`"
           end
 
           @scope.tap do |scope|
@@ -147,6 +137,15 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def materialized(args)
+          if WithCTE.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Materialized CTEs are not supported in Rails 7.2+. Rails 8.0+ supports them natively.
+              DEPRECATION_WARNING
+            )
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -160,6 +159,15 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def not_materialized(args)
+          if WithCTE.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Not materialized CTEs are not supported in natively in Rails 7.2+. Rails 8.0+ supports them natively.
+              DEPRECATION_WARNING
+            )
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -187,18 +195,15 @@ module ActiveRecordExtended
       # @return [Boolean]
       def with_values?
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
-          return with_values_something.present?
+          return with_values_deprecated.present?
         end
 
         !(cte.nil? || cte.empty?)
       end
 
       # @return [Array<Hash>]
-      def with_values_something
-        puts "ActiveRecordExtended: [with_values_something] caller #{caller(0..1).join('\n')}"
-
+      def with_values_deprecated
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
-          Rails.logger.debug "ActiveRecordExtended: [with_values_somthing] CTE support disabled, calling super"
           return with_values
         end
 
@@ -207,8 +212,6 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        puts "ActiveRecordExtended: [with_values=] caller #{caller(0..1).join('\n')}"
-
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
           super
         else
@@ -231,74 +234,36 @@ module ActiveRecordExtended
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
-          Rails.logger.debug "ActiveRecordExtended: [with] CTE support disabled, checking for super call"
-
-          if defined?(super)
-            Rails.logger.debug "ActiveRecordExtended: [with] Calling super"
-            result =
-              case opts
-              when :chain
-                if rest.any?
-                  super(*rest)
-                else
-                  WithChain.new(spawn)
-                end
-              when :recursive
-                WithChain.new(self).recursive(*rest)
-              else
-                super(opts)
-              end
-            Rails.logger.debug "ActiveRecordExtended: [with] Super call completed, result class: #{result.class}"
-            Rails.logger.debug "ActiveRecordExtended: [with] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
-
-            return result
+          if defined?(super) && !opts.is_a?(Symbol)
+            return super
           end
 
-          Rails.logger.debug "ActiveRecordExtended: [with] No super defined, raising error"
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
+          CTE_DEPRECATOR.warn(
+            <<~DEPRECATION_WARNING
+              [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+              Use the native recursive CTE `with_recursive('cte_name', base_query:, recursive_query:)` instead of `with.recursive(base_query:)`
+              `not_materialized` and `materialized` CTEs are not supported in natively in Rails 7.2+.  Rails 8.0+ supports them natively.
+            DEPRECATION_WARNING
+          )
+
+          raise ArgumentError.new("Native Rails CTE `with` requires arguments")
         end
 
         if opts == :chain
           return WithChain.new(spawn)
         end
 
-        puts "ActiveRecordExtended: [with] opts.blank? #{opts.blank?}"
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
       # @param [Hash, WithCTE] opts
-      def with!(opts = :chain, *rest) # rubocop:disable Metrics/AbcSize
+      def with!(opts = :chain, *rest)
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
-          Rails.logger.debug "ActiveRecordExtended: [with!] CTE support disabled, checking for super call"
-
-          if defined?(super)
-            case opts
-            when :chain
-              Rails.logger.debug "ActiveRecordExtended: [with!] Calling super"
-              result = super(*rest)
-              Rails.logger.debug "ActiveRecordExtended: [with!] Super call completed, result class: #{result.class}"
-              Rails.logger.debug "ActiveRecordExtended: [with!] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
-
-              return WithChain.new(result)
-            when :recursive
-              Rails.logger.debug "ActiveRecordExtended: [with!] Returning WithChain.new(result).recursive(*rest)"
-              return WithChain.new(self).recursive(*rest)
-            else
-              Rails.logger.debug "ActiveRecordExtended: [with!] Returning self with super at cte scope"
-              result = super(opts)
-              Rails.logger.debug "ActiveRecordExtended: [with!] result class: #{result.class}"
-              Rails.logger.debug "ActiveRecordExtended: [with!] Super call SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
-
-              tap do |scope|
-                scope.cte ||= WithCTE.new(result)
-              end
-
-              return result
-            end
+          if defined?(super) && !opts.is_a?(Symbol)
+            return super
           end
 
-          Rails.logger.debug "ActiveRecordExtended: [with!] No super defined, raising error"
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
+          raise "Use the native recursive CTE `with_recursive!('cte_name', base_query:, recursive_query:)` instead of `with!.recursive(base_query:)`"
         end
 
         case opts
@@ -307,39 +272,25 @@ module ActiveRecordExtended
         when :recursive
           WithChain.new(self).recursive(*rest)
         else
-          result = tap do |scope|
+          tap do |scope|
             scope.cte ||= WithCTE.new(self)
             scope.cte.pipe_cte_with!(opts)
           end
-
-          puts "ActiveRecordExtended: [with!] result class: #{result.class}"
-          puts "ActiveRecordExtended: [with!] result SQL: #{result.to_sql[0..100] if result.respond_to?(:to_sql)}"
-
-          result
         end
       end
 
       def build_with(arel)
         if WithCTE.cte_disabled? && WithCTE.defined_rails_logger?
-          Rails.logger.debug "ActiveRecordExtended: [build_with] caller #{caller(0..1).join('\n')}"
-          Rails.logger.debug "ActiveRecordExtended: [build_with] CTE support disabled, checking for super call"
-
           if defined?(super)
-            Rails.logger.debug "ActiveRecordExtended: [build_with] Arel class: #{arel.class}"
-            Rails.logger.debug "ActiveRecordExtended: [build_with] Calling super"
-            result = super
-            Rails.logger.debug "ActiveRecordExtended: [build_with] Super call completed, result: #{result.class}"
-            return result
+            return super
           end
 
-          Rails.logger.debug "ActiveRecordExtended: [build_with] No fallback available, raising error"
-          raise "WithCTE support is disabled. Set ActiveRecordExtended::Config.with_cte_disabled = false to re-enable."
+          raise "Should not be called"
         end
 
         return unless with_values?
 
         cte_statements = cte.map do |name, expression|
-          puts "ActiveRecordExtended: [build_with] cte.map: name: #{name.inspect}, expression: #{expression.inspect}"
           grouped_expression = cte.generate_grouping(expression)
           cte_name           = cte.to_arel_sql(cte.double_quote(name.to_s))
           grouped_expression = add_materialized_modifier(grouped_expression, cte, name)
