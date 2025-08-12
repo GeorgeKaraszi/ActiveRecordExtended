@@ -1,3 +1,15 @@
+# Unreleased
+
+### Features
+
+- **WithCTE Deprecation Support for Rails 7.2+**
+    - Added feature flags to disable WithCTE support in Rails 7.2+
+    - Added deprecation warnings for all WithCTE methods when Rails 7.2+ is detected
+    - Added configuration options: `with_cte_disabled` and `with_cte_deprecation_warnings_enabled`
+    - Added helpful error messages directing users to native Rails CTE methods
+    - Improved migration path from ActiveRecordExtended WithCTE to native Rails CTE
+
+
 # 3.4.0 - October 6th 2025
 
 - Added Rails 8.0 support

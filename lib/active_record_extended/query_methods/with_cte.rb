@@ -8,11 +8,31 @@ module ActiveRecordExtended
         include Enumerable
         extend  Forwardable
 
+        def self.cte_disabled?
+          # For Rails < 7.2, always allow CTE support (no deprecation)
+          # For Rails 7.2+, respect the config setting
+          AR_VERSION_GTE_7_2 && ActiveRecordExtended::Config.with_cte_disabled
+        end
+
+        def self.cte_deprecation_warnings_enabled?
+          AR_VERSION_GTE_7_2 && ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled
+        end
+
         def_delegators :@with_values, :empty?, :blank?, :present?
         attr_reader :with_values, :with_keys, :materialized_keys, :not_materialized_keys
 
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
+          if WithCTE.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE `with` and `with!`support is deprecated for Rails 7.2+ (native CTE support).
+                Set ActiveRecordExtended::Config.with_cte_disabled = true to disable ActiveRecordExtended CTE support.
+                Set ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false to disable warnings.
+              DEPRECATION_WARNING
+            )
+          end
+
           @scope = scope
           reset!
         end
@@ -88,14 +108,40 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def recursive(args)
+          if WithCTE.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Use the native recursive CTE `with_recursive` instead of `with.recursive`.
+              DEPRECATION_WARNING
+            )
+          end
+
+          if WithCTE.cte_disabled?
+            raise "Use the native recursive CTE `with_recursive('cte_name', base_query:, recursive_query:)` instead of `with.recursive(base_query:)`"
+          end
+
           @scope.tap do |scope|
             scope.recursive_value = true
             scope.cte.pipe_cte_with!(args)
           end
+
+          puts "ActiveRecordExtended::WithChain: [recursive] Returning @scope"
+
+          @scope
         end
 
         # @param [Hash, WithCTE] args
         def materialized(args)
+          if WithCTE.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Materialized CTEs are not supported in Rails 7.2+. Rails 8.0+ supports them natively.
+              DEPRECATION_WARNING
+            )
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -109,6 +155,15 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def not_materialized(args)
+          if WithCTE.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Not materialized CTEs are not supported in natively in Rails 7.2+. Rails 8.0+ supports them natively.
+              DEPRECATION_WARNING
+            )
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -135,17 +190,29 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def with_values?
+        if WithCTE.cte_disabled?
+          return with_values_deprecated.present?
+        end
+
         !(cte.nil? || cte.empty?)
       end
 
       # @return [Array<Hash>]
-      def with_values
+      def with_values_deprecated
+        if WithCTE.cte_disabled?
+          return with_values
+        end
+
         with_values? ? [cte.with_values] : []
       end
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        cte.with_values = values
+        if WithCTE.cte_disabled?
+          super
+        else
+          cte.with_values = values
+        end
       end
 
       # @param [Boolean] value
@@ -162,13 +229,39 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
-        return WithChain.new(spawn) if opts == :chain
+        if WithCTE.cte_disabled?
+          if defined?(super) && !opts.is_a?(Symbol)
+            return super
+          end
+
+          CTE_DEPRECATOR.warn(
+            <<~DEPRECATION_WARNING
+              [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+              Use the native recursive CTE `with_recursive('cte_name', base_query:, recursive_query:)` instead of `with.recursive(base_query:)`
+              `not_materialized` and `materialized` CTEs are not supported in natively in Rails 7.2+.  Rails 8.0+ supports them natively.
+            DEPRECATION_WARNING
+          )
+
+          raise ArgumentError.new("Native Rails CTE `with` requires arguments")
+        end
+
+        if opts == :chain
+          return WithChain.new(spawn)
+        end
 
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
       # @param [Hash, WithCTE] opts
       def with!(opts = :chain, *rest)
+        if WithCTE.cte_disabled?
+          if defined?(super) && !opts.is_a?(Symbol)
+            return super
+          end
+
+          raise "Use the native recursive CTE `with_recursive!('cte_name', base_query:, recursive_query:)` instead of `with!.recursive(base_query:)`"
+        end
+
         case opts
         when :chain
           WithChain.new(self)
@@ -183,6 +276,14 @@ module ActiveRecordExtended
       end
 
       def build_with(arel)
+        if WithCTE.cte_disabled?
+          if defined?(super)
+            return super
+          end
+
+          raise "Should not be called"
+        end
+
         return unless with_values?
 
         cte_statements = cte.map do |name, expression|
