@@ -104,7 +104,6 @@ RSpec.describe "Active Record With CTE Query Methods" do
           /CTE support will be deprecated in the next major release/
         ).at_least(:once)
       end
-
     end
 
     describe "ActiveRecordExtended::Config.cte_usage_callback" do
@@ -122,27 +121,33 @@ RSpec.describe "Active Record With CTE Query Methods" do
           timestamp: be_a(Time)
         ).at_least(:once)
       end
-
     end
 
     describe "ActiveRecordExtended::Config.cte_adapter_mode" do
       let(:relation) { User.all }
+
+      before do
+        allow(relation).to receive(:with).and_call_original
+        allow(relation).to receive(:legacy_with).and_call_original
+      end
+
       context "when :legacy" do
         before { ActiveRecordExtended::Config.cte_adapter_mode = :legacy }
 
         it "uses the legacy methods" do
-          expect(relation).to receive(:with).and_call_original
-          expect(relation).to receive(:legacy_with).and_call_original
           relation.with(profile: ProfileL.where("likes < 300"))
+          expect(relation).to have_received(:with)
+          expect(relation).to have_received(:legacy_with)
         end
       end
 
       context "when :native" do
         before { ActiveRecordExtended::Config.cte_adapter_mode = :native }
+
         it "uses the only native Rails methods" do
-          expect(relation).to receive(:with).and_call_original
-          expect(relation).to_not receive(:legacy_with).and_call_original
           relation.with(profile: ProfileL.where("likes < 300"))
+          expect(relation).to have_received(:with)
+          expect(relation).not_to have_received(:legacy_with)
         end
       end
     end
