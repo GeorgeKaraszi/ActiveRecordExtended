@@ -2,37 +2,17 @@
 
 module ActiveRecordExtended
   module QueryMethods
-    module WithCTE
+    module WithCTE # rubocop:disable Metrics/ModuleLength
       class WithCTE
         include ActiveRecordExtended::Utilities::Support
         include Enumerable
         extend  Forwardable
-
-        def self.cte_disabled?
-          # For Rails < 7.2, always allow CTE support (no deprecation)
-          # For Rails 7.2+, respect the config setting
-          AR_VERSION_GTE_7_2 && ActiveRecordExtended::Config.with_cte_disabled
-        end
-
-        def self.cte_deprecation_warnings_enabled?
-          AR_VERSION_GTE_7_2 && ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled
-        end
 
         def_delegators :@with_values, :empty?, :blank?, :present?
         attr_reader :with_values, :with_keys, :materialized_keys, :not_materialized_keys
 
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
-          if WithCTE.cte_deprecation_warnings_enabled?
-            CTE_DEPRECATOR.warn(
-              <<~DEPRECATION_WARNING
-                [ActiveRecordExtended] WithCTE `with` and `with!`support is deprecated for Rails 7.2+ (native CTE support).
-                Set ActiveRecordExtended::Config.with_cte_disabled = true to disable ActiveRecordExtended CTE support.
-                Set ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false to disable warnings.
-              DEPRECATION_WARNING
-            )
-          end
-
           @scope = scope
           reset!
         end
@@ -108,32 +88,15 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def recursive(args)
-          if WithCTE.cte_deprecation_warnings_enabled?
-            CTE_DEPRECATOR.warn(
-              <<~DEPRECATION_WARNING
-                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
-                Use the native recursive CTE `with_recursive` instead of `with.recursive`.
-              DEPRECATION_WARNING
-            )
-          end
-
-          if WithCTE.cte_disabled?
-            raise "Use the native recursive CTE `with_recursive('cte_name', base_query:, recursive_query:)` instead of `with.recursive(base_query:)`"
-          end
-
           @scope.tap do |scope|
             scope.recursive_value = true
             scope.cte.pipe_cte_with!(args)
           end
-
-          puts "ActiveRecordExtended::WithChain: [recursive] Returning @scope"
-
-          @scope
         end
 
         # @param [Hash, WithCTE] args
         def materialized(args)
-          if WithCTE.cte_deprecation_warnings_enabled?
+          if ActiveRecordExtended::Config.cte_deprecation_warnings_enabled?
             CTE_DEPRECATOR.warn(
               <<~DEPRECATION_WARNING
                 [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
@@ -155,7 +118,7 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def not_materialized(args)
-          if WithCTE.cte_deprecation_warnings_enabled?
+          if ActiveRecordExtended::Config.cte_deprecation_warnings_enabled?
             CTE_DEPRECATOR.warn(
               <<~DEPRECATION_WARNING
                 [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
@@ -190,27 +153,27 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def with_values?
-        if WithCTE.cte_disabled?
-          return with_values_deprecated.present?
-        end
-
-        !(cte.nil? || cte.empty?)
+        target =
+          if ActiveRecordExtended::Config.should_use_native_cte?
+            ActiveRecordExtended::Config.raise_on_native_cte_error { with_values }
+          else
+            warn_deprecation!
+            cte
+          end
+        !(target.nil? || target.empty?)
       end
 
-      # @return [Array<Hash>]
-      def with_values_deprecated
-        if WithCTE.cte_disabled?
-          return with_values
-        end
-
-        with_values? ? [cte.with_values] : []
+      # @return [Boolean]
+      def recursive_value?
+        !(!@values[:recursive])
       end
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        if WithCTE.cte_disabled?
-          super
+        if ActiveRecordExtended::Config.should_use_native_cte?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
         else
+          warn_deprecation!
           cte.with_values = values
         end
       end
@@ -222,46 +185,44 @@ module ActiveRecordExtended
         @values[:recursive] = value
       end
 
-      # @return [Boolean]
-      def recursive_value?
-        !(!@values[:recursive])
+      def with(...)
+        track_cte_usage!(:with)
+
+        if ActiveRecordExtended::Config.should_use_native_cte?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
+        else
+          legacy_with(...)
+        end
       end
 
+      def with!(...)
+        if ActiveRecordExtended::Config.should_use_native_cte?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
+        else
+          warn_deprecation!
+          legacy_with!(...)
+        end
+      end
+
+      def build_with(arel)
+        if ActiveRecordExtended::Config.should_use_native_cte?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
+        else
+          legacy_build_with(arel)
+        end
+      end
+
+      private
+
       # @param [Hash, WithCTE] opts
-      def with(opts = :chain, *rest)
-        if WithCTE.cte_disabled?
-          if defined?(super) && !opts.is_a?(Symbol)
-            return super
-          end
-
-          CTE_DEPRECATOR.warn(
-            <<~DEPRECATION_WARNING
-              [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
-              Use the native recursive CTE `with_recursive('cte_name', base_query:, recursive_query:)` instead of `with.recursive(base_query:)`
-              `not_materialized` and `materialized` CTEs are not supported in natively in Rails 7.2+.  Rails 8.0+ supports them natively.
-            DEPRECATION_WARNING
-          )
-
-          raise ArgumentError.new("Native Rails CTE `with` requires arguments")
-        end
-
-        if opts == :chain
-          return WithChain.new(spawn)
-        end
+      def legacy_with(opts = :chain, *rest)
+        return WithChain.new(self) if opts == :chain
 
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
       # @param [Hash, WithCTE] opts
-      def with!(opts = :chain, *rest)
-        if WithCTE.cte_disabled?
-          if defined?(super) && !opts.is_a?(Symbol)
-            return super
-          end
-
-          raise "Use the native recursive CTE `with_recursive!('cte_name', base_query:, recursive_query:)` instead of `with!.recursive(base_query:)`"
-        end
-
+      def legacy_with!(opts = :chain, *rest)
         case opts
         when :chain
           WithChain.new(self)
@@ -275,15 +236,7 @@ module ActiveRecordExtended
         end
       end
 
-      def build_with(arel)
-        if WithCTE.cte_disabled?
-          if defined?(super)
-            return super
-          end
-
-          raise "Should not be called"
-        end
-
+      def legacy_build_with(arel)
         return unless with_values?
 
         cte_statements = cte.map do |name, expression|
@@ -301,8 +254,6 @@ module ActiveRecordExtended
         end
       end
 
-      private
-
       def add_materialized_modifier(expression, cte, name)
         if cte.materialized_key?(name)
           Arel.sql("MATERIALIZED #{expression.to_sql}")
@@ -311,6 +262,31 @@ module ActiveRecordExtended
         else
           expression
         end
+      end
+
+      def warn_deprecation!
+        return unless ActiveRecordExtended::Config.cte_deprecation_warnings_enabled?
+        return if ActiveRecordExtended::Config.should_use_native_cte?
+        return if @warned_deprecation
+
+        @warned_deprecation = true
+
+        CTE_DEPRECATOR.warn(
+          "[ActiveRecordExtended] CTE support will be deprecated in the next major release. " \
+          "Set the adapter mode to \"ActiveRecordExtended::Config.cte_adapter_mode = :native\" " \
+          "to begin the migration process over to using the official Rails CTE support."
+        )
+      end
+
+      def track_cte_usage!(method_name)
+        return unless ActiveRecordExtended::Config.cte_migration_tracking
+        return unless ActiveRecordExtended::Config.cte_usage_callback
+
+        ActiveRecordExtended::Config.cte_usage_callback.call(
+          method:    method_name,
+          locations: caller(1..2),
+          timestamp: Time.current
+        )
       end
     end
   end

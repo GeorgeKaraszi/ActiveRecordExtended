@@ -84,148 +84,67 @@ RSpec.describe "Active Record With CTE Query Methods" do
     end
   end
 
-  # New feature flag and deprecation tests
-  describe "WithCTE feature flag and deprecation" do
-    let(:relation) { User.all }
-    let(:cte_hash) { { profile: ProfileL.where("likes < 300") } }
-    let(:orig_disabled) { ActiveRecordExtended::Config.with_cte_disabled }
-    let(:orig_warn) { ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled }
-
+  describe "WithCTE Deprecations", skip: !ActiveRecordExtended::AR_VERSION_GTE_7_2 do
     after do
-      ActiveRecordExtended::Config.with_cte_disabled = orig_disabled
-      ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = orig_warn
-    end
-
-    context "when on Rails < 7.2" do
-      before do
-        stub_const("ActiveRecordExtended::AR_VERSION_GTE_7_2", false)
-      end
-
-      it "allows WithCTE even when disabled (Rails < 7.2 ignores config)" do
-        ActiveRecordExtended::Config.with_cte_disabled = true
-        # For Rails < 7.2, CTE should always work regardless of config
-        expect { relation.with(cte_hash) }.not_to raise_error
-      end
-
-      it "allows WithCTE by default for Rails < 7.2 (no warning)" do
-        ActiveRecordExtended::Config.with_cte_disabled = false
-        expect { relation.with(cte_hash) }.not_to raise_error
+      ActiveRecordExtended::Config.configure do |config|
+        config.cte_deprecation_warnings = false
+        config.cte_migration_tracking = false
+        config.cte_adapter_mode = :legacy
+        config.cte_usage_callback = nil
       end
     end
 
-    context "when on Rails >= 7.2" do
-      let(:with_cte) { ActiveRecordExtended::QueryMethods::WithCTE::WithCTE.new(relation) }
+    describe "ActiveRecordExtended::Config.cte_deprecation_warnings" do
+      before { ActiveRecordExtended::Config.cte_deprecation_warnings_enabled = true }
 
-      before do
-        stub_const("ActiveRecordExtended::AR_VERSION_GTE_7_2", true)
-        ActiveRecordExtended::Config.with_cte_disabled = true
+      it "warns when using .with" do
         allow(ActiveRecordExtended::CTE_DEPRECATOR).to receive(:warn)
+        User.with(profile: ProfileL.where("likes < 300"))
+        expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(
+          /CTE support will be deprecated in the next major release/
+        ).at_least(:once)
       end
 
-      it "emits a deprecation warning when WithCTE is used and warnings are enabled" do
-        ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = true
-        with_cte
-        expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/WithCTE.*support is deprecated/).at_least(:once)
+    end
+
+    describe "ActiveRecordExtended::Config.cte_usage_callback" do
+      before do
+        ActiveRecordExtended::Config.cte_migration_tracking = true
+        ActiveRecordExtended::Config.cte_usage_callback = -> {}
       end
 
-      it "does not emit a deprecation warning if warnings are disabled" do
-        ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = false
-        with_cte
-        expect(ActiveRecordExtended::CTE_DEPRECATOR).not_to have_received(:warn)
+      it "calls the callback proc" do
+        allow(ActiveRecordExtended::Config.cte_usage_callback).to receive(:call)
+        User.with(profile: ProfileL.where("likes < 300"))
+        expect(ActiveRecordExtended::Config.cte_usage_callback).to have_received(:call).with(
+          method:    :with,
+          locations: be_a(Array),
+          timestamp: be_a(Time)
+        ).at_least(:once)
       end
 
-      context "when CTE support is disabled" do
-        before do
-          ActiveRecordExtended::Config.with_cte_disabled = true
-        end
+    end
 
-        it "raises error when trying to use recursive CTE" do
-          expect do
-            relation.with.recursive(cte_hash)
-          end.to raise_error(ArgumentError, /Native Rails CTE.*requires arguments/)
-        end
+    describe "ActiveRecordExtended::Config.cte_adapter_mode" do
+      let(:relation) { User.all }
+      context "when :legacy" do
+        before { ActiveRecordExtended::Config.cte_adapter_mode = :legacy }
 
-        it "raises error when trying to use with! with recursive" do
-          expect do
-            relation.with!.recursive(cte_hash)
-          end.to raise_error(/Use the native recursive CTE/)
-        end
-
-        it "raises ArgumentError when trying to use with without arguments" do
-          expect do
-            relation.with
-          end.to raise_error(ArgumentError, /Native Rails CTE.*requires arguments/)
-        end
-
-        it "raises error when trying to use build_with" do
-          # build_with is a private method, so we need to test it differently
-          # The error should be raised when trying to generate SQL
-          # First, we need to ensure the relation has CTE values
-          relation.cte = ActiveRecordExtended::QueryMethods::WithCTE::WithCTE.new(relation)
-          relation.cte.with_values = cte_hash
-
-          # When CTE support is disabled, with_values? should return false
-          # so build_with is never called
-          expect(relation.with_values?).to be false
+        it "uses the legacy methods" do
+          expect(relation).to receive(:with).and_call_original
+          expect(relation).to receive(:legacy_with).and_call_original
+          relation.with(profile: ProfileL.where("likes < 300"))
         end
       end
 
-      context "when CTE support is enabled" do
-        before do
-          ActiveRecordExtended::Config.with_cte_disabled = false
-        end
-
-        it "allows normal CTE usage" do
-          expect { relation.with(cte_hash) }.not_to raise_error
-        end
-
-        it "allows recursive CTE usage" do
-          expect { relation.with.recursive(cte_hash) }.not_to raise_error
-        end
-
-        it "allows with! usage" do
-          expect { relation.with!(cte_hash) }.not_to raise_error
+      context "when :native" do
+        before { ActiveRecordExtended::Config.cte_adapter_mode = :native }
+        it "uses the only native Rails methods" do
+          expect(relation).to receive(:with).and_call_original
+          expect(relation).to_not receive(:legacy_with).and_call_original
+          relation.with(profile: ProfileL.where("likes < 300"))
         end
       end
-    end
-  end
-
-  describe "WithCTE deprecation warnings for specific methods" do
-    let(:relation) { User.all }
-    let(:cte_hash) { { profile: ProfileL.where("likes < 300") } }
-    let(:orig_disabled) { ActiveRecordExtended::Config.with_cte_disabled }
-    let(:orig_warn) { ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled }
-
-    before do
-      stub_const("ActiveRecordExtended::AR_VERSION_GTE_7_2", true)
-      ActiveRecordExtended::Config.with_cte_disabled = false
-      ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = true
-      allow(ActiveRecordExtended::CTE_DEPRECATOR).to receive(:warn)
-    end
-
-    after do
-      ActiveRecordExtended::Config.with_cte_disabled = orig_disabled
-      ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = orig_warn
-    end
-
-    it "emits deprecation warning for recursive method" do
-      relation.with.recursive(cte_hash)
-      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/recursive CTE/).at_least(:once)
-    end
-
-    it "emits deprecation warning for materialized method" do
-      relation.with.materialized(cte_hash)
-      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/Materialized CTEs/).at_least(:once)
-    end
-
-    it "emits deprecation warning for not_materialized method" do
-      relation.with.not_materialized(cte_hash)
-      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/Not materialized CTEs/).at_least(:once)
-    end
-
-    it "emits deprecation warning for with method" do
-      relation.with(cte_hash)
-      expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(/WithCTE.*support is deprecated/).at_least(:once)
     end
   end
 end

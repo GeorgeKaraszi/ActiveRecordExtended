@@ -2,7 +2,6 @@
 
 require "active_record_extended/version"
 
-require "logger"
 require "active_record"
 require "active_record/relation"
 require "active_record/relation/merger"
@@ -11,19 +10,49 @@ require "active_record/relation/query_methods"
 module ActiveRecordExtended
   extend ActiveSupport::Autoload
 
+  AR_VERSION_GTE_8_0 = Gem::Requirement.new(">= 8.0").satisfied_by?(ActiveRecord.gem_version)
+  AR_VERSION_GTE_7_2 = Gem::Requirement.new(">= 7.2").satisfied_by?(ActiveRecord.gem_version)
+  CTE_DEPRECATOR     = ActiveSupport::Deprecation.new(ActiveRecordExtended::VERSION, "ActiveRecordExtended")
+
   module Config
-    mattr_accessor :with_cte_disabled, default: false
-    mattr_accessor :with_cte_deprecation_warnings_enabled, default: true
+    ARE_CTE_ERROR = Class.new(StandardError)
+
+    mattr_accessor :cte_adapter_mode, default: :auto
+    # Options:
+    #   :auto      - Automatically use Rails native if available
+    #   :native    - Always use Rails native (error if < 7.2)
+    #   :adapter   - Use adapter layer (recommended for migration)
+
+    mattr_accessor :cte_deprecation_warnings, default: true
+    mattr_accessor :cte_migration_tracking, default: false
+    # Callback for tracking CTE usage during migration
+    mattr_accessor :cte_usage_callback, default: nil
+
+    mattr_accessor :cte_deprecation_warnings_enabled, default: true
+
+    def self.cte_deprecation_warnings_enabled?
+      cte_deprecation_warnings_enabled && AR_VERSION_GTE_7_2
+    end
+
+    def self.should_use_native_cte?
+      return false if cte_adapter_mode == :legacy
+      return true if cte_adapter_mode == :native
+
+      cte_adapter_mode == :auto && AR_VERSION_GTE_7_2
+    end
+
+    def self.raise_on_native_cte_error
+      if AR_VERSION_GTE_7_2
+        yield
+      else
+        raise ARE_CTE_ERROR.new("Rails < 7.2 does not support CTEs")
+      end
+    end
 
     def self.configure
       yield self
     end
   end
-
-  AR_VERSION_GTE_8_0 = Gem::Requirement.new(">= 8.0").satisfied_by?(ActiveRecord.gem_version)
-  AR_VERSION_GTE_7_2 = Gem::Requirement.new(">= 7.1.5.1").satisfied_by?(ActiveRecord.gem_version)
-  # AR_VERSION_GTE_7_2 = Gem::Requirement.new(">= 7.2").satisfied_by?(ActiveRecord.gem_version)
-  CTE_DEPRECATOR = ActiveSupport::Deprecation.new(ActiveRecordExtended::VERSION, "ActiveRecordExtended")
 
   module Utilities
     extend ActiveSupport::Autoload

@@ -29,7 +29,7 @@ RSpec.configure do |config|
 
   # Reset ActiveRecordExtended config before each test
   config.before do
-    ActiveRecordExtended::Config.with_cte_disabled = false
-    ActiveRecordExtended::Config.with_cte_deprecation_warnings_enabled = true
+    ActiveRecordExtended::Config.cte_adapter_mode = :legacy
+    ActiveRecordExtended::Config.cte_deprecation_warnings_enabled = false
   end
 end

@@ -18,7 +18,7 @@ module ActiveRecordExtended
 
       module Merger
         def merge
-          merge_ctes!
+          merge_ctes! unless ActiveRecordExtended::Config.should_use_native_cte?
           merge_union!
           merge_windows!
           super
@@ -69,7 +69,8 @@ module ActiveRecordExtended
           super.tap do |arel|
             build_windows(arel) if window_values?
             build_unions(arel)  if union_values?
-            build_with(arel)    if with_values?
+            # Rails would have already processed the CTE construction, despite using native or legacy CTE paths
+            build_with(arel)    unless AR_VERSION_GTE_7_2
           end
         end
       end
