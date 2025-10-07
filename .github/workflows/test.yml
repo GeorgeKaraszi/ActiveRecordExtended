@@ -39,7 +39,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: vendor/bundle
           key: bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.rails }}-${{ hashFiles('**/Gemfile.lock') }}

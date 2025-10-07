@@ -1,3 +1,7 @@
+# 3.4.0 - October 6th 2025
+
+- Added Rails 8.0 support
+
 # 3.3.0 - July 22nd 2024
 
 ### Breaking Changes
