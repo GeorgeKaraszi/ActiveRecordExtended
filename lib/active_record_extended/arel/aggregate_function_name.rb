@@ -5,6 +5,7 @@ module Arel
     class AggregateFunctionName < ::Arel::Nodes::Node
       include Arel::Predications
       include Arel::WindowPredications
+
       attr_accessor :name, :expressions, :distinct, :alias, :orderings
 
       def initialize(name, expr, distinct = false)
