@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rails: [70, 71, 72, 80]
+        rails: [71, 72, 80]
         ruby: [3.2, 3.3, 3.4]
         experimental: [false]
         include:
