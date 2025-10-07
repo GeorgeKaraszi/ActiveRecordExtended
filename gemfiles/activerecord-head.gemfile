@@ -2,7 +2,6 @@
 
 source "https://rubygems.org"
 
-gemspec path: ".."
 eval_gemfile "../Gemfile"
 
 git "https://github.com/rails/rails.git" do

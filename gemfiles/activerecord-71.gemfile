@@ -2,7 +2,6 @@
 
 source "https://rubygems.org"
 
-gemspec path: ".."
 eval_gemfile "../Gemfile"
 
 gem "activerecord", "~> 7.1.0"
