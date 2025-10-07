@@ -11,17 +11,17 @@ jobs:
       fail-fast: false
       matrix:
         rails: [70, 71, 72, 80]
-        ruby: [3.1, 3.2, 3.3]
+        ruby: [3.1, 3.2, 3.3, 3.4]
         experimental: [false]
         exclude:
           - ruby: 3.1
             rails: 80
         include:
             - rails: head
-              ruby: 3.2
+              ruby: 3.3
               experimental: true
             - rails: head
-              ruby: 3.3
+              ruby: 3.4
               experimental: true
 
     services:
@@ -45,6 +45,11 @@ jobs:
           key: bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.rails }}-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
             bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.rails }}-
+
+      - name: Fix permissions for vendor/bundle
+        run: |
+          mkdir -p vendor/bundle
+          chmod -R o-w vendor/bundle
 
       - name: Bundle install
         run: |

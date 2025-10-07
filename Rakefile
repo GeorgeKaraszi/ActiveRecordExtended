@@ -36,6 +36,7 @@ end
 namespace :db do
   desc "Loads the test database ENV file"
   task :load_db_settings do
+    require "logger"
     require "active_record"
     unless ENV["DATABASE_URL"]
       require "dotenv"

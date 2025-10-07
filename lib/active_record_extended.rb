@@ -2,6 +2,7 @@
 
 require "active_record_extended/version"
 
+require "logger"
 require "active_record"
 require "active_record/relation"
 require "active_record/relation/merger"
