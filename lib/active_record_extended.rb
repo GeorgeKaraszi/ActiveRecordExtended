@@ -19,14 +19,13 @@ module ActiveRecordExtended
 
     mattr_accessor :cte_adapter_mode, default: :legacy
     # Options:
-    # :auto   - Automatically use Rails native if available
-    # :native - Always use Rails native (will raise errors if ActiveRecord Version < 7.2)
-    # :legacy - Always use legacy WITH cte creation
+    # - :auto   => Automatically use Rails native if available
+    # - :native => Always use Rails native (will raise errors if ActiveRecord Version < 7.2)
+    # - :legacy => Always use legacy WITH cte creation
 
-    mattr_accessor :cte_deprecation_warnings, default: true
-    mattr_accessor :cte_migration_tracking, default: false
-    # Callback for tracking CTE usage during migration
-    mattr_accessor :cte_usage_callback, default: nil
+    mattr_accessor :cte_deprecation_warnings, default: true # Enable deprecation warnings for CTE legacy usage
+    mattr_accessor :cte_migration_tracking, default: false # Enable callback for tracking CTE usage during migration
+    mattr_accessor :cte_usage_callback, default: nil # Callback for tracking CTE usage during migration
 
     def self.cte_deprecation_warnings_enabled?
       cte_deprecation_warnings && AR_VERSION_GTE_7_2
