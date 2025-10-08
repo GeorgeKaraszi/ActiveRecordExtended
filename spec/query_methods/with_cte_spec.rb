@@ -94,8 +94,32 @@ RSpec.describe "Active Record With CTE Query Methods" do
       end
     end
 
+    describe "#with_native" do
+      let(:relation) { User.all }
+
+      before do
+        ActiveRecordExtended::Config.cte_adapter_mode = :legacy
+        allow(relation).to receive(:legacy_with).and_call_original
+      end
+
+      it "does not use legacy_with when forced to use native implementation" do
+        relation
+          .with_native(profile: ProfileL.where("likes < 300"))
+          .with(other_profile: ProfileL.where("likes < 300"))
+
+        expect(relation).not_to have_received(:legacy_with)
+      end
+
+      it "does use legacy_with if not forced to use native" do
+        relation
+          .with(profile: ProfileL.where("likes < 300"))
+          .with(other_profile: ProfileL.where("likes < 300"))
+        expect(relation).to have_received(:legacy_with).twice
+      end
+    end
+
     describe "ActiveRecordExtended::Config.cte_deprecation_warnings" do
-      before { ActiveRecordExtended::Config.cte_deprecation_warnings_enabled = true }
+      before { ActiveRecordExtended::Config.cte_deprecation_warnings = true }
 
       it "warns when using .with" do
         allow(ActiveRecordExtended::CTE_DEPRECATOR).to receive(:warn)

@@ -154,7 +154,7 @@ module ActiveRecordExtended
       # @return [Boolean]
       def with_values?
         target =
-          if ActiveRecordExtended::Config.should_use_native_cte?
+          if ActiveRecordExtended::Config.should_use_native_cte?(force: forced_native_adapter?)
             ActiveRecordExtended::Config.raise_on_native_cte_error { with_values }
           else
             warn_deprecation!
@@ -170,7 +170,7 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        if ActiveRecordExtended::Config.should_use_native_cte?
+        if ActiveRecordExtended::Config.should_use_native_cte?(force: forced_native_adapter?)
           ActiveRecordExtended::Config.raise_on_native_cte_error { super }
         else
           warn_deprecation!
@@ -185,18 +185,44 @@ module ActiveRecordExtended
         @values[:recursive] = value
       end
 
-      def with(...)
-        track_cte_usage!(:with)
+      def override_adapter=(value)
+        raise ImmutableRelation if @loaded
 
-        if ActiveRecordExtended::Config.should_use_native_cte?
+        @values[:override_adapter] = value
+      end
+
+      # Forces a relation query to use the native Rails CTE process instead of the legacy pathway,
+      # despite the configuration set within ActiveRecordExtended::Config.cte_adapter_mode.
+      #
+      # @example
+      # User.with_native(comments: Comment.where(id: 1))
+      def with_native(...)
+        spawn.with_native!(...)
+      end
+
+      def with_native!(...)
+        self.override_adapter = :native
+        self.with_values |= [cte.with_values] if cte.present? # Merge legacy CTEs with native CTEs
+
+        with(...)
+      end
+
+      def with(...)
+        if ActiveRecordExtended::Config.should_use_native_cte?(force: forced_native_adapter?)
           ActiveRecordExtended::Config.raise_on_native_cte_error { super }
         else
           legacy_with(...)
         end
+      ensure
+        track_cte_usage!(:with)
       end
 
+      # Things to Solve:
+      # When an application has ActiveRecordExtended::Config.should_use_native_cte? enabled
+      # When application passes in an argument to force native or legacy
+
       def with!(...)
-        if ActiveRecordExtended::Config.should_use_native_cte?
+        if ActiveRecordExtended::Config.should_use_native_cte?(force: forced_native_adapter?)
           ActiveRecordExtended::Config.raise_on_native_cte_error { super }
         else
           warn_deprecation!
@@ -205,7 +231,7 @@ module ActiveRecordExtended
       end
 
       def build_with(arel)
-        if ActiveRecordExtended::Config.should_use_native_cte?
+        if ActiveRecordExtended::Config.should_use_native_cte?(force: forced_native_adapter?)
           ActiveRecordExtended::Config.raise_on_native_cte_error { super }
         else
           legacy_build_with(arel)
@@ -267,9 +293,9 @@ module ActiveRecordExtended
       def warn_deprecation!
         return unless ActiveRecordExtended::Config.cte_deprecation_warnings_enabled?
         return if ActiveRecordExtended::Config.should_use_native_cte?
-        return if @warned_deprecation
+        return if @values[:warned_cte_deprecation]
 
-        @warned_deprecation = true
+        @values[:warned_cte_deprecation] = true
 
         CTE_DEPRECATOR.warn(
           "[ActiveRecordExtended] CTE support will be deprecated in the next major release. " \
@@ -287,6 +313,10 @@ module ActiveRecordExtended
           locations: caller(1..2),
           timestamp: Time.current
         )
+      end
+
+      def forced_native_adapter?
+        @values[:override_adapter] == :native
       end
     end
   end

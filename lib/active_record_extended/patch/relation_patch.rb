@@ -6,7 +6,7 @@ module ActiveRecordExtended
       module QueryDelegation
         AR_EX_QUERY_METHODS = (
           [
-            :with, :define_window, :select_window, :foster_select,
+            :with, :with_native, :define_window, :select_window, :foster_select,
             :either_join, :either_joins, :either_order, :either_orders
           ] +
           ActiveRecordExtended::QueryMethods::Unionize::UNIONIZE_METHODS +

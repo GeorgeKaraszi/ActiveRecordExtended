@@ -17,24 +17,23 @@ module ActiveRecordExtended
   module Config
     ARE_CTE_ERROR = Class.new(StandardError)
 
-    mattr_accessor :cte_adapter_mode, default: :auto
+    mattr_accessor :cte_adapter_mode, default: :legacy
     # Options:
-    #   :auto      - Automatically use Rails native if available
-    #   :native    - Always use Rails native (error if < 7.2)
-    #   :adapter   - Use adapter layer (recommended for migration)
+    # :auto   - Automatically use Rails native if available
+    # :native - Always use Rails native (will raise errors if ActiveRecord Version < 7.2)
+    # :legacy - Always use legacy WITH cte creation
 
     mattr_accessor :cte_deprecation_warnings, default: true
     mattr_accessor :cte_migration_tracking, default: false
     # Callback for tracking CTE usage during migration
     mattr_accessor :cte_usage_callback, default: nil
 
-    mattr_accessor :cte_deprecation_warnings_enabled, default: true
-
     def self.cte_deprecation_warnings_enabled?
-      cte_deprecation_warnings_enabled && AR_VERSION_GTE_7_2
+      cte_deprecation_warnings && AR_VERSION_GTE_7_2
     end
 
-    def self.should_use_native_cte?
+    def self.should_use_native_cte?(force: false)
+      return true if force
       return false if cte_adapter_mode == :legacy
       return true if cte_adapter_mode == :native
 
