@@ -49,6 +49,14 @@ module ActiveRecordExtended
     def self.configure
       yield self
     end
+
+    def self.track_cte_usage
+      old_value = cte_migration_tracking
+      self.cte_migration_tracking = true
+      yield
+    ensure
+      self.cte_migration_tracking = old_value
+    end
   end
 
   module Utilities
