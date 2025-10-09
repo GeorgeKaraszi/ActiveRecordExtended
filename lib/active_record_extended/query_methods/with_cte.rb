@@ -163,6 +163,10 @@ module ActiveRecordExtended
         !(target.nil? || target.empty?)
       end
 
+      def forced_native_adapter?
+        @values[:override_adapter] == :native
+      end
+
       # @return [Boolean]
       def recursive_value?
         !(!@values[:recursive])
@@ -313,10 +317,6 @@ module ActiveRecordExtended
           locations: caller(1..2),
           timestamp: Time.current
         )
-      end
-
-      def forced_native_adapter?
-        @values[:override_adapter] == :native
       end
     end
   end
