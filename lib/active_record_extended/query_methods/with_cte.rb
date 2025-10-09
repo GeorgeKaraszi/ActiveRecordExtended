@@ -310,7 +310,7 @@ module ActiveRecordExtended
 
         ActiveRecordExtended::Config.cte_usage_callback.call(
           method:    method_name,
-          locations: caller(1..2),
+          locations: caller(1..5),
           timestamp: Time.current
         )
       end
