@@ -89,11 +89,12 @@ module ActiveRecordExtended
       #
       # SPECIAL GOTCHA NOTE: (if duplicate keys are found) This will favor the parents query `with's` over nested ones!
       def pipe_cte_with!(subquery)
-        return self if @scope.forced_native_adapter? || subquery.try(:forced_native_adapter?)
         return self unless subquery.try(:with_values?)
 
-        # Add subquery CTE's to the parents query stack. (READ THE SPECIAL NOTE ABOVE!)
-        if @scope.with_values?
+        if @scope.forced_native_adapter? || subquery.try(:forced_native_adapter?)
+          @scope.with_values |= subquery.with_values
+        elsif @scope.with_values?
+          # Add subquery CTE's to the parents query stack. (READ THE SPECIAL NOTE ABOVE!)
           @scope.cte.pipe_cte_with!(subquery.cte)
         else
           # Top level has no with values
