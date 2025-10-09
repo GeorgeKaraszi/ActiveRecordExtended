@@ -26,4 +26,10 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  # Reset ActiveRecordExtended config before each test
+  config.before do
+    ActiveRecordExtended::Config.cte_adapter_mode = :legacy
+    ActiveRecordExtended::Config.cte_deprecation_warnings = false
+  end
 end

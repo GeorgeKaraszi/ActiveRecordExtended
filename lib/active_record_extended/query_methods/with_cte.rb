@@ -2,7 +2,7 @@
 
 module ActiveRecordExtended
   module QueryMethods
-    module WithCTE
+    module WithCTE # rubocop:disable Metrics/ModuleLength
       class WithCTE
         include ActiveRecordExtended::Utilities::Support
         include Enumerable
@@ -96,6 +96,15 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def materialized(args)
+          if ActiveRecordExtended::Config.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Materialized CTEs are not supported in Rails 7.2+. Rails 8.0+ supports them natively.
+              DEPRECATION_WARNING
+            )
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -109,6 +118,15 @@ module ActiveRecordExtended
 
         # @param [Hash, WithCTE] args
         def not_materialized(args)
+          if ActiveRecordExtended::Config.cte_deprecation_warnings_enabled?
+            CTE_DEPRECATOR.warn(
+              <<~DEPRECATION_WARNING
+                [ActiveRecordExtended] WithCTE support is deprecated for Rails 7.2+ (native CTE support).
+                Not materialized CTEs are not supported in natively in Rails 7.2+. Rails 8.0+ supports them natively.
+              DEPRECATION_WARNING
+            )
+          end
+
           @scope.tap do |scope|
             args.each_pair do |name, _expression|
               sym_name = name.to_sym
@@ -135,17 +153,33 @@ module ActiveRecordExtended
 
       # @return [Boolean]
       def with_values?
-        !(cte.nil? || cte.empty?)
+        target =
+          if forced_native_adapter?
+            ActiveRecordExtended::Config.raise_on_native_cte_error { with_values }
+          else
+            warn_deprecation!
+            cte
+          end
+        !(target.nil? || target.empty?)
       end
 
-      # @return [Array<Hash>]
-      def with_values
-        with_values? ? [cte.with_values] : []
+      def forced_native_adapter?
+        @values[:override_adapter] == :native || ActiveRecordExtended::Config.should_use_native_cte?
+      end
+
+      # @return [Boolean]
+      def recursive_value?
+        !(!@values[:recursive])
       end
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        cte.with_values = values
+        if forced_native_adapter?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
+        else
+          warn_deprecation!
+          cte.with_values = values
+        end
       end
 
       # @param [Boolean] value
@@ -155,20 +189,66 @@ module ActiveRecordExtended
         @values[:recursive] = value
       end
 
-      # @return [Boolean]
-      def recursive_value?
-        !(!@values[:recursive])
+      def override_adapter=(value)
+        raise ImmutableRelation if @loaded
+
+        @values[:override_adapter] = value
       end
 
+      # Forces a relation query to use the native Rails CTE process instead of the legacy pathway,
+      # despite the configuration set within ActiveRecordExtended::Config.cte_adapter_mode.
+      #
+      # @example
+      # User.with_native(comments: Comment.where(id: 1))
+      def with_native(...)
+        spawn.with_native!(...)
+      end
+
+      def with_native!(...)
+        self.override_adapter = :native
+        self.with_values |= [cte.with_values] if cte.present? # Merge legacy CTEs with native CTEs
+
+        with(...)
+      end
+
+      def with(...)
+        if forced_native_adapter?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
+        else
+          legacy_with(...)
+        end
+      ensure
+        track_cte_usage!(:with)
+      end
+
+      def with!(...)
+        if forced_native_adapter?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
+        else
+          warn_deprecation!
+          legacy_with!(...)
+        end
+      end
+
+      def build_with(arel)
+        if forced_native_adapter?
+          ActiveRecordExtended::Config.raise_on_native_cte_error { super }
+        else
+          legacy_build_with(arel)
+        end
+      end
+
+      private
+
       # @param [Hash, WithCTE] opts
-      def with(opts = :chain, *rest)
-        return WithChain.new(spawn) if opts == :chain
+      def legacy_with(opts = :chain, *rest)
+        return WithChain.new(self) if opts == :chain
 
         opts.blank? ? self : spawn.with!(opts, *rest)
       end
 
       # @param [Hash, WithCTE] opts
-      def with!(opts = :chain, *rest)
+      def legacy_with!(opts = :chain, *rest)
         case opts
         when :chain
           WithChain.new(self)
@@ -182,7 +262,7 @@ module ActiveRecordExtended
         end
       end
 
-      def build_with(arel)
+      def legacy_build_with(arel)
         return unless with_values?
 
         cte_statements = cte.map do |name, expression|
@@ -200,8 +280,6 @@ module ActiveRecordExtended
         end
       end
 
-      private
-
       def add_materialized_modifier(expression, cte, name)
         if cte.materialized_key?(name)
           Arel.sql("MATERIALIZED #{expression.to_sql}")
@@ -210,6 +288,31 @@ module ActiveRecordExtended
         else
           expression
         end
+      end
+
+      def warn_deprecation!
+        return unless ActiveRecordExtended::Config.cte_deprecation_warnings_enabled?
+        return if forced_native_adapter?
+        return if @values[:warned_cte_deprecation]
+
+        @values[:warned_cte_deprecation] = true
+
+        CTE_DEPRECATOR.warn(
+          "[ActiveRecordExtended] CTE support will be deprecated in the next major release. " \
+          "Set the adapter mode to \"ActiveRecordExtended::Config.cte_adapter_mode = :native\" " \
+          "to begin the migration process over to using the official Rails CTE support."
+        )
+      end
+
+      def track_cte_usage!(method_name)
+        return unless ActiveRecordExtended::Config.cte_migration_tracking
+        return unless ActiveRecordExtended::Config.cte_usage_callback
+
+        ActiveRecordExtended::Config.cte_usage_callback.call(
+          method:    method_name,
+          locations: caller(1..10),
+          timestamp: Time.current
+        )
       end
     end
   end

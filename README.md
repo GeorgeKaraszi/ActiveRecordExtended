@@ -47,14 +47,14 @@ Active Record Extended is the continuation of maintaining and improving the work
 Overtime the lack of updating to support the latest versions of ActiveRecord 5.x has caused quite a bit of users forking off the project to create their own patches jobs to maintain compatibility.
 The only problem is that this has created a wild west of environments of sorts. The problem has grown to the point no one is attempting to directly contribute to the original source. And forked repositories are finding themselves as equally as dead with little to no activity.
 
-Active Record Extended is essentially providing users with the other half of Postgreses querying abilities. Due to Rails/ActiveRecord/Arel being designed to be DB agnostic, there are a lot of left out features; Either by choice or the simple lack of supporting API's for other databases. However some features are not exactly PG explicit. Some are just helper methods to express an idea much more easily.
+Active Record Extended is essentially providing users with the other half of Postgres querying abilities. Due to Rails/ActiveRecord/Arel being designed to be DB agnostic, there are a lot of left-out features; Either by choice or the simple lack of supporting API's for other databases. However some features are not exactly PG explicit. Some are just helper methods to express an idea much more easily.
 
 ## Compatibility
 
 This package is designed to align and work with any officially supported Ruby and Rails versions.
- - Minimum Ruby Version: 3.1.x **(EOL warning!)**
- - Minimum Rails Version: 6.1.x **(EOL warning!)**
- - Minimum Postgres Version: 12.x **(EOL warning!)**
+ - Minimum Ruby Version: 3.2.x **(EOL warning!)**
+ - Minimum Rails Version: 7.1.x **(EOL warning!)**
+ - Minimum Postgres Version: 13.x **(EOL warning!)**
  - Latest Ruby supported: 3.4.x
  - Latest Rails supported: 8.0.x
  - Postgres: 11-current(18) (probably works with most older versions to a certain point)
@@ -926,6 +926,35 @@ SELECT "users"."id",
         (FIRST_VALUE(name) OVER number_window) AS "first_value_name"
 FROM "users"
 WINDOW number_window AS (PARTITION BY number ORDER BY id DESC)
+```
+
+## Deprecation Notice: WithCTE Support in Rails 7.2+
+
+Rails 7.2+ introduces native CTE support. The `WithCTE` feature in ActiveRecordExtended will be fully deprecated in favor of the native support Rails 7.2+ introduces.
+
+### Configuration Options
+
+Add the following to an initializer (e.g., `config/initializers/active_record_extended.rb`):
+
+```ruby
+# config/initializers/active_record_extended.rb
+
+ActiveRecordExtended::Config.configure do |config|
+  # Options: :auto (default), :native, :legacy
+  # :auto => will use the native Rails CTE implementation if Rails version 7.2+ is installed
+  # :native => will only use the native Rails CTE implementation
+  # :legacy => will continue to use the legacy CTE adaptation
+  config.cte_adapter_mode = :native
+  
+  # Displays deprecation warnings anytime non-native mode is used. (Warning: This will spam logs with warnings due to the nested nature of ActiveRecord::Relation)
+  config.cte_deprecation_warnings = true
+  
+  # (Optional) Enabling this will track methods calling #with CTE methods.
+  config.cte_migration_tracking = false
+  
+  # (Optional) (Requires cte_migration_tracking enabled) Callback method when .with is called.
+  config.cte_usage_callback = ->(method_name, locations, timestamp) {}
+end
 ```
 
 ## License

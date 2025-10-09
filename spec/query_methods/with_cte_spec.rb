@@ -83,4 +83,97 @@ RSpec.describe "Active Record With CTE Query Methods" do
       end
     end
   end
+
+  describe "WithCTE Deprecations", skip: !ActiveRecordExtended::AR_VERSION_GTE_7_2 do
+    after do
+      ActiveRecordExtended::Config.configure do |config|
+        config.cte_deprecation_warnings = false
+        config.cte_migration_tracking = false
+        config.cte_adapter_mode = :legacy
+        config.cte_usage_callback = nil
+      end
+    end
+
+    describe "#with_native" do
+      let(:relation) { User.all }
+
+      before do
+        ActiveRecordExtended::Config.cte_adapter_mode = :legacy
+        allow(relation).to receive(:legacy_with).and_call_original
+      end
+
+      it "does not use legacy_with when forced to use native implementation" do
+        relation
+          .with_native(profile: ProfileL.where("likes < 300"))
+          .with(other_profile: ProfileL.where("likes < 300"))
+
+        expect(relation).not_to have_received(:legacy_with)
+      end
+
+      it "does use legacy_with if not forced to use native" do
+        relation
+          .with(profile: ProfileL.where("likes < 300"))
+          .with(other_profile: ProfileL.where("likes < 300"))
+        expect(relation).to have_received(:legacy_with).twice
+      end
+    end
+
+    describe "ActiveRecordExtended::Config.cte_deprecation_warnings" do
+      before { ActiveRecordExtended::Config.cte_deprecation_warnings = true }
+
+      it "warns when using .with" do
+        allow(ActiveRecordExtended::CTE_DEPRECATOR).to receive(:warn)
+        User.with(profile: ProfileL.where("likes < 300"))
+        expect(ActiveRecordExtended::CTE_DEPRECATOR).to have_received(:warn).with(
+          /CTE support will be deprecated in the next major release/
+        ).at_least(:once)
+      end
+    end
+
+    describe "ActiveRecordExtended::Config.cte_usage_callback" do
+      before do
+        ActiveRecordExtended::Config.cte_migration_tracking = true
+        ActiveRecordExtended::Config.cte_usage_callback = -> {}
+      end
+
+      it "calls the callback proc" do
+        allow(ActiveRecordExtended::Config.cte_usage_callback).to receive(:call)
+        User.with(profile: ProfileL.where("likes < 300"))
+        expect(ActiveRecordExtended::Config.cte_usage_callback).to have_received(:call).with(
+          method:    :with,
+          locations: be_a(Array),
+          timestamp: be_a(Time)
+        ).at_least(:once)
+      end
+    end
+
+    describe "ActiveRecordExtended::Config.cte_adapter_mode" do
+      let(:relation) { User.all }
+
+      before do
+        allow(relation).to receive(:with).and_call_original
+        allow(relation).to receive(:legacy_with).and_call_original
+      end
+
+      context "when :legacy" do
+        before { ActiveRecordExtended::Config.cte_adapter_mode = :legacy }
+
+        it "uses the legacy methods" do
+          relation.with(profile: ProfileL.where("likes < 300"))
+          expect(relation).to have_received(:with)
+          expect(relation).to have_received(:legacy_with)
+        end
+      end
+
+      context "when :native" do
+        before { ActiveRecordExtended::Config.cte_adapter_mode = :native }
+
+        it "uses the only native Rails methods" do
+          relation.with(profile: ProfileL.where("likes < 300"))
+          expect(relation).to have_received(:with)
+          expect(relation).not_to have_received(:legacy_with)
+        end
+      end
+    end
+  end
 end

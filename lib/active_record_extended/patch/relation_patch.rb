@@ -6,7 +6,7 @@ module ActiveRecordExtended
       module QueryDelegation
         AR_EX_QUERY_METHODS = (
           [
-            :with, :define_window, :select_window, :foster_select,
+            :with, :with_native, :define_window, :select_window, :foster_select,
             :either_join, :either_joins, :either_order, :either_orders
           ] +
           ActiveRecordExtended::QueryMethods::Unionize::UNIONIZE_METHODS +
@@ -39,6 +39,7 @@ module ActiveRecordExtended
         end
 
         def merge_ctes!
+          return if other.forced_native_adapter?
           return unless other.with_values?
 
           return relation.with!.recursive(other.cte) if other.recursive_value? && !relation.recursive_value?
@@ -69,7 +70,8 @@ module ActiveRecordExtended
           super.tap do |arel|
             build_windows(arel) if window_values?
             build_unions(arel)  if union_values?
-            build_with(arel)    if with_values?
+            # Rails would have already processed the CTE construction, despite using native or legacy CTE paths
+            build_with(arel)    unless AR_VERSION_GTE_7_2
           end
         end
       end
