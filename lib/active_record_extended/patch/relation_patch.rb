@@ -18,7 +18,7 @@ module ActiveRecordExtended
 
       module Merger
         def merge
-          merge_ctes! unless ActiveRecordExtended::Config.should_use_native_cte?
+          merge_ctes!
           merge_union!
           merge_windows!
           super
@@ -39,6 +39,7 @@ module ActiveRecordExtended
         end
 
         def merge_ctes!
+          return if other.forced_native_adapter?
           return unless other.with_values?
 
           return relation.with!.recursive(other.cte) if other.recursive_value? && !relation.recursive_value?

@@ -31,8 +31,7 @@ module ActiveRecordExtended
       cte_deprecation_warnings && AR_VERSION_GTE_7_2
     end
 
-    def self.should_use_native_cte?(force: false)
-      return true if force
+    def self.should_use_native_cte?
       return false if cte_adapter_mode == :legacy
       return true if cte_adapter_mode == :native
 
