@@ -44,7 +44,7 @@ module ActiveRecordExtended
         end
 
         # @param [Hash, WithCTE] value
-        def pipe_cte_with!(value) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+        def pipe_cte_with!(value)
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|
@@ -54,8 +54,6 @@ module ActiveRecordExtended
             # Ensure we follow FIFO pattern.
             # If the parent has similar CTE alias keys, we want to favor the parent's expressions over its children's.
             if expression.is_a?(ActiveRecord::Relation) && expression.with_values?
-              expression.cte = expression.cte.dup if expression.cte
-
               # Add child's materialized keys to the parent
               @materialized_keys += expression.cte.materialized_keys
               @not_materialized_keys += expression.cte.not_materialized_keys
@@ -77,13 +75,21 @@ module ActiveRecordExtended
           @materialized_keys = Set.new
           @not_materialized_keys = Set.new
         end
+
+        def deep_dup
+          @with_keys = @with_keys.deep_dup
+          @with_values = @with_values.deep_dup
+          @materialized_keys = @materialized_keys.deep_dup
+          @not_materialized_keys_keys = @not_materialized_keys_keys.deep_dup
+          super
+        end
       end
 
       class WithChain
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
-          @scope       = scope
-          @scope.cte ||= WithCTE.new(scope)
+          @scope     = scope
+          @scope.cte = @scope.cte&.deep_dup || WithCTE.new(scope)
         end
 
         # @param [Hash, WithCTE] args
@@ -118,6 +124,12 @@ module ActiveRecordExtended
             end
             scope.cte.pipe_cte_with!(args)
           end
+        end
+      end
+
+      def spawn
+        super.tap do |scope|
+          scope.cte = scope.cte.deep_dup if scope.cte
         end
       end
 
