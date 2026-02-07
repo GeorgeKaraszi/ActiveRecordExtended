@@ -49,6 +49,18 @@ module ActiveRecordExtended
         substitute_comparisons(opts, rest, Arel::Nodes::Contains, "contains")
       end
 
+      def contains_key(opts, *rest)
+        substitute_comparisons(opts, rest, Arel::Nodes::ContainsKey, "contains_key")
+      end
+
+      def contains_any_key(opts, *rest)
+        substitute_comparisons(opts, rest, Arel::Nodes::ContainsAnyKey, "contains_any_key")
+      end
+
+      def contains_all_keys(opts, *rest)
+        substitute_comparisons(opts, rest, Arel::Nodes::ContainsAllKeys, "contains_all_keys")
+      end
+
       private
 
       def matchable_column?(col, arel)

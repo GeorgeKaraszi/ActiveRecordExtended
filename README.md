@@ -114,8 +114,7 @@ This only accepts a single value to a given attribute. So querying for example m
 [Postgres '@>' (JSONB/HSTORE type) Contains expression](https://www.postgresql.org/docs/10/static/functions-json.html#FUNCTIONS-JSONB-OP-TABLE)
 
 
-The `contains/1` method is used for finding any elements in an `Array`, `JSONB`, or `HSTORE` column type.
-That contains all of the provided values.
+The `contains/1` method is used for finding any elements in an `Array`, `JSONB`, or `HSTORE` column type that contains all of the provided values.
 
 Array Type:
 ```ruby
@@ -133,6 +132,23 @@ bob   = User.create!(data: { nickname: "ARExtended" })
 randy = User.create!(data: { nickname: "ARExtended" })
 
 User.where.contains(data: { nickname: "ARExtended" }) #=> [bob, randy]
+```
+
+#### Contains Key(s)
+[Postgres '@>' (JSONB/HSTORE type) Contains expression](https://www.postgresql.org/docs/10/static/functions-json.html#FUNCTIONS-JSONB-OP-TABLE)
+
+
+The `contains_key/1`, `contains_any_key/2`, and `contains_all_keys/2` methods are used for finding any elements in a `JSONB` or `HSTORE` column type that contains the provided key, any of the provided keys, or all of the provided keys, respectively.
+
+HSTORE / JSONB Type:
+```ruby
+alice = User.create!(data: { nickname: "ARExtend", alias: "al" })
+bob   = User.create!(data: { nickname: "ARExtended", email: "bob@gmail.com" })
+randy = User.create!(data: { nickname: "ARExtended" })
+
+User.where.contains_key(data: "nickname") #=> [alice, bob, randy]
+User.where.contains_any_key(data: ["alias", "email"]) #=> [alice, bob]
+User.where.contains_all_keys(data: ["alias", "nickname"]) #=> [alice]
 ```
 
 #### Overlap

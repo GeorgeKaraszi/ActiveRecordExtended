@@ -20,6 +20,18 @@ module ActiveRecordExtended
         infix_value object, collector, " <@ "
       end
 
+      def visit_Arel_Nodes_ContainsKey(object, collector)
+        infix_value object, collector, " ? "
+      end
+
+      def visit_Arel_Nodes_ContainsAnyKey(object, collector)
+        infix_value object, collector, " ?| "
+      end
+
+      def visit_Arel_Nodes_ContainsAllKeys(object, collector)
+        infix_value object, collector, " ?& "
+      end
+
       def visit_Arel_Nodes_ContainedInArray(object, collector)
         infix_value object, collector, " <@ "
       end

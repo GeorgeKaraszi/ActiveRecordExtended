@@ -23,6 +23,18 @@ module Arel
       Nodes::Contains.new self, Nodes.build_quoted(other, self)
     end
 
+    def contains_key(other)
+      Nodes::ContainsKey.new self, Nodes.build_quoted(other, self)
+    end
+
+    def contains_any_key(other)
+      Nodes::ContainsAnyKey.new self, Nodes.build_quoted(other, self)
+    end
+
+    def contains_all_keys(other)
+      Nodes::ContainsAllKeys.new self, Nodes.build_quoted(other, self)
+    end
+
     def contained_in_array(other)
       Nodes::ContainedInArray.new self, Nodes.build_quoted(other, self)
     end
