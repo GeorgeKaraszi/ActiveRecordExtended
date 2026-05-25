@@ -10,8 +10,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rails: [70, 71, 72, 80]
-        ruby: [3.2, 3.3, 3.4]
+        rails: [70, 71, 72, 80, 81]
+        ruby: [3.2, 3.3, 3.4, 4.0]
         experimental: [false]
         include:
             - rails: head
@@ -19,6 +19,9 @@ jobs:
               experimental: true
             - rails: head
               ruby: 3.4
+              experimental: true
+            - rails: head
+              ruby: 4.0
               experimental: true
 
     services:
@@ -30,13 +33,13 @@ jobs:
         ports: ["5432:5432"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           path: vendor/bundle
           key: bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.rails }}-${{ hashFiles('**/Gemfile.lock') }}

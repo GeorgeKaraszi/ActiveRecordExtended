@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+eval_gemfile "../Gemfile"
+
+gem "activerecord", "~> 8.1.0"
+gem "pg", "< 2.0"
