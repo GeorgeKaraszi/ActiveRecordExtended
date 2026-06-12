@@ -82,5 +82,20 @@ RSpec.describe "Active Record With CTE Query Methods" do
         expect(user_relation_with_self_cte).to contain_exactly(user_one, user_two)
       end
     end
+
+    context "when called again will spawn the relation" do
+      it "maintains the CTE in the spawned relation" do
+        cte_hash = { profile: ProfileL.where("likes < 300") }
+        relation = User.all.with(cte_hash)
+        spawned_relation = relation.all
+        second_relation = relation.with.materialized(cte_hash)
+
+        expect(relation.cte.object_id).not_to eq(spawned_relation.cte.object_id)
+        expect(relation.to_sql).to eq(spawned_relation.to_sql)
+
+        expect(relation.cte.object_id).not_to eq(second_relation.cte.object_id)
+        expect(relation.to_sql).not_to eq(second_relation.to_sql)
+      end
+    end
   end
 end
