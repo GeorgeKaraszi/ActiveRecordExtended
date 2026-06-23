@@ -24,6 +24,7 @@
     - [Either Order](#either-order)
   - [Common Table Expressions (CTE)](#common-table-expressions-cte)
     - [Subquery CTE Gotchas](#subquery-cte-gotchas)
+    - [Toggling CTE Handling](#toggling-cte-handling)
   - [JSON Query Methods](#json-query-methods)
     - [Row To JSON](#row-to-json)
     - [JSON/B Build Object](#jsonb-build-object)
@@ -52,11 +53,11 @@ Active Record Extended is essentially providing users with the other half of Pos
 ## Compatibility
 
 This package is designed to align and work with any officially supported Ruby and Rails versions.
- - Minimum Ruby Version: 3.1.x **(EOL warning!)**
- - Minimum Rails Version: 6.1.x **(EOL warning!)**
+ - Minimum Ruby Version: 3.3.x
+ - Minimum Rails Version: 7.1.x
  - Minimum Postgres Version: 12.x **(EOL warning!)**
- - Latest Ruby supported: 3.4.x
- - Latest Rails supported: 8.0.x
+ - Latest Ruby supported: 4.0.x
+ - Latest Rails supported: 8.1.x
  - Postgres: 11-current(18) (probably works with most older versions to a certain point)
 
 ## Installation
@@ -453,6 +454,41 @@ WITH "unique_cte" AS (
   ) )) people
 ```
 
+#### Toggling CTE Handling
+
+By default this gem manages CTEs with its own implementation (materialized modifiers,
+child-to-parent piping, recursive chaining, etc.). Rails ships its own native
+`#with`/`#with_recursive`, so you can opt out of this gem's handling and use Rails'
+native CTE support instead.
+
+**Global toggle** — flip the handler for the whole application (defaults to `:extended`):
+
+```ruby
+# config/initializers/active_record_extended.rb
+ActiveRecordExtended.configure do |config|
+  config.cte_handler = :native # or :extended (default)
+end
+```
+
+When set to `:native`, every `.with` call delegates to `ActiveRecord::Relation#with`,
+storing into Rails' own `@values[:with]` and emitting the CTE through Rails' builder.
+The gem-specific extras (`.with.materialized`, child piping, etc.) are not applied in
+this mode.
+
+**Per-query toggle** — wrap query construction in a block. The override applies to the
+query *and any nested subquery `.with` calls built inside the block*, then is restored:
+
+```ruby
+ActiveRecordExtended.with_native_cte do
+  User.with(recent: Profile.where(active: true))
+      .joins("JOIN recent ON recent.user_id = users.id")
+end
+
+# The inverse, useful when the global handler is :native:
+ActiveRecordExtended.with_extended_cte do
+  User.with(recent: Profile.where(active: true))
+end
+```
 
 ### JSON Query Methods
 If any or all of your json sub-queries include a CTE, read the [Subquery CTE Gotchas](#subquery-cte-gotchas) warnings.

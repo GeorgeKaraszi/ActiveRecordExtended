@@ -1,3 +1,22 @@
+# Unreleased
+
+### Breaking Changes
+
+- Deprecated Rails 7.0 (and earlier) support
+  - New minimum Rails version is 7.1
+- Deprecated Ruby 3.2 (and earlier) support
+  - New minimum Ruby version is 3.3
+
+### Features
+
+- Added toggling between this gem's CTE implementation and Rails' native CTE support
+  - Global: `ActiveRecordExtended.configure { |c| c.cte_handler = :native }` (defaults to `:extended`)
+  - Per-query: `ActiveRecordExtended.with_native_cte { ... }` / `ActiveRecordExtended.with_extended_cte { ... }`, scoped to the block including nested subquery `.with` calls
+
+### Bugfixes
+
+- `build_with` now defers to Rails when this gem holds no CTEs, so native `with_recursive` emits its CTE instead of being silently dropped
+
 # 3.4.0 - October 6th 2025
 
 - Added Rails 8.0 support
