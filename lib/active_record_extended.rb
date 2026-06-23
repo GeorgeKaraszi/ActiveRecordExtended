@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "active_record_extended/version"
+require "active_record_extended/configuration"
 
 require "logger"
 require "active_record"

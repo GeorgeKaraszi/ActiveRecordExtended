@@ -140,12 +140,18 @@ module ActiveRecordExtended
 
       # @return [Array<Hash>]
       def with_values
+        return super if ActiveRecordExtended.native_cte?
+
         with_values? ? [cte.with_values] : []
       end
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        cte.with_values = values
+        if ActiveRecordExtended.native_cte?
+          super
+        else
+          cte.with_values = values
+        end
       end
 
       # @param [Boolean] value
@@ -162,6 +168,7 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with(opts = :chain, *rest)
+        return super if ActiveRecordExtended.native_cte?
         return WithChain.new(spawn) if opts == :chain
 
         opts.blank? ? self : spawn.with!(opts, *rest)
@@ -169,6 +176,8 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] opts
       def with!(opts = :chain, *rest)
+        return super if ActiveRecordExtended.native_cte?
+
         case opts
         when :chain
           WithChain.new(self)
@@ -183,7 +192,10 @@ module ActiveRecordExtended
       end
 
       def build_with(arel)
-        return unless with_values?
+        # When this gem isn't holding any CTEs (native mode, or a native
+        # `with_recursive` call), defer to Rails' own build_with so its
+        # `@values[:with]` are still emitted.
+        return super unless with_values?
 
         cte_statements = cte.map do |name, expression|
           grouped_expression = cte.generate_grouping(expression)

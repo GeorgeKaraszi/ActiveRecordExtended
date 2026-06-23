@@ -91,6 +91,9 @@ Style/NilLambda:
 # Disabled cops #
 #################
 
+Style/OneClassPerFile:
+  Enabled: false
+
 Style/Documentation:
   Enabled: false
 
