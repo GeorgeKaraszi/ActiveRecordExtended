@@ -2,7 +2,7 @@
 
 module ActiveRecordExtended
   module Utilities
-    module Support # rubocop:disable Metrics/ModuleLength
+    module Support
       A_TO_Z_KEYS = ("a".."z").to_a.freeze
 
       # We need to ensure we can flatten nested ActiveRecord::Relations
@@ -92,12 +92,8 @@ module ActiveRecordExtended
         return self unless subquery.try(:with_values?)
 
         # Add subquery CTE's to the parents query stack. (READ THE SPECIAL NOTE ABOVE!)
-        if @scope.with_values?
-          @scope.cte.pipe_cte_with!(subquery.cte)
-        else
-          # Top level has no with values
-          @scope.with!(subquery.cte)
-        end
+        @scope.with!(subquery.cte)
+        subquery.cte = QueryMethods::WithCTE::WithCTE.new(subquery)
 
         self
       end

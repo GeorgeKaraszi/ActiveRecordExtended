@@ -9,7 +9,7 @@ module ActiveRecordExtended
         extend  Forwardable
 
         def_delegators :@with_values, :empty?, :blank?, :present?
-        attr_reader :with_values, :with_keys, :materialized_keys, :not_materialized_keys
+        attr_reader :with_values, :materialized_keys, :not_materialized_keys
 
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
@@ -18,14 +18,17 @@ module ActiveRecordExtended
         end
 
         # @return [Enumerable] Returns the order for which CTE's were imported as.
-        def each
-          return to_enum(:each) unless block_given?
+        def each(&block)
+          return to_enum(:each) unless block
 
-          with_keys.each do |key|
-            yield(key, with_values[key])
-          end
+          with_values.each(&block)
         end
         alias each_pair each
+
+        # @return [Array<Symbol>] CTE names in insertion order
+        def with_keys
+          with_values.keys
+        end
 
         # @param [Hash, WithCTE] value
         def with_values=(value)
@@ -44,7 +47,7 @@ module ActiveRecordExtended
         end
 
         # @param [Hash, WithCTE] value
-        def pipe_cte_with!(value) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+        def pipe_cte_with!(value)
           return if value.nil? || value.empty?
 
           value.each_pair do |name, expression|
@@ -54,36 +57,38 @@ module ActiveRecordExtended
             # Ensure we follow FIFO pattern.
             # If the parent has similar CTE alias keys, we want to favor the parent's expressions over its children's.
             if expression.is_a?(ActiveRecord::Relation) && expression.with_values?
-              expression.cte = expression.cte.dup if expression.cte
-
               # Add child's materialized keys to the parent
               @materialized_keys += expression.cte.materialized_keys
               @not_materialized_keys += expression.cte.not_materialized_keys
 
               pipe_cte_with!(expression.cte)
-              expression.cte.reset!
+              # Other relations can share this CTE object, so give the expression a new one
+              expression.cte = WithCTE.new(expression)
             end
 
-            @with_keys            |= [sym_name]
             @with_values[sym_name] = expression
           end
-
-          value.reset! if value.is_a?(WithCTE)
         end
 
         def reset!
-          @with_keys   = []
           @with_values = {}
           @materialized_keys = Set.new
           @not_materialized_keys = Set.new
+        end
+
+        def initialize_copy(other)
+          super
+          @with_values = other.with_values.dup
+          @materialized_keys = other.materialized_keys.dup
+          @not_materialized_keys = other.not_materialized_keys.dup
         end
       end
 
       class WithChain
         # @param [ActiveRecord::Relation] scope
         def initialize(scope)
-          @scope       = scope
-          @scope.cte ||= WithCTE.new(scope)
+          @scope = scope
+          @scope.own_cte!
         end
 
         # @param [Hash, WithCTE] args
@@ -145,7 +150,13 @@ module ActiveRecordExtended
 
       # @param [Hash, WithCTE] values
       def with_values=(values)
-        cte.with_values = values
+        own_cte!.with_values = values
+      end
+
+      # Copies the CTE before a change, because spawned relations share it.
+      # @return [WithCTE]
+      def own_cte!
+        self.cte = cte&.dup || WithCTE.new(self)
       end
 
       # @param [Boolean] value
@@ -175,10 +186,7 @@ module ActiveRecordExtended
         when :recursive
           WithChain.new(self).recursive(*rest)
         else
-          tap do |scope|
-            scope.cte ||= WithCTE.new(self)
-            scope.cte.pipe_cte_with!(opts)
-          end
+          tap { own_cte!.pipe_cte_with!(opts) }
         end
       end
 

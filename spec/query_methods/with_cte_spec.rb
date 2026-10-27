@@ -66,6 +66,13 @@ RSpec.describe "Active Record With CTE Query Methods" do
         expect(query.cte.with_keys).to eq([:profile, :my_profile])
         expect(query).to contain_exactly(user_two)
       end
+
+      it "does not clear the CTEs of a merged recursive query" do
+        recursive_query = User.with.recursive(recursive_users: User.where(id: user_one.id))
+        User.all.merge(recursive_query).to_sql
+
+        expect(recursive_query.cte.with_keys).to eq([:recursive_users])
+      end
     end
 
     context "when the relation uses itself as a second CTE" do
@@ -81,6 +88,60 @@ RSpec.describe "Active Record With CTE Query Methods" do
 
         expect(user_relation_with_self_cte).to contain_exactly(user_one, user_two)
       end
+    end
+
+    context "when called again will spawn the relation" do
+      let(:cte_hash) { { profile: ProfileL.where("likes < 300") } }
+      let(:relation) { User.all.with(cte_hash) }
+
+      it "maintains the CTE in the spawned relation" do
+        expect(relation.all.to_sql).to eq(relation.to_sql)
+      end
+
+      it "does not change the original relation when a spawned relation adds a CTE" do
+        relation.all.with!(other: ProfileL.where("likes > 400"))
+
+        expect(relation.cte.with_values.keys).to eq([:profile])
+      end
+
+      it "does not change the original relation when a chained relation adds a materialized CTE" do
+        materialized_relation = relation.with.materialized(cte_hash)
+
+        expect(relation.cte.materialized_key?(:profile)).to be(false)
+        expect(materialized_relation.cte.materialized_key?(:profile)).to be(true)
+      end
+
+      it "does not change relations that share a CTE when one of them is nested" do
+        child = ProfileL.with(inner: ProfileL.where("likes < 300"))
+        sibling = child.where(likes: 200)
+        User.with(outer: sibling).to_sql
+
+        expect(child.cte.with_keys).to eq([:inner])
+      end
+
+      it "does not change relations that share a CTE when one of them is in a union" do
+        child = User.with(profile: ProfileL.where("likes < 300")).where(id: user_one.id)
+        sibling = child.where(id: user_one.id)
+        User.union(User.where(id: user_two.id), sibling).to_sql
+
+        expect(child.cte.with_keys).to eq([:profile])
+      end
+    end
+  end
+
+  describe "WithCTE#dup" do
+    it "does not share state with the original" do
+      original = ActiveRecordExtended::QueryMethods::WithCTE::WithCTE.new(User.all)
+      original.pipe_cte_with!(profile: ProfileL.all)
+      copy = original.dup
+
+      copy.pipe_cte_with!(other: ProfileL.all)
+      copy.materialized_keys << :profile
+      copy.not_materialized_keys << :other
+
+      expect(original.with_keys).to eq([:profile])
+      expect(original.materialized_keys).to be_empty
+      expect(original.not_materialized_keys).to be_empty
     end
   end
 end
