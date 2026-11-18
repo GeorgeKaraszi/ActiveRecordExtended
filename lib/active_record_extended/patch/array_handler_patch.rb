@@ -19,4 +19,7 @@ module ActiveRecordExtended
   end
 end
 
-ActiveRecord::PredicateBuilder::ArrayHandler.prepend(ActiveRecordExtended::Patch::ArrayHandlerPatch)
+# Rails 5.2.1+ already builds `=` for array columns through `force_equality?`.
+if ActiveRecord.gem_version < Gem::Version.new("5.2.1")
+  ActiveRecord::PredicateBuilder::ArrayHandler.prepend(ActiveRecordExtended::Patch::ArrayHandlerPatch)
+end
